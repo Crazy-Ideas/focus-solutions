@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+
+{% macro form_group(field) %}
+    <div class="form-group required">
+        <label for="{{ field.id }}" class="form-control-label">{{ field.label }}</label>
+        {%- if field.errors %}
+            {{ field(class_="form-control is-invalid") }}
+        {%- else %}
+            {{ field(class_="form-control") }}
+        {%- endif %}
+        {%- if field.errors %}
+            <div class="invalid-feedback">
+                {{ field.errors[0] }}
+            </div>
+        {%- endif %}
+    </div>
+{% endmacro %}
+
+
+{% macro file_group(field) %}
+    <div class="custom-file">
+        {%- if field.errors %}
+            {{ field(class_="custom-file-input is-invalid") }}
+        {%- else %}
+            {{ field(class_="custom-file-input") }}
+        {%- endif %}
+        <label for="{{ field.id }}" class="custom-file-label">{{ field.label }}</label>
+        {%- if field.errors %}
+            <div class="invalid-feedback">
+                {{ field.errors[0] }}
+            </div>
+        {%- endif %}
+    </div>
+    <br>
+{% endmacro %}
+
+
+{% macro quick_form(form) -%}
+    {%- set _enctype = [] %}
+    {%- for field in form %}
+        {%- if field.type == "FileField" %}
+            {%- set _ = _enctype.append("multipart/form-data") -%}
+        {%- endif %}
+    {%- endfor %}
+    <form class="form" method="POST" {%- if _enctype[0] %}enctype="{{ _enctype[0] }}"{% endif -%}>
+        {%- for field in form %}
+            {%- if field.type in ("HiddenField", "CSRFTokenField") %}
+                {{ field() }}
+            {%- elif field.type == "SubmitField" %}
+                <br>
+                {{ field(class_="btn btn-success") }}
+            {%- elif field.type =="BooleanField" %}
+                <div class="form-check">
+                    <label class="form-check-label">
+                        {{ field(class_="form-check-input") }} {{ field.label.text }}
+                    </label>
+                </div>
+            {%- elif field.type == "FileField" %}
+                {{ file_group(field) }}
+            {%- else %}
+                {{ form_group(field) }}
+            {%- endif %}
+        {%- endfor %}
+    </form>
+{% endmacro %}
+
+{% block app_content %}
+    <div class="row">
+        <div class="col-md-8">
+            {% if name %}
+                <a class="btn btn-primary btn-block" href="{{ name_url }}">
+                    {{ name }}
+                </a>
+            {% else %}
+                {{ title }}
+            {% endif %}
+        </div>
+        {% if cancel_url %}
+            <div class="col-md-4">
+                <a class="btn btn-primary btn-block"
+                   href="{{ cancel_url }}">
+                    Cancel
+                </a>
+            </div>
+        {% endif %}
+    </div>
+    <br>
+    <div class="row">
+        <div class="col-md-8">
+            {{ quick_form(form) }}
+        </div>
+    </div>
+{% endblock %}
+
+{% block scripts %}
+    {{ super() }}
+    <script>
+        $(".custom-file-input").on("change", function () {
+            let fileName = $(this).val().split("\\").pop();
+            $(this).siblings(".custom-file-label").addClass("selected").html(fileName);
+        });
+    </script>
+    {%- set _select_fields = [] %}
+    {%- for field in form %}
+        {%- if field.type == "SelectField" %}
+            {%- set _ = _select_fields.append(field.id) -%}
+        {%- endif %}
+    {%- endfor %}
+    {%- if _select_fields[0] %}
+        <script>
+            $(document).ready(function () {
+                {%- for select_field_id in _select_fields %}
+                    $("#{{ select_field_id }}").select2({theme: "bootstrap4", selectOnClose: true});
+                {% endfor %}
+            });
+        </script>
+    {%- endif %}
+{% endblock %}
