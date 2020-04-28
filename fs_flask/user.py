@@ -12,6 +12,7 @@ from wtforms import PasswordField, SubmitField
 from wtforms.fields.html5 import EmailField
 from wtforms.validators import InputRequired
 
+from config import Config
 from fs_flask import fs_app, login
 
 
@@ -23,12 +24,16 @@ class User(FirestoreDocument, UserMixin):
         self.password_hash: str = str()
         self.name: str = str()
         self.initial: str = str()
+        self.city: str = Config.DEFAULT_CITY
+        self.role: str = str()
 
     def __repr__(self) -> str:
         return f"{self.email.lower()}"
 
     @classmethod
-    def create_user(cls, email: str, name: str, initial: str) -> str:
+    def create_user(cls, email: str, name: str, initial: str, role: str) -> str:
+        if role not in Config.ROLES:
+            return str()
         if not isinstance(email, str) or sum(1 for char in email if char == "@") != 1:
             return str()
         db_user = cls.objects.filter_by(email=email).first()
@@ -38,6 +43,7 @@ class User(FirestoreDocument, UserMixin):
         user.email = email
         user.name = name
         user.initial = initial.upper()[:2]
+        user.role = role
         password = b64encode(os.urandom(24)).decode()
         user.set_password(password)
         user.set_id(email.replace("@", "_").replace(".", "-"))
