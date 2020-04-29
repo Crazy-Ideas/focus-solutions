@@ -38,7 +38,7 @@
         <div class="collapse navbar-collapse" id="navbarMenu">
             <div class="navbar-nav mr-auto">
                 {% if current_user.is_authenticated %}
-                    <a class="nav-item nav-link active" href="#">Hotels</a>
+                    <a class="nav-item nav-link active" href="{{ url_for('query') }}">Reports</a>
                 {% endif %}
             </div>
             <div class="navbar-nav ml-auto">

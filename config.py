@@ -11,6 +11,7 @@ class Config:
     HOTEL = "hotel"
     ROLES = (ADMIN, HOTEL)
     DEFAULT_CITY = "Mumbai"
+    ANY = "Any"
     CITIES = ("Mumbai", "Pune")
     NO_MEAL = "No Meal"
     MEALS = ("Breakfast", "Lunch", "Dinner", "Hi Tea", NO_MEAL)

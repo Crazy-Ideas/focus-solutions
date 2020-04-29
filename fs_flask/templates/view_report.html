@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block app_content %}
+    <div class="row">
+        <div class="col-md">
+            <table class="table table-bordered table-hover table-responsive-md">
+                <thead class="thead-dark">
+                <tr>
+                    <th class="text-center" scope="col">No</th>
+                    <th class="text-center" scope="col">Hotel</th>
+                    <th class="text-center" scope="col">Count</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for hotel_count in hotel_counts %}
+                    <tr>
+                        <td class="text-center">{{ loop.index }}</td>
+                        <td class="text-center">{{ hotel_count[0] }}</td>
+                        <td class="text-center">{{ hotel_count[1] }}</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+{% endblock %}

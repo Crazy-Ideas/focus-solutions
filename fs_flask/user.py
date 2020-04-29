@@ -25,6 +25,7 @@ class User(FirestoreDocument, UserMixin):
         self.name: str = str()
         self.initial: str = str()
         self.city: str = Config.DEFAULT_CITY
+        self.hotel: str = str()
         self.role: str = str()
 
     def __repr__(self) -> str:
@@ -42,6 +43,8 @@ class User(FirestoreDocument, UserMixin):
         user = cls()
         user.email = email
         user.name = name
+        if role == Config.HOTEL:
+            user.hotel = name
         user.initial = initial.upper()[:2]
         user.role = role
         password = b64encode(os.urandom(24)).decode()
