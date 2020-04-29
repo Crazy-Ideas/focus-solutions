@@ -45,7 +45,7 @@
                 {% if current_user.is_anonymous %}
                     <a class="nav-item nav-link active" href="{{ url_for('login') }}">Login</a>
                 {% else %}
-                    <a class="nav-item nav-link active" href="#">
+                    <a class="nav-item nav-link active" href="{{ url_for('profile') }}">
                         {{ current_user.initial }}
                     </a>
                     <a class="nav-item nav-link active" href="{{ url_for('logout') }}">Logout</a>
@@ -55,15 +55,30 @@
     </nav>
 </div>
 
-{% macro select_form(form, unique_id, button_text) %}
+{%- macro select_form(form, unique_id, button_text) %}
     <form class="form" method="POST" id="{{ unique_id }}_primary_form">
         {{ form.csrf_token() }}
         {{ form.action_type(value=config.SELECT) }}
         {{ form.select_id(value=unique_id) }}
         {{ form.confirm(value=button_text, class='btn btn-info btn-block') }}
     </form>
-{% endmacro %}
+{%- endmacro %}
 
+{%- macro form_group(field) %}
+    <div class="form-group required">
+        <label for="{{ field.id }}" class="form-control-label">{{ field.label }}</label>
+        {%- if field.errors %}
+            {{ field(class_="form-control is-invalid") }}
+        {%- else %}
+            {{ field(class_="form-control") }}
+        {%- endif %}
+        {%- if field.errors %}
+            <div class="invalid-feedback">
+                {{ field.errors[0] }}
+            </div>
+        {%- endif %}
+    </div>
+{%- endmacro %}
 
 {% block content %}
     <div class="container-xl">

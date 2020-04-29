@@ -7,8 +7,8 @@ os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = 'google-cloud.json'
 class Config:
     SECRET_KEY = os.environ.get('SECRET_KEY') or b64encode(os.urandom(24)).decode()
     SHEET_ID = "1OnvVprC_RSlsKxgAgve-dliPGJydj--qkmvnRUfyGYM"
-    ADMIN = "admin"
-    HOTEL = "hotel"
+    ADMIN = "Admin"
+    HOTEL = "Hotel"
     ROLES = (ADMIN, HOTEL)
     DEFAULT_CITY = "Mumbai"
     ANY = "Any"

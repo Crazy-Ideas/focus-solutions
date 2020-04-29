@@ -1,11 +1,12 @@
 from operator import itemgetter
 from typing import List
 
-from flask import render_template, url_for
+from flask import render_template, url_for, redirect
 from flask_login import login_required, current_user
 
+from config import Config
 from fs_flask import fs_app
-from fs_flask.forms import QueryForm
+from fs_flask.forms import QueryForm, ProfileForm
 from fs_flask.hotel import Usage
 
 
@@ -32,3 +33,14 @@ def view_report(usage_data: List[Usage]):
     hotel_counts = [(hotel, sum(1 for usage in usage_data if usage.hotel == hotel)) for hotel in hotels]
     hotel_counts.sort(key=itemgetter(1), reverse=True)
     return render_template("view_report.html", hotel_counts=hotel_counts, title="Report")
+
+
+@fs_app.route("/profile", methods=["GET", "POST"])
+@login_required
+def profile():
+    form = ProfileForm()
+    form.populate_choices(current_user)
+    if not form.validate_on_submit() or current_user.role != Config.ADMIN:
+        return render_template("profile.html", user=current_user, form=form)
+    form.update_user(current_user)
+    return redirect(url_for("profile"))

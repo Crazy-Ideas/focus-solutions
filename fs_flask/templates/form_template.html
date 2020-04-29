@@ -1,22 +1,5 @@
 {% extends "base.html" %}
 
-{% macro form_group(field) %}
-    <div class="form-group required">
-        <label for="{{ field.id }}" class="form-control-label">{{ field.label }}</label>
-        {%- if field.errors %}
-            {{ field(class_="form-control is-invalid") }}
-        {%- else %}
-            {{ field(class_="form-control") }}
-        {%- endif %}
-        {%- if field.errors %}
-            <div class="invalid-feedback">
-                {{ field.errors[0] }}
-            </div>
-        {%- endif %}
-    </div>
-{% endmacro %}
-
-
 {% macro file_group(field) %}
     <div class="custom-file">
         {%- if field.errors %}

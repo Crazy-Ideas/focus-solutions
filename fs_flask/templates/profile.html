@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+
+{% block app_content %}
+    <div class="row justify-content-center">
+        <div class="col-md-4">
+            <div class="card text-center">
+                <h5 class="card-header">{{ user.name }}</h5>
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item">
+                        <strong>{{ user.email }}</strong>
+                    </li>
+                    <li class="list-group-item">
+                        City<br>
+                        <strong>{{ user.city }}</strong>
+                        {% if user.role == config.ADMIN %}
+                            <a type="button" class="badge badge-warning text-white" data-toggle="modal"
+                               data-target="#city_modal">
+                                &#9998;
+                            </a>
+                        {% endif %}
+                    </li>
+                    {% if user.role == config.ADMIN %}
+                        <li class="list-group-item">
+                            Hotel View<br>
+                            <strong>{{ user.hotel }}</strong>
+                            <a type="button" class="badge badge-warning text-white" data-toggle="modal"
+                               data-target="#hotel_modal">
+                                &#9998;
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </div>
+    {% if user.role == config.ADMIN %}
+        <div class="modal fade" id="hotel_modal" tabindex="-1" role="dialog">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Edit Hotel</h5>
+                        <button type="button" class="close" data-dismiss="modal">
+                            <span>&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body justify-content-center d-flex">
+                        <form class="form" method="POST" id="hotel-form">
+                            {{ form_group(form.hotel) }}
+                            {{ form.city(class="d-none") }}
+                            {{ form.csrf_token() }}
+                        </form>
+                    </div>
+                    <div class="modal-footer justify-content-center d-flex">
+                        <button type="button" class="btn btn-warning" id="hotel-button">Save</button>
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal fade" id="city_modal" tabindex="-1" role="dialog">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Edit City</h5>
+                        <button type="button" class="close" data-dismiss="modal">
+                            <span>&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body justify-content-center">
+                        <form class="form" method="POST" id="city-form">
+                            {{ form_group(form.city) }}
+                            {{ form.hotel(class="d-none") }}
+                            {{ form.csrf_token() }}
+                        </form>
+                        If you change your city then your Hotel View will be reset to Any.
+                    </div>
+                    <div class="modal-footer justify-content-center d-flex">
+                        <button type="button" class="btn btn-warning" id="city-button">Save</button>
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+{% endblock %}
+
+{% if user.role == config.ADMIN %}
+    {% block scripts %}
+        {{ super() }}
+        <script>
+            $("#hotel-button").on("click", () => {
+                document.forms["hotel-form"].submit()
+            });
+            $("#city-button").on("click", () => {
+                document.forms["city-form"].submit()
+            });
+        </script>
+    {% endblock %}
+{% endif %}
