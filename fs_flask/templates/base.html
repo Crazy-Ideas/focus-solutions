@@ -38,7 +38,7 @@
         <div class="collapse navbar-collapse" id="navbarMenu">
             <div class="navbar-nav mr-auto">
                 {% if current_user.is_authenticated %}
-                    <a class="nav-item nav-link active" href="{{ url_for('query') }}">Reports</a>
+                    <a class="nav-item nav-link active" href="{{ url_for('hotel_count') }}">Reports</a>
                 {% endif %}
             </div>
             <div class="navbar-nav ml-auto">
@@ -115,6 +115,22 @@
             dom: '<"top"if>rt<"bottom"p>'
         });
     </script>
+    {%- set _select_fields = [] %}
+    {%- for field in form %}
+        {%- if field.type in ("SelectField", "SelectMultipleField") %}
+            {%- set _ = _select_fields.append(field.id) -%}
+        {%- endif %}
+    {%- endfor %}
+    {%- if _select_fields[0] %}
+        <script>
+            $(document).ready(function () {
+                {%- for select_field_id in _select_fields %}
+                    $("#{{ select_field_id }}").select2({theme: "bootstrap4", selectOnClose: true});
+                {% endfor %}
+            });
+        </script>
+    {%- endif %}
+
 {%- endblock scripts %}
 
 </body>

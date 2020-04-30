@@ -83,19 +83,4 @@
             $(this).siblings(".custom-file-label").addClass("selected").html(fileName);
         });
     </script>
-    {%- set _select_fields = [] %}
-    {%- for field in form %}
-        {%- if field.type == "SelectField" %}
-            {%- set _ = _select_fields.append(field.id) -%}
-        {%- endif %}
-    {%- endfor %}
-    {%- if _select_fields[0] %}
-        <script>
-            $(document).ready(function () {
-                {%- for select_field_id in _select_fields %}
-                    $("#{{ select_field_id }}").select2({theme: "bootstrap4", selectOnClose: true});
-                {% endfor %}
-            });
-        </script>
-    {%- endif %}
 {% endblock %}

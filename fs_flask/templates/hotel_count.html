@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+
+{% block app_content %}
+    <div class="row justify-content-center">
+        <div class="col-md-4">
+            <div class="card text-center">
+                <h5 class="card-header">
+                    Event Types
+                    <a type="button" class="badge badge-primary text-white" data-toggle="modal"
+                       data-target="#event_modal">
+                        &#9998;
+                    </a>
+                </h5>
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item">
+                        Timing
+                        <span class="badge badge-primary">{{ selection.timing }}</span>
+                    </li>
+                    <li class="list-group-item">
+                        Meal
+                        {% for meal in selection.meals %}
+                            <span class="badge badge-primary">{{ meal }}</span>
+                        {% endfor %}
+                    </li>
+                    <li class="list-group-item">
+                        Event
+                        <span class="badge badge-primary">{{ selection.event }}</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        <div class="col-md-8 text-center">
+            {% if hotel_counts %}
+                <table class="table table-bordered table-hover ">
+                    <thead class="thead-dark">
+                    <tr>
+                        <th class="text-center" scope="col">No</th>
+                        <th class="" scope="col">Hotels</th>
+                        <th class="text-center" scope="col">{{ total }}</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for hotel_count in hotel_counts %}
+                        <tr>
+                            <td class="text-center">{{ loop.index }}</td>
+                            <td class="">{{ hotel_count[0] }}</td>
+                            <td class="text-center">{{ hotel_count[1] }}</td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <strong>No Hotels. Update query criteria.</strong>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="modal fade" id="event_modal" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Event Query</h5>
+                    <button type="button" class="close" data-dismiss="modal">
+                        <span>&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body justify-content-center">
+                    <form class="form" method="POST" id="event-form">
+                        {{ form_group(form.timing) }}
+                        {{ form_group(form.meals) }}
+                        {{ form_group(form.event) }}
+                        {{ form.csrf_token() }}
+                    </form>
+                </div>
+                <div class="modal-footer justify-content-center d-flex">
+                    <button type="button" class="btn btn-primary" id="event-button">Query</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}
+
+{% block scripts %}
+    {{ super() }}
+    <script>
+        $("#event-button").on("click", () => {
+            document.forms["event-form"].submit()
+        });
+    </script>
+{% endblock %}
