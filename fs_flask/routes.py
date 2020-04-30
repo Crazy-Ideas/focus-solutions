@@ -6,7 +6,7 @@ from flask_login import login_required, current_user
 
 from config import Config
 from fs_flask import fs_app
-from fs_flask.forms import EventForm, ProfileForm
+from fs_flask.forms import QueryForm, ProfileForm
 from fs_flask.hotel import Usage
 
 
@@ -20,12 +20,18 @@ def home():
 @fs_app.route("/hotel_count", methods=["GET", "POST"])
 @login_required
 def hotel_count():
-    form = EventForm()
+    form = QueryForm()
     form.populate_choices()
-    usage_data: List[Usage] = form.get_usage(current_user.city)
+    usage_data: List[Usage] = form.get_usage()
     hotels = {usage.hotel for usage in usage_data}
     hotel_counts = [(hotel, sum(1 for usage in usage_data if usage.hotel == hotel)) for hotel in hotels]
     hotel_counts.sort(key=itemgetter(1), reverse=True)
+    if current_user.hotel in hotels:
+        current_hotel = next(hotel for hotel in hotel_counts if hotel[0] == current_user.hotel)
+        hotel_counts.remove(current_hotel)
+        hotel_counts.insert(0, current_hotel)
+    elif current_user.hotel != Config.ANY:
+        hotel_counts.insert(0, (current_user.hotel, 0))
     return render_template("hotel_count.html", form=form, hotel_counts=hotel_counts, title="Report",
                            selection=form.get_selection(), total=len(usage_data))
 
@@ -34,8 +40,8 @@ def hotel_count():
 @login_required
 def profile():
     form = ProfileForm()
-    form.populate_choices(current_user)
+    form.populate_choices()
     if not form.validate_on_submit() or current_user.role != Config.ADMIN:
         return render_template("profile.html", user=current_user, form=form)
-    form.update_user(current_user)
+    form.update_user()
     return redirect(url_for("profile"))

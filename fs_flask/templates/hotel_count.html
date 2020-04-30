@@ -7,7 +7,7 @@
                 <h5 class="card-header">
                     Event Types
                     <a type="button" class="badge badge-primary text-white" data-toggle="modal"
-                       data-target="#event_modal">
+                       data-target="#query-modal" data-query-type="event" data-title="Edit Event Query Parameters">
                         &#9998;
                     </a>
                 </h5>
@@ -28,9 +28,27 @@
                     </li>
                 </ul>
             </div>
+            <br>
+            <div class="card text-center">
+                <h5 class="card-header">
+                    Hotels
+                    <a type="button" class="badge badge-primary text-white" data-toggle="modal"
+                       data-target="#query-modal" data-query-type="hotel" data-title="Edit Hotel Query Parameters">
+                        &#9998;
+                    </a>
+                </h5>
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item">
+                        Hotels<br>
+                        {% for hotel in selection.hotels %}
+                            <span class="badge badge-primary">{{ hotel }}</span>
+                        {% endfor %}
+                    </li>
+                </ul>
+            </div>
         </div>
         <div class="col-md-8 text-center">
-            {% if hotel_counts %}
+            {% if total %}
                 <table class="table table-bordered table-hover ">
                     <thead class="thead-dark">
                     <tr>
@@ -41,7 +59,8 @@
                     </thead>
                     <tbody>
                     {% for hotel_count in hotel_counts %}
-                        <tr>
+                        <tr {% if hotel_count[0] == current_user.hotel %}
+                            class="table-primary font-weight-bold" {% endif %}>
                             <td class="text-center">{{ loop.index }}</td>
                             <td class="">{{ hotel_count[0] }}</td>
                             <td class="text-center">{{ hotel_count[1] }}</td>
@@ -55,25 +74,30 @@
         </div>
     </div>
 
-    <div class="modal fade" id="event_modal" tabindex="-1" role="dialog">
+    <div class="modal fade" id="query-modal" tabindex="-1" role="dialog">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">Event Query</h5>
+                    <h5 class="modal-title">Title Placeholder</h5>
                     <button type="button" class="close" data-dismiss="modal">
                         <span>&times;</span>
                     </button>
                 </div>
                 <div class="modal-body justify-content-center">
-                    <form class="form" method="POST" id="event-form">
-                        {{ form_group(form.timing) }}
-                        {{ form_group(form.meals) }}
-                        {{ form_group(form.event) }}
+                    <form class="form" method="POST" id="query-form">
+                        <div id="event-select">
+                            {{ form_group(form.timing) }}
+                            {{ form_group(form.meals) }}
+                            {{ form_group(form.event) }}
+                        </div>
+                        <div id="hotel-select">
+                            {{ form_group(form.hotels) }}
+                        </div>
                         {{ form.csrf_token() }}
                     </form>
                 </div>
                 <div class="modal-footer justify-content-center d-flex">
-                    <button type="button" class="btn btn-primary" id="event-button">Query</button>
+                    <button type="button" class="btn btn-primary" id="query-button">Query</button>
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
                 </div>
             </div>
@@ -85,8 +109,20 @@
 {% block scripts %}
     {{ super() }}
     <script>
-        $("#event-button").on("click", () => {
-            document.forms["event-form"].submit()
+        $("#query-button").on("click", () => {
+            document.forms["query-form"].submit()
         });
+        $("#query-modal").on("show.bs.modal", function (event) {
+            let query_type = $(event.relatedTarget).data("query-type")
+            let title = $(event.relatedTarget).data("title")
+            $(this).find(".modal-title").text(title)
+            if (query_type === "event") {
+                $(this).find("#event-select").show()
+                $(this).find("#hotel-select").hide()
+            } else if (query_type === "hotel") {
+                $(this).find("#hotel-select").show()
+                $(this).find("#event-select").hide()
+            }
+        })
     </script>
 {% endblock %}
