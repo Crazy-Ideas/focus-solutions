@@ -98,6 +98,7 @@
     </div>
 {% endblock %}
 
+
 {% block scripts %}
     <!-- Bootstrap -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
@@ -123,20 +124,21 @@
     {%- endfor %}
     {%- if _select_fields[0] %}
         <script>
-            $(document).ready(function () {
+            $(document).ready(() => {
                 {%- for select_field_id, select_field_type in _select_fields %}
                     $("#{{ select_field_id }}").select2({
                         theme: "bootstrap4",
-                        {% if select_field_type == "SelectField" %}
+                        {%- if select_field_type == "SelectField" %}
                             selectOnClose: true,
-                        {% endif %}
+                        {%- endif %}
                     });
-                {% endfor %}
+                {%- endfor %}
             });
         </script>
     {%- endif %}
 
 {%- endblock scripts %}
+
 
 </body>
 </html>

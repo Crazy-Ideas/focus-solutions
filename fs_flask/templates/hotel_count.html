@@ -5,6 +5,36 @@
         <div class="col-md-4">
             <div class="card text-center">
                 <h5 class="card-header">
+                    Hotels
+                    <a type="button" class="badge badge-primary text-white" data-toggle="modal"
+                       data-target="#query-modal" data-query-type="hotel" data-title="Edit Hotel Query Parameters">
+                        &#9998;
+                    </a>
+                </h5>
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item">
+                        Hotels<br>
+                        {% for hotel in selection.hotels %}
+                            <span class="badge badge-primary">{{ hotel }}</span>
+                        {% endfor %}
+                    </li>
+                </ul>
+            </div>
+            <br>
+            <div class="card text-center">
+                <h5 class="card-header">
+                    Period
+                </h5>
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item">
+                        Date<br>
+                        <span class="badge badge-primary">01-Aug-2018</span>
+                    </li>
+                </ul>
+            </div>
+            <br>
+            <div class="card text-center">
+                <h5 class="card-header">
                     Event Types
                     <a type="button" class="badge badge-primary text-white" data-toggle="modal"
                        data-target="#query-modal" data-query-type="event" data-title="Edit Event Query Parameters">
@@ -28,31 +58,18 @@
                     </li>
                 </ul>
             </div>
-            <br>
-            <div class="card text-center">
-                <h5 class="card-header">
-                    Hotels
-                    <a type="button" class="badge badge-primary text-white" data-toggle="modal"
-                       data-target="#query-modal" data-query-type="hotel" data-title="Edit Hotel Query Parameters">
-                        &#9998;
-                    </a>
-                </h5>
-                <ul class="list-group list-group-flush">
-                    <li class="list-group-item">
-                        Hotels<br>
-                        {% for hotel in selection.hotels %}
-                            <span class="badge badge-primary">{{ hotel }}</span>
-                        {% endfor %}
-                    </li>
-                </ul>
-            </div>
         </div>
         <div class="col-md-8 text-center">
             {% if total %}
+                <div class="row">
+                    <div class="col-md" id="hotel-count-pie" style="height: 400px;"></div>
+                </div>
+                <div class="row">
+                <div class="col-md">
                 <table class="table table-bordered table-hover ">
                     <thead class="thead-dark">
                     <tr>
-                        <th class="text-center" scope="col">No</th>
+                        <th class="text-center" scope="col">Sr. No.</th>
                         <th class="" scope="col">Hotels</th>
                         <th class="text-center" scope="col">{{ total }}</th>
                     </tr>
@@ -71,6 +88,8 @@
             {% else %}
                 <strong>No Hotels. Update query criteria.</strong>
             {% endif %}
+            </div>
+            </div>
         </div>
     </div>
 
@@ -108,6 +127,7 @@
 
 {% block scripts %}
     {{ super() }}
+    <script src="https://www.gstatic.com/charts/loader.js"></script>
     <script>
         $("#query-button").on("click", () => {
             document.forms["query-form"].submit()
@@ -124,5 +144,22 @@
                 $(this).find("#event-select").hide()
             }
         })
+    </script>
+    <!--suppress JSUnresolvedVariable, JSUnresolvedFunction -->
+    <script>
+        google.charts.load("current");
+        google.charts.setOnLoadCallback(() => {
+            const hotel_count_pie = new google.visualization.ChartWrapper({
+                chartType: "PieChart",
+                dataTable: [
+                    ["Hotel Name", "Hotel Count"],
+                    {% for hotel in pie_data %}
+                        ["{{ hotel[0] }}", {{ hotel[1] }}],
+                    {% endfor %}
+                ],
+                containerId: "hotel-count-pie",
+            });
+            hotel_count_pie.draw()
+        });
     </script>
 {% endblock %}

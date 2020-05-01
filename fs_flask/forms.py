@@ -26,6 +26,7 @@ class QueryForm(FlaskForm):
         self.meals.choices.extend([(meal, meal) for meal in Config.MEALS])
         self.event.choices.extend([(event, event) for event in Config.EVENTS])
         hotels = Hotel.objects.filter_by(city=current_user.city).get()
+        hotels.sort(key=lambda hotel: hotel.name)
         self.hotels.choices.extend([(hotel.name, hotel.name) for hotel in hotels])
 
     def get_usage(self) -> List[Usage]:
@@ -36,10 +37,16 @@ class QueryForm(FlaskForm):
                 query = query.filter_by(timing=self.timing.data)
             if self.event.data != Config.ANY:
                 query = query.filter_by(event_type=self.event.data)
+            self.meals.data = self.meals.data if self.meals.data else [Config.ANY]
+            if self.meals.data[0] == Config.ANY and len(self.meals.data) > 1:
+                self.meals.data.remove(Config.ANY)
             if self.meals.data[0] != Config.ANY:
                 query = query.filter("meals", query.ARRAY_CONTAINS_ANY, self.meals.data)
+            self.hotels.data = self.hotels.data if self.hotels.data else [Config.ANY]
+            if self.hotels.data[0] == Config.ANY and len(self.hotels.data) > 1:
+                self.hotels.data.remove(Config.ANY)
             if self.hotels.data[0] != Config.ANY:
-                if current_user.hotel not in self.hotels.data:
+                if current_user.hotel != Config.ANY and current_user.hotel not in self.hotels.data:
                     self.hotels.data.append(current_user.hotel)
                 if self.meals.data[0] == Config.ANY:
                     query = query.filter("hotel", query.IN, self.hotels.data)
@@ -80,7 +87,7 @@ class ProfileForm(FlaskForm):
         cities.sort(key=itemgetter(0))
         self.city.choices.extend(cities)
 
-    def update_current_user(self) -> bool:
+    def update_user(self) -> bool:
         if current_user.hotel != self.hotel.data:
             current_user.hotel = self.hotel.data
             return current_user.save()
