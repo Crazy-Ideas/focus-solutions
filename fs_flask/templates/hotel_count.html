@@ -182,7 +182,7 @@
                 chartType: "PieChart",
                 dataTable: [
                     ["Hotel Name", "Hotel Count"],
-                    {% for hotel in pie_data %}
+                    {% for hotel in hotel_counts %}
                         ["{{ hotel[0] }}", {{ hotel[1] }}],
                     {% endfor %}
                 ],

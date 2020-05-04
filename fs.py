@@ -6,10 +6,12 @@ from fs_flask.hotel import Hotel, Usage
 from fs_flask.user import User
 
 
-def create_user(email: str, name: str, initial: str, role: str):
-    password = User.create_user(email, name, initial, role)
+def create_user(email: str, name: str, initial: str, role: str, hotel: str):
+    if hotel not in Hotel.objects.get():
+        print("Invalid hotel")
+    password = User.create_user(email, name, initial, role, hotel)
     if not password:
-        print("Invalid email")
+        print("Invalid email or role")
     else:
         print(f"User {email} created. Your password is {password}")
     return
@@ -17,13 +19,22 @@ def create_user(email: str, name: str, initial: str, role: str):
 
 def mumbai_hotels():
     sheet = build("sheets", "v4").spreadsheets().values()
-    hotel_table = sheet.get(spreadsheetId=Config.SHEET_ID, range="Mumbai!A1:Z50").execute().get("values", list())
-    hotel_dict = {str(index): {"name": hotel, "rooms": list()} for index, hotel in enumerate(hotel_table[0])}
+    hotel_table = sheet.get(spreadsheetId=Config.SHEET_ID, range="Mumbai!A1:Z30").execute().get("values", list())
+    hotel_dict = {str(index): {"name": hotel, "rooms": list(), "competitions": list()}
+                  for index, hotel in enumerate(hotel_table[0])}
     for rooms in hotel_table[1:]:
         for index, room in enumerate(rooms):
             if room:
                 hotel_dict[str(index)]["rooms"].append(room)
-    hotels = [Hotel(hotel["name"], hotel["rooms"], "Mumbai").doc_to_dict() for _, hotel in hotel_dict.items()]
+    hotel_table = sheet.get(spreadsheetId=Config.SHEET_ID, range="Mumbai!A31:Z45").execute().get("values", list())
+    for hotels in hotel_table[1:]:
+        for index, hotel in enumerate(hotels):
+            if hotel:
+                hotel_dict[str(index)]["competitions"].append(hotel)
+            if hotel not in hotel_table[0]:
+                raise TypeError
+    hotels = [Hotel(hotel["name"], hotel["rooms"], hotel["competitions"], "Mumbai").doc_to_dict()
+              for _, hotel in hotel_dict.items()]
     for hotel in hotels:
         print(hotel)
     Hotel.objects.delete()

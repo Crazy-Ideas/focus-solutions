@@ -5,14 +5,24 @@ from firestore_ci import FirestoreDocument
 
 
 class Hotel(FirestoreDocument):
-    def __init__(self, name: str = None, ball_rooms: List[str] = None, city: str = None):
+    def __init__(self, name: str = None, ball_rooms: List[str] = None, competitions: List[str] = None,
+                 city: str = None):
         super().__init__()
         self.name: str = name if name else str()
         self.ball_rooms: List[str] = ball_rooms if ball_rooms else list()
         self.city: str = city if city else str()
+        self.competitions: List[str] = competitions if competitions else list()
 
     def __repr__(self):
-        return f"{self.city}:{self.name}:{self.ball_rooms}"
+        return f"{self.city}:{self.name}:Ballrooms={len(self.ball_rooms)}:Competitions={len(self.competitions)}"
+
+    @classmethod
+    def get_competitions(cls, city: str, hotel: str) -> List[str]:
+        competitions = [hotel]
+        my_hotel: Hotel = cls.objects.filter_by(city=city, name=hotel).first()
+        if my_hotel:
+            competitions.extend(sorted(my_hotel.competitions))
+        return competitions[:10]
 
 
 Hotel.init()

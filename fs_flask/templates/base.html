@@ -130,6 +130,8 @@
                         theme: "bootstrap4",
                         {%- if select_field_type == "SelectField" %}
                             selectOnClose: true,
+                        {%- else %}
+                            maximumSelectionLength: 10,
                         {%- endif %}
                     });
                 {%- endfor %}

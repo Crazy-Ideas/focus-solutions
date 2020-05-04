@@ -21,17 +21,17 @@ class QueryForm(FlaskForm):
         self.timing.choices.append(any_choice)
         self.meals.choices.append(any_choice)
         self.event.choices.append(any_choice)
-        self.hotels.choices.append(any_choice)
+        self.hotels.choices.append((current_user.hotel, current_user.hotel))
         self.timing.choices.extend([(timing, timing) for timing in Config.TIMINGS])
         self.meals.choices.extend([(meal, meal) for meal in Config.MEALS])
         self.event.choices.extend([(event, event) for event in Config.EVENTS])
         hotels = Hotel.objects.filter_by(city=current_user.city).get()
         hotels.sort(key=lambda hotel: hotel.name)
-        self.hotels.choices.extend([(hotel.name, hotel.name) for hotel in hotels])
+        self.hotels.choices.extend([(hotel.name, hotel.name) for hotel in hotels if hotel.name != current_user.hotel])
 
     def get_usage(self) -> List[Usage]:
         query = Usage.objects.filter_by(city=current_user.city)
-        filter_hotels = False
+        filter_meals = False
         if self.validate_on_submit():
             if self.timing.data != Config.ANY:
                 query = query.filter_by(timing=self.timing.data)
@@ -41,24 +41,22 @@ class QueryForm(FlaskForm):
             if self.meals.data[0] == Config.ANY and len(self.meals.data) > 1:
                 self.meals.data.remove(Config.ANY)
             if self.meals.data[0] != Config.ANY:
-                query = query.filter("meals", query.ARRAY_CONTAINS_ANY, self.meals.data)
-            self.hotels.data = self.hotels.data if self.hotels.data else [Config.ANY]
-            if self.hotels.data[0] == Config.ANY and len(self.hotels.data) > 1:
-                self.hotels.data.remove(Config.ANY)
-            if self.hotels.data[0] != Config.ANY:
-                if current_user.hotel != Config.ANY and current_user.hotel not in self.hotels.data:
-                    self.hotels.data.append(current_user.hotel)
-                if self.meals.data[0] == Config.ANY:
-                    query = query.filter("hotel", query.IN, self.hotels.data)
-                else:
-                    filter_hotels = True
+                filter_meals = True
+            if not self.hotels.data:
+                self.hotels.data = Hotel.get_competitions(current_user.city, current_user.hotel)
+            if current_user.hotel not in self.hotels.data:
+                self.hotels.data.insert(0, current_user.hotel)
+            self.hotels.data = self.hotels.data[:10]
+            query = query.filter("hotel", query.IN, self.hotels.data)
         else:
             self.timing.data = Config.ANY
             self.event.data = Config.ANY
             self.meals.data = [Config.ANY]
-            self.hotels.data = [Config.ANY]
-        usage_data = [usage for usage in query.get() if usage.hotel in self.hotels.data] \
-            if filter_hotels else query.get()
+            self.hotels.data = Hotel.get_competitions(current_user.city, current_user.hotel)
+            query = query.filter("hotel", query.IN, self.hotels.data)
+        usage_data = query.get()
+        if filter_meals:
+            usage_data = [usage for usage in usage_data if any(meal in usage.meals for meal in self.meals.data)]
         return usage_data
 
     def get_selection(self) -> dict:
@@ -77,8 +75,6 @@ class ProfileForm(FlaskForm):
 
     def populate_choices(self) -> None:
         self.hotel.choices.append((current_user.hotel, current_user.hotel))
-        if current_user.hotel != Config.ANY:
-            self.hotel.choices.append((Config.ANY, Config.ANY))
         hotels = Hotel.objects.filter_by(city=current_user.city).get()
         hotels.sort(key=lambda hotel: hotel.name)
         self.hotel.choices.extend([(hotel.name, hotel.name) for hotel in hotels if hotel.name != current_user.hotel])
@@ -93,6 +89,7 @@ class ProfileForm(FlaskForm):
             return current_user.save()
         elif current_user.city != self.city.data:
             current_user.city = self.city.data
-            current_user.hotel = Config.ANY
+            hotel = Hotel.objects.filter_by(city=current_user.city).first()
+            current_user.hotel = hotel.name if hotel else str()
             return current_user.save()
         return False
