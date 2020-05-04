@@ -36,11 +36,15 @@ class Usage(FirestoreDocument):
     def __repr__(self):
         return f"{self.hotel}:{self.date}:{self.timing}:{self.company}:{self.event_type}"
 
-    def set_date(self, mm_dd_yyyy: str):
-        date = dt.datetime.strptime(mm_dd_yyyy, "%m/%d/%Y")
+    def set_date(self, mm_dd_yyyy: str) -> bool:
+        try:
+            date = dt.datetime.strptime(mm_dd_yyyy, "%m/%d/%Y")
+        except ValueError:
+            return False
         self.date = date.strftime("%Y-%m-%d")
         self.day = date.strftime("%A")
         self.weekday = self.day not in ("Saturday", "Sunday")
+        return True
 
 
 Usage.init()

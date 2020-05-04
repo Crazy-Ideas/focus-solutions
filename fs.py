@@ -34,27 +34,49 @@ def mumbai_hotels():
 def mumbai_1_aug():
     sheet = build("sheets", "v4").spreadsheets().values()
     hotel_table = sheet.get(spreadsheetId=Config.SHEET_ID, range="1-Aug!A1:H100").execute().get("values", list())
+    hotels = Hotel.objects.filter_by(city="Mumbai").get()
+    hotel_names = [hotel.name for hotel in hotels]
     usages = list()
-    for row in hotel_table[1:]:
+    errors = list()
+    for index, row in enumerate(hotel_table[1:]):
         usage = Usage()
-        usage.hotel = row[6]
         usage.city = "Mumbai"
-        usage.set_date(row[0])
-        if row[1] not in Config.TIMINGS:
-            raise TypeError
+        date_pass = usage.set_date(row[0])
         usage.timing = row[1]
         usage.company = row[2]
         usage.event_description = row[3]
-        if row[5] not in Config.EVENTS:
-            raise TypeError
+        usage.meals = [row[4]]
         usage.event_type = row[5]
-        meals = row[4].split(",") if "," in row[4] else [row[4]]
-        meals = [meal.strip() for meal in meals]
-        if any(meal not in Config.MEALS for meal in meals):
-            raise TypeError
-        usage.meals = meals
+        usage.hotel = row[6]
         usage.ball_rooms = [row[7]]
+        if not date_pass:
+            errors.append(f"{index + 1}:DATE_ERROR:{usage}")
+            continue
+        if usage.timing not in Config.TIMINGS:
+            errors.append(f"{index + 1}:TIMING_ERROR:{usage}")
+            continue
+        if usage.event_type not in Config.EVENTS:
+            errors.append(f"{index + 1}:EVENT_TYPE_ERROR:{usage}")
+            continue
+        usage.meals = usage.meals[0].split(",")
+        usage.meals = [meal.strip() for meal in usage.meals]
+        if any(meal not in Config.MEALS for meal in usage.meals):
+            errors.append(f"{index + 1}:TIMING_ERROR:{usage}")
+            continue
+        if usage.hotel not in hotel_names:
+            errors.append(f"{index + 1}:HOTEL_ERROR:{usage}")
+            continue
+        usage.ball_rooms = usage.ball_rooms[0].split(",")
+        usage.ball_rooms = [room.strip() for room in usage.ball_rooms]
+        hotel = next(hotel for hotel in hotels if hotel.name == usage.hotel)
+        if any(room not in hotel.ball_rooms for room in usage.ball_rooms):
+            errors.append(f"{index + 1}:BALL_ROOM_ERROR:{usage}")
+            continue
         usages.append(usage.doc_to_dict())
+    if errors:
+        for error in errors:
+            print(error)
+        return
     for usage in usages:
         print(usage)
     Usage.objects.delete()
