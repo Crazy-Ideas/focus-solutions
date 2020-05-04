@@ -92,7 +92,36 @@
             </div>
         </div>
     </div>
+    {% if total %}
+        <br>
+        <table id="usage_list" class="table table-bordered table-hover ">
+            <thead class="thead-dark">
+            <tr>
+                <th class="text-center" scope="col">Date</th>
+                <th class="text-center d-none d-md-table-cell" scope="col">Timing</th>
+                <th class="text-center" scope="col">Company</th>
+                <th class="text-center d-none d-md-table-cell" scope="col">Meal</th>
+                <th class="text-center d-none d-md-table-cell" scope="col">Event</th>
+                <th class="text-center" scope="col">Hotel</th>
+                <th class="text-center d-none d-md-table-cell" scope="col">Ballroom</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for usage in usages %}
+                <tr>
+                    <td class="text-center">{{ usage.formatted_date }}</td>
+                    <td class="text-center d-none d-md-table-cell">{{ usage.timing }}</td>
+                    <td class="text-center">{{ usage.company }}</td>
+                    <td class="text-center d-none d-md-table-cell">{{ usage.formatted_meal }}</td>
+                    <td class="text-center d-none d-md-table-cell">{{ usage.event_type }}</td>
+                    <td class="text-center">{{ usage.hotel }}</td>
+                    <td class="text-center d-none d-md-table-cell">{{ usage.formatted_ball_room }}</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
 
+    {% endif %}
     <div class="modal fade" id="query-modal" tabindex="-1" role="dialog">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
@@ -162,4 +191,10 @@
             hotel_count_pie.draw()
         });
     </script>
+    <script>
+        $(document).ready(function () {
+            $('#usage_list').DataTable();
+        });
+    </script>
+
 {% endblock %}

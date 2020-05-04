@@ -46,5 +46,16 @@ class Usage(FirestoreDocument):
         self.weekday = self.day not in ("Saturday", "Sunday")
         return True
 
+    @property
+    def formatted_date(self):
+        return dt.datetime.strptime(self.date, "%Y-%m-%d").strftime("%d-%b-%Y")
+
+    @property
+    def formatted_meal(self):
+        return ", ".join(self.meals)
+
+    @property
+    def formatted_ball_room(self):
+        return ", ".join(self.ball_rooms)
 
 Usage.init()

@@ -38,7 +38,7 @@ def hotel_count():
         other_count = sum(hotel[1] for hotel in hotel_counts[4:])
         pie_data.append(("Others", other_count))
     return render_template("hotel_count.html", form=form, hotel_counts=hotel_counts, title="Report",
-                           selection=form.get_selection(), total=len(usage_data), pie_data=pie_data)
+                           selection=form.get_selection(), total=len(usage_data), pie_data=pie_data, usages=usage_data)
 
 
 @fs_app.route("/profile", methods=["GET", "POST"])
