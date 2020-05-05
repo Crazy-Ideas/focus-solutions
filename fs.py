@@ -6,10 +6,20 @@ from fs_flask.hotel import Hotel, Usage
 from fs_flask.user import User
 
 
-def create_user(email: str, name: str, initial: str, role: str, hotel: str):
-    if hotel not in Hotel.objects.get():
-        print("Invalid hotel")
-    password = User.create_user(email, name, initial, role, hotel)
+def create_user(email: str, name: str, role: str, hotel_name: str = None):
+    if role not in Config.ROLES:
+        print("Invalid role")
+        return
+    if role == Config.ADMIN and not hotel_name:
+        print("Hotel name required for ADMIN")
+        return
+    hotel_name = name if Config.HOTEL else hotel_name
+    hotel: Hotel = Hotel.objects.filter_by(name=hotel_name).first()
+    if not hotel:
+        print("Hotel not found in the database")
+        return
+    initial = "".join([word[0] for word in name.split()][:3]).upper() if Config.ADMIN else hotel.initial
+    password = User.create_user(email, name, initial, role, hotel_name)
     if not password:
         print("Invalid email or role")
     else:
@@ -31,8 +41,8 @@ def mumbai_hotels():
         for index, hotel in enumerate(hotels):
             if hotel:
                 hotel_dict[str(index)]["competitions"].append(hotel)
-            if hotel not in hotel_table[0]:
-                raise TypeError
+                if hotel not in hotel_table[0]:
+                    raise TypeError
     hotels = [Hotel(hotel["name"], hotel["rooms"], hotel["competitions"], "Mumbai").doc_to_dict()
               for _, hotel in hotel_dict.items()]
     for hotel in hotels:
@@ -59,7 +69,7 @@ def mumbai_1_aug():
         usage.meals = [row[4]]
         usage.event_type = row[5]
         usage.hotel = row[6]
-        usage.ball_rooms = [row[7]]
+        usage.ballrooms = [row[7]]
         if not date_pass:
             errors.append(f"{index + 1}:DATE_ERROR:{usage}")
             continue
@@ -77,10 +87,10 @@ def mumbai_1_aug():
         if usage.hotel not in hotel_names:
             errors.append(f"{index + 1}:HOTEL_ERROR:{usage}")
             continue
-        usage.ball_rooms = usage.ball_rooms[0].split(",")
-        usage.ball_rooms = [room.strip() for room in usage.ball_rooms]
+        usage.ballrooms = usage.ballrooms[0].split(",")
+        usage.ballrooms = [room.strip() for room in usage.ballrooms]
         hotel = next(hotel for hotel in hotels if hotel.name == usage.hotel)
-        if any(room not in hotel.ball_rooms for room in usage.ball_rooms):
+        if any(room not in hotel.ballrooms for room in usage.ballrooms):
             errors.append(f"{index + 1}:BALL_ROOM_ERROR:{usage}")
             continue
         usages.append(usage.doc_to_dict())

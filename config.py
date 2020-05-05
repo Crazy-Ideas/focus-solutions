@@ -19,5 +19,5 @@ class Config:
     MICE = "Meetings & Conference (MICE)"
     SOCIAL = "Social Event"
     EXHIBITION = "Exhibition"
-    OTHER_EVENT = "Other Event"
-    EVENTS = (MICE, SOCIAL, EXHIBITION, OTHER_EVENT)
+    OTHER = "Other"
+    EVENTS = (MICE, SOCIAL, EXHIBITION, OTHER)

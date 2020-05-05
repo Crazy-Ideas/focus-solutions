@@ -80,6 +80,14 @@
     </div>
 {%- endmacro %}
 
+{%- macro form_group_no_error(field) %}
+    <div class="form-group required">
+        <label for="{{ field.id }}" class="form-control-label">{{ field.label }}</label>
+        {{ field(class_="form-control") }}
+    </div>
+{%- endmacro %}
+
+
 {% block content %}
     <div class="container-xl">
         {% with messages = get_flashed_messages() %}
@@ -131,7 +139,7 @@
                         {%- if select_field_type == "SelectField" %}
                             selectOnClose: true,
                         {%- else %}
-                            maximumSelectionLength: 10,
+                            maximumSelectionLength: 9,
                         {%- endif %}
                     });
                 {%- endfor %}

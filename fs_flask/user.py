@@ -33,8 +33,6 @@ class User(FirestoreDocument, UserMixin):
 
     @classmethod
     def create_user(cls, email: str, name: str, initial: str, role: str, hotel: str) -> str:
-        if role not in Config.ROLES:
-            return str()
         if not isinstance(email, str) or sum(1 for char in email if char == "@") != 1:
             return str()
         db_user = cls.objects.filter_by(email=email).first()
@@ -61,6 +59,15 @@ class User(FirestoreDocument, UserMixin):
 
     def get_id(self) -> str:
         return self.email
+
+    def update_initial(self, initial: str) -> bool:
+        user = self
+        if self.role == Config.ADMIN:
+            user = User.objects.filter_by(name=self.hotel).first()
+        if user:
+            user.initial = initial
+            return user.save()
+        return False
 
 
 User.init()

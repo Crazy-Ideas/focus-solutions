@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+
+{% block app_content %}
+    <div class="row justify-content-center">
+        <div class="col-md-4">
+            <div class="card text-center">
+                <h5 class="card-header">{{ current_user.name }}</h5>
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item">
+                        <strong>{{ current_user.email }}</strong>
+                    </li>
+                    <li class="list-group-item">
+                        City<br>
+                        <strong>{{ current_user.city }}</strong>
+                        <a type="button" class="badge badge-warning text-white" data-toggle="modal"
+                           data-target="#edit_modal" data-type="{{ form.CITY }}" data-title="Edit City">
+                            &#9998;
+                        </a>
+                    </li>
+                    <li class="list-group-item">
+                        Hotel View<br>
+                        <strong>{{ current_user.hotel }}</strong>
+                        <a type="button" class="badge badge-warning text-white" data-toggle="modal"
+                           data-target="#edit_modal" data-type="{{ form.HOTEL }}" data-title="Edit Hotel">
+                            &#9998;
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-center">
+                <h5 class="card-header">
+                    {{ current_user.city }} Hotels
+                    <a type="button" class="badge badge-success text-white" data-toggle="modal"
+                       data-target="#edit_modal" data-type="{{ form.NEW_HOTEL }}"
+                       data-title="New Hotel in {{ current_user.city }}">
+                        +
+                    </a>
+                </h5>
+                <ul class="list-group list-group-flush">
+                    {% for hotel in hotels %}
+                        <li class="list-group-item {{ hotel.display }}">
+                            <strong>{{ hotel.name }}</strong>
+                            <a class="badge badge-primary" href="{{ url_for('hotel_manage', hotel_id=hotel.id) }}">
+                                &#9432;
+                            </a>
+                            <br>
+                            <strong>{{ hotel.ballrooms|length }}</strong> ball rooms,
+                            <strong>{{ hotel.competitions|length }}</strong> competitions
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="edit_modal" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Placeholder Title</h5>
+                    <button type="button" class="close" data-dismiss="modal">
+                        <span>&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body justify-content-center">
+                    <form class="form" method="POST" id="edit-form">
+                        {{ form.select_type() }}
+                        <div id="hotel-select">
+                            {{ form_group(form.hotel) }}
+                        </div>
+                        <div id="city-select">
+                            {{ form_group(form.city) }}
+                        </div>
+                        <div id="new-hotel">
+                            {{ form_group(form.new_hotel) }}
+                        </div>
+                        <div id="comment">
+                            Placeholder comment
+                        </div>
+                        {{ form.csrf_token() }}
+                    </form>
+                </div>
+                <div class="modal-footer justify-content-center d-flex">
+                    <button type="button" class="btn btn-warning" id="save-button">Save</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block scripts %}
+    {{ super() }}
+    <script>
+        $("#save-button").on("click", () => {
+            document.forms["edit-form"].submit()
+        });
+        $("#edit_modal").on("show.bs.modal", function (event) {
+            let select_type = $(event.relatedTarget).data("type")
+            let title = $(event.relatedTarget).data("title")
+            $(this).find(".modal-title").text(title)
+            $(this).find("#select_type").val(select_type)
+            if (select_type === "hotel") {
+                $(this).find("#hotel-select").show()
+                $(this).find("#city-select").hide()
+                $(this).find("#new-hotel").hide()
+                $(this).find("#comment").text("")
+            } else if (select_type === "city") {
+                $(this).find("#city-select").show()
+                $(this).find("#hotel-select").hide()
+                $(this).find("#new-hotel").hide()
+                $(this).find("#comment").text("If you change the city then your hotel will be reset.")
+            } else if (select_type === "new_hotel") {
+                $(this).find("#new-hotel").show()
+                $(this).find("#city-select").hide()
+                $(this).find("#hotel-select").hide()
+                $(this).find("#comment").text("")
+            }
+        })
+    </script>
+{% endblock %}
