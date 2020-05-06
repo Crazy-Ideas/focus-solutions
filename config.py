@@ -16,8 +16,7 @@ class Config:
     NO_MEAL = "No Meal"
     MEALS = ("Breakfast", "Lunch", "Dinner", "Hi Tea", NO_MEAL)
     TIMINGS = ("Morning", "Evening")
-    MICE = "Meetings & Conference (MICE)"
+    MICE = "MICE Event"
     SOCIAL = "Social Event"
-    EXHIBITION = "Exhibition"
     OTHER = "Other"
-    EVENTS = (MICE, SOCIAL, EXHIBITION, OTHER)
+    EVENTS = (MICE, SOCIAL, OTHER)

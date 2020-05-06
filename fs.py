@@ -2,7 +2,8 @@
 from googleapiclient.discovery import build
 
 from config import Config
-from fs_flask.hotel import Hotel, Usage
+from fs_flask.hotel import Hotel
+from fs_flask.usage import Usage
 from fs_flask.user import User
 
 
@@ -29,14 +30,14 @@ def create_user(email: str, name: str, role: str, hotel_name: str = None):
 
 def mumbai_hotels():
     sheet = build("sheets", "v4").spreadsheets().values()
-    hotel_table = sheet.get(spreadsheetId=Config.SHEET_ID, range="Mumbai!A1:Z30").execute().get("values", list())
+    hotel_table = sheet.get(spreadsheetId=Config.SHEET_ID, range="Hotels!A1:Z30").execute().get("values", list())
     hotel_dict = {str(index): {"name": hotel, "rooms": list(), "competitions": list()}
                   for index, hotel in enumerate(hotel_table[0])}
     for rooms in hotel_table[1:]:
         for index, room in enumerate(rooms):
             if room:
                 hotel_dict[str(index)]["rooms"].append(room)
-    hotel_table = sheet.get(spreadsheetId=Config.SHEET_ID, range="Mumbai!A31:Z45").execute().get("values", list())
+    hotel_table = sheet.get(spreadsheetId=Config.SHEET_ID, range="Hotels!A31:Z45").execute().get("values", list())
     for hotels in hotel_table[1:]:
         for index, hotel in enumerate(hotels):
             if hotel:
@@ -52,9 +53,9 @@ def mumbai_hotels():
     print(f"{len(hotels)} hotels created")
 
 
-def mumbai_1_aug():
+def mumbai_usage():
     sheet = build("sheets", "v4").spreadsheets().values()
-    hotel_table = sheet.get(spreadsheetId=Config.SHEET_ID, range="1-Aug!A1:H100").execute().get("values", list())
+    hotel_table = sheet.get(spreadsheetId=Config.SHEET_ID, range="Usage!A1:H2000").execute().get("values", list())
     hotels = Hotel.objects.filter_by(city="Mumbai").get()
     hotel_names = [hotel.name for hotel in hotels]
     usages = list()

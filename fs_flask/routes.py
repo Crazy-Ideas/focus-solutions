@@ -6,8 +6,8 @@ from flask_login import login_required, current_user
 
 from config import Config
 from fs_flask import fs_app
-from fs_flask.forms import QueryForm, AdminForm, HotelForm
-from fs_flask.hotel import Usage, Hotel
+from fs_flask.hotel import Hotel, HotelForm, AdminForm
+from fs_flask.usage import Usage, QueryForm
 
 
 @fs_app.route("/")
@@ -53,11 +53,11 @@ def admin_manage() -> Response:
         flash("Insufficient privilege")
         return redirect(url_for("home"))
     form = AdminForm()
-    hotels = form.populate_choices()
     if not form.validate_on_submit():
-        return render_template("admin.html", form=form, hotels=hotels)
-    form.update_user()
-    return redirect(url_for("admin_manage"))
+        form.flash_form_errors()
+        return render_template("admin.html", form=form, title="Admin")
+    form.update()
+    return render_template("admin.html", form=form, title="Admin")
 
 
 @fs_app.route("/hotels/<hotel_id>", methods=["GET", "POST"])
@@ -72,4 +72,4 @@ def hotel_manage(hotel_id: str) -> Response:
         form.flash_form_errors()
         return render_template("hotel.html", title=hotel.name, form=form, hotel=hotel)
     form.update()
-    return redirect(url_for("hotel_manage", hotel_id=hotel.id))
+    return render_template("hotel.html", title=hotel.name, form=form, hotel=hotel)

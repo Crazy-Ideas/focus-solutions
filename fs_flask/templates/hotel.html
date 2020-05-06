@@ -19,13 +19,14 @@
                         <strong>{{ hotel.city }}</strong>
                     </li>
                     <li class="list-group-item">
-                        Initial<br>
-                        <strong>{{ hotel.initial }}</strong>
+                        Initial
                         <a type="button" class="badge badge-warning text-white" data-toggle="modal"
                            data-target="#hotel_modal" data-type="{{ form.INITIAL }}"
                            data-title="Edit Initial">
                             &#9998;
                         </a>
+                        <br>
+                        <strong>{{ hotel.initial }}</strong>
                     </li>
                 </ul>
             </div>
@@ -99,7 +100,7 @@
                             {{ form_group_no_error(form.ballroom) }}
                         </div>
                         <div id="select-hotel">
-                            {{ form_group(form.competitions) }}
+                            {{ form_group_no_error(form.competitions) }}
                         </div>
                         <div id="comment">
                             Placeholder comment
