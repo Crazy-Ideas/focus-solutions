@@ -7,7 +7,7 @@ from flask_login import current_user
 from wtforms import StringField, SelectMultipleField, HiddenField, SubmitField, ValidationError, SelectField
 
 from config import Config
-from fs_flask.forms import FSForm
+from fs_flask import FSForm
 
 
 class Hotel(FirestoreDocument):

@@ -6,7 +6,7 @@ from flask_login import current_user
 from wtforms import SelectField, SelectMultipleField, SubmitField
 
 from config import Config
-from fs_flask.forms import FSForm
+from fs_flask import FSForm
 from fs_flask.hotel import Hotel
 
 

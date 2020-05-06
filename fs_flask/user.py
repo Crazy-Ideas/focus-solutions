@@ -91,7 +91,7 @@ def login() -> str:
         return redirect(url_for("home"))
     form = LoginForm()
     if not form.validate_on_submit():
-        return render_template("form_template.html", title="Focus Solutions - Sign In", form=form)
+        return render_template("form_template.html", title="Focus Solutions", form=form)
     user = User.objects.filter_by(email=form.email.data).first()
     if not user or not user.check_password(form.password.data):
         flash(f"Invalid email or password.")
