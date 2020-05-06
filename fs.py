@@ -94,6 +94,7 @@ def mumbai_usage():
         if any(room not in hotel.ballrooms for room in usage.ballrooms):
             errors.append(f"{index + 1}:BALL_ROOM_ERROR:{usage}")
             continue
+        hotel.set_ballroom_used(usage.ballrooms)
         usages.append(usage.doc_to_dict())
     if errors:
         for error in errors:
@@ -104,3 +105,5 @@ def mumbai_usage():
     Usage.objects.delete()
     Usage.create_from_list_of_dict(usages)
     print(f"{len(usages)} occupancy records created")
+    Hotel.save_all(hotels)
+    print(f"{len(hotels)} hotel occupancy updated")

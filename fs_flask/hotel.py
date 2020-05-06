@@ -1,13 +1,19 @@
 from operator import itemgetter
-from typing import List
+from typing import List, Optional
 
 from firestore_ci import FirestoreDocument
 from flask import request
 from flask_login import current_user
 from wtforms import StringField, SelectMultipleField, HiddenField, SubmitField, ValidationError, SelectField
 
-from config import Config
+from config import Config, BaseMap
 from fs_flask import FSForm
+
+
+class BallroomMap(BaseMap):
+    def __init__(self, name: str = None):
+        self.name: str = name if name else str()
+        self.used: bool = False
 
 
 class Hotel(FirestoreDocument):
@@ -15,7 +21,8 @@ class Hotel(FirestoreDocument):
                  city: str = None):
         super().__init__()
         self.name: str = name if name else str()
-        self.ballrooms: List[str] = ballrooms if ballrooms else [Config.OTHER]
+        self.ballroom_maps: List[dict] = [BallroomMap(room).to_dict() for room in ballrooms] if ballrooms \
+            else [BallroomMap(Config.OTHER).to_dict()]
         self.city: str = city if city else str()
         self.competitions: List[str] = competitions if competitions else list()
         self.initial: str = "".join([word[0] for word in name.split()][:3]).upper() if name else str()
@@ -39,8 +46,42 @@ class Hotel(FirestoreDocument):
         return hotels
 
     @property
+    def ballrooms(self):
+        return sorted([room["name"] for room in self.ballroom_maps])
+
+    @property
+    def used(self):
+        return any(room["used"] for room in self.ballroom_maps)
+
+    @property
     def display(self):
         return "list-group-item-primary" if current_user.hotel == self.name else str()
+
+    def get_ballroom(self, name) -> Optional[BallroomMap]:
+        room = next((room for room in self.ballroom_maps if room["name"] == name), None)
+        return BallroomMap.from_dict(room) if room else None
+
+    def add_ballroom(self, name) -> bool:
+        if self.get_ballroom(name):
+            return False
+        self.ballroom_maps.append(BallroomMap(name).to_dict())
+        return True
+
+    def remove_ballroom(self, name) -> bool:
+        room = self.get_ballroom(name)
+        if not room:
+            return False
+        self.ballroom_maps.remove(room.to_dict())
+        return True
+
+    def set_ballroom_used(self, names: List[str]) -> bool:
+        room_changed = False
+        for name in names:
+            room = next((room for room in self.ballroom_maps if room["name"] == name and not room["used"]), None)
+            if room:
+                room["used"] = True
+                room_changed = True
+        return room_changed
 
 
 Hotel.init()
@@ -84,6 +125,8 @@ class HotelForm(FSForm):
                 raise ValidationError("Ball room is not changed")
             if self.old_ballroom.data not in self.hotel.ballrooms:
                 raise ValidationError("Error in editing ball room")
+            if self.hotel.get_ballroom(self.old_ballroom.data).used:
+                raise ValidationError("Cannot edit a ballroom with an event")
         if self.form_type.data == self.NEW_BALLROOM and ballroom.data in self.hotel.ballrooms:
             raise ValidationError("Duplicate ball room")
 
@@ -91,6 +134,8 @@ class HotelForm(FSForm):
         if self.form_type.data == self.REMOVE_BALLROOM:
             if old_ballroom.data not in self.hotel.ballrooms:
                 raise ValidationError("Error in removing ball rooms")
+            if self.hotel.get_ballroom(old_ballroom.data).used:
+                raise ValidationError("Cannot remove a ballroom with an event")
 
     def update(self):
         if self.form_type.data == self.INITIAL:
@@ -99,12 +144,12 @@ class HotelForm(FSForm):
         elif self.form_type.data == self.COMPETITION:
             self.hotel.competitions = self.competitions.data[:9]
         elif self.form_type.data == self.NEW_BALLROOM:
-            self.hotel.ballrooms.append(self.ballroom.data)
+            self.hotel.add_ballroom(self.ballroom.data)
         elif self.form_type.data == self.EDIT_BALLROOM:
-            self.hotel.ballrooms = [self.ballroom.data if room == self.old_ballroom.data else room
-                                    for room in self.hotel.ballrooms]
+            self.hotel.remove_ballroom(self.old_ballroom.data)
+            self.hotel.add_ballroom(self.ballroom.data)
         elif self.form_type.data == self.REMOVE_BALLROOM:
-            self.hotel.ballrooms.remove(self.old_ballroom.data)
+            self.hotel.remove_ballroom(self.old_ballroom.data)
         self.hotel.save()
 
 

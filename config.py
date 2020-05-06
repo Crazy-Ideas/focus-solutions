@@ -20,3 +20,23 @@ class Config:
     SOCIAL = "Social Event"
     OTHER = "Other"
     EVENTS = (MICE, SOCIAL, OTHER)
+
+
+class BaseMap:
+    def to_dict(self):
+        return self.__dict__
+
+    @classmethod
+    def from_dict(cls, input_dict: dict):
+        map_object = cls()
+        map_fields = set(map_object.to_dict())
+        for field, value in input_dict.items():
+            if field not in map_fields:
+                continue
+            if not isinstance(value, type(getattr(map_object, field))):
+                continue
+            setattr(map_object, field, value)
+        return map_object
+
+    def __repr__(self):
+        return ':'.join(str(value) for _, value in self.to_dict().items())

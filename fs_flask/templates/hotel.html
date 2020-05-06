@@ -45,7 +45,7 @@
                     {% for ballroom in hotel.ballrooms %}
                         <li class="list-group-item">
                             {{ ballroom }}
-                            {% if ballroom != config.OTHER %}
+                            {% if ballroom != config.OTHER and not hotel.get_ballroom(ballroom).used %}
                                 <a type="button" class="badge badge-warning text-white" data-toggle="modal"
                                    data-target="#hotel_modal" data-type="{{ form.EDIT_BALLROOM }}"
                                    data-title="Edit Ballroom {{ ballroom }}" data-ballroom="{{ ballroom }}">
