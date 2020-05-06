@@ -47,6 +47,13 @@
                             <a class="badge badge-primary" href="{{ url_for('hotel_manage', hotel_id=hotel.id) }}">
                                 &#9432;
                             </a>
+                            {% if not hotel.used and hotel.name != current_user.hotel %}
+                                <a type="button" class="badge badge-danger text-white" data-toggle="modal"
+                                   data-target="#admin_modal" data-type="{{ form.DELETE_HOTEL }}"
+                                   data-title="Delete Hotel" data-hotel="{{ hotel.name }}">
+                                    X
+                                </a>
+                            {% endif %}
                             <br>
                             <strong>{{ hotel.ballrooms|length }}</strong> ball rooms,
                             <strong>{{ hotel.competitions|length }}</strong> competitions
@@ -68,6 +75,7 @@
                 <div class="modal-body justify-content-center">
                     <form class="form" method="POST" id="edit-form">
                         {{ form.form_type() }}
+                        {{ form.delete_hotel() }}
                         <div id="hotel-select">
                             {{ form_group_no_error(form.default_hotel) }}
                         </div>
@@ -84,7 +92,7 @@
                     </form>
                 </div>
                 <div class="modal-footer justify-content-center d-flex">
-                    <button type="button" class="btn btn-warning" id="save-button">Save</button>
+                    <button type="button" class="btn" id="save-button">Save</button>
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
                 </div>
             </div>
@@ -100,14 +108,22 @@
         });
         $("#admin_modal").on("show.bs.modal", function (event) {
             let form_type = $(event.relatedTarget).data("type")
+            let hotel = $(event.relatedTarget).data("hotel")
             let title = $(event.relatedTarget).data("title")
             $(this).find(".modal-title").text(title)
             $(this).find("#form_type").val(form_type)
+            $(this).find("#delete_hotel").val(hotel)
+            if (form_type === "delete_hotel") {
+                $(this).find("#comment").text("Are you sure you want to delete " + hotel + "?")
+                $(this).find("#save-button").addClass("btn-danger").removeClass("btn-warning").html("Delete")
+            } else {
+                $(this).find("#comment").text("")
+                $(this).find("#save-button").addClass("btn-warning").removeClass("btn-danger").html("Save")
+            }
             if (form_type === "hotel") {
                 $(this).find("#hotel-select").show()
                 $(this).find("#city-select").hide()
                 $(this).find("#new-hotel").hide()
-                $(this).find("#comment").text("")
             } else if (form_type === "city") {
                 $(this).find("#city-select").show()
                 $(this).find("#hotel-select").hide()
@@ -117,7 +133,10 @@
                 $(this).find("#new-hotel").show()
                 $(this).find("#city-select").hide()
                 $(this).find("#hotel-select").hide()
-                $(this).find("#comment").text("")
+            } else if (form_type === "delete_hotel") {
+                $(this).find("#new-hotel").hide()
+                $(this).find("#city-select").hide()
+                $(this).find("#hotel-select").hide()
             }
         })
     </script>
