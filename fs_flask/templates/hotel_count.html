@@ -14,7 +14,7 @@
                 <ul class="list-group list-group-flush">
                     <li class="list-group-item">
                         Hotels<br>
-                        {% for hotel in selection.hotels %}
+                        {% for hotel in form.selection.hotels %}
                             <span class="badge badge-primary">{{ hotel }}</span>
                         {% endfor %}
                     </li>
@@ -44,23 +44,23 @@
                 <ul class="list-group list-group-flush">
                     <li class="list-group-item">
                         Timing
-                        <span class="badge badge-primary">{{ selection.timing }}</span>
+                        <span class="badge badge-primary">{{ form.selection.timing }}</span>
                     </li>
                     <li class="list-group-item">
                         Meal
-                        {% for meal in selection.meals %}
+                        {% for meal in form.selection.meals %}
                             <span class="badge badge-primary">{{ meal }}</span>
                         {% endfor %}
                     </li>
                     <li class="list-group-item">
                         Event
-                        <span class="badge badge-primary">{{ selection.event }}</span>
+                        <span class="badge badge-primary">{{ form.selection.event }}</span>
                     </li>
                 </ul>
             </div>
         </div>
         <div class="col-md-8 text-center">
-            {% if total %}
+            {% if form.usage_data|length %}
                 <div class="row">
                     <div class="col-md" id="hotel-count-pie" style="height: 400px;"></div>
                 </div>
@@ -71,11 +71,11 @@
                     <tr>
                         <th class="text-center" scope="col">Sr. No.</th>
                         <th class="" scope="col">Hotels</th>
-                        <th class="text-center" scope="col">{{ total }}</th>
+                        <th class="text-center" scope="col">{{ form.usage_data|length }}</th>
                     </tr>
                     </thead>
                     <tbody>
-                    {% for hotel_count in hotel_counts %}
+                    {% for hotel_count in form.hotel_counts %}
                         <tr {% if hotel_count[0] == current_user.hotel %}
                             class="table-primary font-weight-bold" {% endif %}>
                             <td class="text-center">{{ loop.index }}</td>
@@ -92,7 +92,7 @@
             </div>
         </div>
     </div>
-    {% if total %}
+    {% if form.usage_data|length %}
         <br>
         <table id="usage_list" class="table table-bordered table-hover ">
             <thead class="thead-dark">
@@ -108,7 +108,7 @@
             </tr>
             </thead>
             <tbody>
-            {% for usage in usages %}
+            {% for usage in form.usage_data %}
                 <tr>
                     <td class="text-center">{{ usage.formatted_date }}</td>
                     <td class="text-center d-none d-md-table-cell">{{ usage.timing }}</td>
@@ -184,7 +184,7 @@
                 chartType: "PieChart",
                 dataTable: [
                     ["Hotel Name", "Hotel Count"],
-                    {% for hotel in hotel_counts %}
+                    {% for hotel in form.hotel_counts %}
                         ["{{ hotel[0] }}", {{ hotel[1] }}],
                     {% endfor %}
                 ],

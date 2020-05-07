@@ -1,13 +1,10 @@
-from operator import itemgetter
-from typing import List
-
 from flask import render_template, url_for, redirect, Response, flash
 from flask_login import login_required, current_user
 
 from config import Config
 from fs_flask import fs_app
 from fs_flask.hotel import Hotel, HotelForm, AdminForm
-from fs_flask.usage import Usage, QueryForm
+from fs_flask.usage import QueryForm
 
 
 @fs_app.route("/")
@@ -21,17 +18,11 @@ def home() -> Response:
 @login_required
 def hotel_count() -> Response:
     form = QueryForm()
-    form.populate_choices()
-    usage_data: List[Usage] = form.get_usage()
-    hotels = {usage.hotel for usage in usage_data}
-    hotel_counts = [(hotel, sum(1 for usage in usage_data if usage.hotel == hotel)) for hotel in hotels]
-    hotel_counts.sort(key=itemgetter(1), reverse=True)
-    if current_user.hotel in hotels:
-        current_hotel = next(hotel for hotel in hotel_counts if hotel[0] == current_user.hotel)
-        hotel_counts.remove(current_hotel)
-        hotel_counts.insert(0, current_hotel)
-    return render_template("hotel_count.html", form=form, hotel_counts=hotel_counts, title="Report",
-                           selection=form.get_selection(), total=len(usage_data), usages=usage_data)
+    if not form.validate_on_submit():
+        form.flash_form_errors()
+        return render_template("hotel_count.html", form=form, title="Report")
+    form.update_query()
+    return render_template("hotel_count.html", form=form, title="Report")
 
 
 @fs_app.route("/profile")
