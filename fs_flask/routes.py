@@ -14,15 +14,16 @@ def home() -> Response:
     return render_template("home.html", title="Dashboard")
 
 
-@fs_app.route("/hotel_count", methods=["GET", "POST"])
+@fs_app.route("/reports/main", methods=["GET", "POST"])
 @login_required
-def hotel_count() -> Response:
+def main_report() -> Response:
     form = QueryForm()
     if not form.validate_on_submit():
         form.flash_form_errors()
-        return render_template("hotel_count.html", form=form, title="Report")
+        form.update_data()
+        return render_template("main_report.html", form=form, title="Report")
     form.update_query()
-    return render_template("hotel_count.html", form=form, title="Report")
+    return render_template("main_report.html", form=form, title="Report")
 
 
 @fs_app.route("/profile")

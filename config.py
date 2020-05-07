@@ -1,3 +1,4 @@
+import datetime as dt
 import os
 from base64 import b64encode
 
@@ -40,3 +41,7 @@ class BaseMap:
 
     def __repr__(self):
         return ':'.join(str(value) for _, value in self.to_dict().items())
+
+
+def today():
+    return dt.date.today()
