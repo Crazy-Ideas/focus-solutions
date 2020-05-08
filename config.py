@@ -16,7 +16,9 @@ class Config:
     CITIES = ("Mumbai", "Pune")
     NO_MEAL = "No Meal"
     MEALS = ("Breakfast", "Lunch", "Dinner", "Hi Tea", NO_MEAL)
-    TIMINGS = ("Morning", "Evening")
+    MORNING = "Morning"
+    EVENING = "Evening"
+    TIMINGS = (MORNING, EVENING)
     MICE = "MICE Event"
     SOCIAL = "Social Event"
     OTHER = "Other"
@@ -44,4 +46,4 @@ class BaseMap:
 
 
 def today():
-    return dt.date.today()
+    return dt.datetime.today()

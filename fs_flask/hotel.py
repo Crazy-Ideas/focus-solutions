@@ -1,12 +1,13 @@
+import datetime as dt
 from operator import itemgetter
-from typing import List, Optional
+from typing import List, Optional, Tuple
 
 from firestore_ci import FirestoreDocument
 from flask import request
 from flask_login import current_user
-from wtforms import StringField, SelectMultipleField, HiddenField, SubmitField, ValidationError, SelectField
+from wtforms import StringField, SelectMultipleField, HiddenField, SubmitField, ValidationError, SelectField, DateField
 
-from config import Config, BaseMap
+from config import Config, BaseMap, today
 from fs_flask import FSForm
 
 
@@ -27,6 +28,10 @@ class Hotel(FirestoreDocument):
         self.competitions: List[str] = competitions if competitions else list()
         self.initial: str = "".join([word[0] for word in name.split()][:3]).upper() if name else str()
         self.email: str = str()
+        self.start_date: str = str()
+        self.end_date: str = str()
+        self.set_contract(today(), today())
+        self._last_entry_date: str = str()
 
     def __repr__(self):
         return f"{self.city}:{self.name}:Ballrooms={len(self.ballrooms)}:Competitions={len(self.competitions)}"
@@ -52,6 +57,19 @@ class Hotel(FirestoreDocument):
     @property
     def used(self):
         return any(room["used"] for room in self.ballroom_maps)
+
+    @property
+    def contract(self) -> Tuple[dt.datetime, dt.datetime]:
+        return dt.datetime.strptime(self.start_date, "%Y-%m-%d"), dt.datetime.strptime(self.end_date, "%Y-%m-%d")
+
+    @property
+    def last_entry_date(self) -> dt.datetime:
+        return dt.datetime.strptime(self._last_entry_date, "%Y-%m-%d")
+
+    @property
+    def formatted_contract(self) -> Tuple[str, str]:
+        return (dt.datetime.strptime(self.start_date, "%Y-%m-%d").strftime("%d-%b-%Y"),
+                dt.datetime.strptime(self.end_date, "%Y-%m-%d").strftime("%d-%b-%Y"))
 
     @property
     def display(self):
@@ -83,17 +101,27 @@ class Hotel(FirestoreDocument):
                 room_changed = True
         return room_changed
 
+    def set_contract(self, start_date: dt.datetime, end_date: dt.datetime) -> None:
+        self.start_date = start_date.strftime("%Y-%m-%d")
+        self.end_date = end_date.strftime("%Y-%m-%d")
+
+    def set_last_entry_date(self, date: dt.datetime) -> None:
+        self._last_entry_date = date.strftime("%Y-%m-%d")
+
 
 Hotel.init()
 
 
 class HotelForm(FSForm):
+    DEFAULT_DATE = today()
     INITIAL = "initial"
     EDIT_BALLROOM = "edit_ballroom"
     NEW_BALLROOM = "new_ballroom"
     REMOVE_BALLROOM = "remove_ballroom"
     COMPETITION = "hotel"
     initial = StringField("Enter Initial (Can be 2 or 3 alphabets)")
+    start_date = DateField("Select contract start date")
+    end_date = DateField("Select contract end date")
     ballroom = StringField("Ball room name")
     competitions = SelectMultipleField("Select hotels", choices=list())
     old_ballroom = HiddenField()
@@ -109,6 +137,7 @@ class HotelForm(FSForm):
         if request.method == "GET":
             self.competitions.data = hotel.competitions
             self.initial.data = hotel.initial
+            self.start_date.data, self.end_date.data = hotel.contract
 
     def validate_initial(self, initial: StringField):
         if self.form_type.data != self.INITIAL:
@@ -116,6 +145,20 @@ class HotelForm(FSForm):
         initial.data = initial.data.strip().upper()
         if not initial.data.isalpha() or not 2 <= len(initial.data) <= 3:
             raise ValidationError("Invalid Initial")
+        if current_user.role != Config.ADMIN:
+            raise ValidationError("Only Admin can modify hotels private information")
+
+    def raise_date_error(self, message):
+        self.start_date.data, self.end_date.data = self.hotel.contract
+        raise ValidationError(message)
+
+    def validate_end_date(self, end_date: DateField):
+        if self.form_type.data != self.INITIAL:
+            return
+        if not self.start_date.data or not end_date.data:
+            self.raise_date_error(str())
+        if self.start_date.data > self.end_date.data:
+            self.raise_date_error("Contract start date cannot be greater than contract end date")
 
     def validate_ballroom(self, ballroom: StringField):
         if self.form_type.data == self.EDIT_BALLROOM:
@@ -140,6 +183,7 @@ class HotelForm(FSForm):
     def update(self):
         if self.form_type.data == self.INITIAL:
             self.hotel.initial = self.initial.data
+            self.hotel.set_contract(self.start_date.data, self.end_date.data)
             current_user.update_initial(self.initial.data)
         elif self.form_type.data == self.COMPETITION:
             self.hotel.competitions = self.competitions.data[:9]

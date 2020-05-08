@@ -4,7 +4,14 @@
     <div class="row justify-content-center">
         <div class="col-md-4">
             <div class="card text-center">
-                <h5 class="card-header">{{ hotel.name }}</h5>
+                <h5 class="card-header">
+                    {{ hotel.name }}
+                    <a type="button" class="badge badge-warning text-white" data-toggle="modal"
+                       data-target="#hotel_modal" data-type="{{ form.INITIAL }}"
+                       data-title="Edit Initial">
+                        &#9998;
+                    </a>
+                </h5>
                 <ul class="list-group list-group-flush">
                     <li class="list-group-item">
                         Email<br>
@@ -20,13 +27,15 @@
                     </li>
                     <li class="list-group-item">
                         Initial
-                        <a type="button" class="badge badge-warning text-white" data-toggle="modal"
-                           data-target="#hotel_modal" data-type="{{ form.INITIAL }}"
-                           data-title="Edit Initial">
-                            &#9998;
-                        </a>
                         <br>
                         <strong>{{ hotel.initial }}</strong>
+                    </li>
+                    <li class="list-group-item">
+                        Contract
+                        <br>
+                        Start Date: <strong>{{ hotel.formatted_contract[0] }}</strong>
+                        <br>
+                        End Date: <strong>{{ hotel.formatted_contract[1] }}</strong>
                     </li>
                 </ul>
             </div>
@@ -95,6 +104,8 @@
                         {{ form.old_ballroom() }}
                         <div id="edit-initial">
                             {{ form_group_no_error(form.initial) }}
+                            {{ form_group_no_error(form.start_date) }}
+                            {{ form_group_no_error(form.end_date) }}
                         </div>
                         <div id="edit-ballroom">
                             {{ form_group_no_error(form.ballroom) }}

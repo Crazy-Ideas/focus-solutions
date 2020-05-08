@@ -32,8 +32,27 @@ class Usage(FirestoreDocument):
         return f"{self.hotel}:{self.date}:{self.timing}:{self.company}:{self.event_type}"
 
     @classmethod
-    def db_date(cls, date: dt.date) -> str:
+    def db_date(cls, date: dt.datetime) -> str:
         return date.strftime("%Y-%m-%d")
+
+    @classmethod
+    def get_data_entry_date(cls, hotel: Hotel) -> Tuple[dt.datetime, str]:
+        start_date, end_date = hotel.contract
+        end_date = today() if end_date > today() else end_date
+        query = cls.objects.filter_by(city=hotel.city, hotel=hotel.name)
+        query = query.filter("date", ">=", cls.db_date(start_date)).filter("date", "<=", cls.db_date(end_date))
+        last_usage = query.order_by("date", cls.objects.ORDER_DESCENDING).first()
+        if not last_usage:
+            return start_date, Config.MORNING
+        last_day_usage = cls.objects.filter_by(city=hotel.city, hotel=hotel.name, date=last_usage.date).get()
+        if any(usage.timing == Config.EVENING for usage in last_day_usage):
+            data_entry_date = last_day_usage[0].date_in_datetime + dt.timedelta(days=1)
+            if data_entry_date > end_date:
+                return end_date, str()
+            else:
+                return data_entry_date, Config.MORNING
+        else:
+            return last_day_usage[0].date_in_datetime, Config.EVENING
 
     def set_date(self, dd_mm_yyyy: str) -> bool:
         try:
@@ -47,8 +66,12 @@ class Usage(FirestoreDocument):
         return True
 
     @property
+    def date_in_datetime(self):
+        return dt.datetime.strptime(self.date, "%Y-%m-%d")
+
+    @property
     def formatted_date(self):
-        return dt.datetime.strptime(self.date, "%Y-%m-%d").strftime("%d-%b-%Y")
+        return self.date_in_datetime.strftime("%d-%b-%Y")
 
     @property
     def formatted_meal(self):
@@ -67,7 +90,7 @@ class QueryForm(FSForm):
     MAX_WEEKDAYS = int(MAX_ALL_DAYS * 7 / 5)
     MAX_WEEKENDS = int(MAX_ALL_DAYS * 7 / 2)
     MAX_SPECIFIC_DAYS = int(MAX_ALL_DAYS * 7 / 1)
-    DEFAULT_DATE = dt.date(year=2018, month=8, day=1)
+    DEFAULT_DATE = dt.datetime(year=2018, month=8, day=1)
     ALL_DAY = "All Days"
     WEEKDAY = "Weekdays"
     WEEKEND = "Weekends"
