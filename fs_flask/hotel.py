@@ -72,8 +72,18 @@ class Hotel(FirestoreDocument):
                 dt.datetime.strptime(self.end_date, "%Y-%m-%d").strftime("%d-%b-%Y"))
 
     @property
-    def display(self):
+    def display_default(self) -> str:
         return "list-group-item-primary" if current_user.hotel == self.name else str()
+
+    @property
+    def display_delete(self) -> str:
+        return "disabled" if self.used or self.name == current_user.hotel else str()
+
+    def display_ballroom(self, ballroom: str) -> str:
+        room = self.get_ballroom(ballroom)
+        if not room:
+            return str()
+        return "disabled" if room.used or ballroom == Config.OTHER else str()
 
     def get_ballroom(self, name) -> Optional[BallroomMap]:
         room = next((room for room in self.ballroom_maps if room["name"] == name), None)

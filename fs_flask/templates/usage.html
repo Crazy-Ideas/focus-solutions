@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block app_content %}
+    <div class="row justify-content-center">
+        <div class="col-lg-4">
+            <ul class="list-group text-center">
+                <li class="list-group-item list-group-item-secondary">
+                    <strong>{{ form.hotel.name }}</strong>
+                </li>
+            </ul>
+        </div>
+        <div class="col-lg-4">
+            <ul class="list-group text-center">
+                <li class="list-group-item list-group-item-secondary">
+                    <strong>{{ form.formatted_date }}</strong> - <strong>{{ form.timing }}</strong>
+                </li>
+            </ul>
+        </div>
+        <div class="col-lg-4">
+            <ul class="list-group text-center">
+                <li class="list-group-item list-group-item">
+                    <a type="button" class="btn btn-success text-white" href="#">
+                        <span class="oi oi-plus"></span>
+                    </a>
+                    <a type="button" class="btn btn-danger text-white" href="#">
+                        <span class="oi oi-ban"></span>
+                    </a>
+                    <a type="button" class="btn btn-primary text-white" href="#">
+                        <span class="oi oi-arrow-thick-left"></span>
+                    </a>
+                    <a class="btn btn-primary" href="#">
+                        <span class="oi oi-calendar"></span>
+                    </a>
+                    <a class="btn btn-primary" href="#">
+                        <span class="oi oi-arrow-thick-right"></span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <br>
+
+
+{% endblock %}

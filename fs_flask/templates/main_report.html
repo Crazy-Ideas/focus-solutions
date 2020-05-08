@@ -6,9 +6,9 @@
             <div class="card text-center">
                 <h5 class="card-header">
                     Hotels
-                    <a type="button" class="badge badge-primary text-white" data-toggle="modal"
+                    <a type="button" class="btn btn-primary text-white" data-toggle="modal"
                        data-target="#query-modal" data-query-type="hotel" data-title="Edit Hotel Query Parameters">
-                        &#9998;
+                        <span class="oi oi-pencil"></span>
                     </a>
                 </h5>
                 <ul class="list-group list-group-flush">
@@ -24,9 +24,9 @@
             <div class="card text-center">
                 <h5 class="card-header">
                     Period
-                    <a type="button" class="badge badge-primary text-white" data-toggle="modal"
+                    <a type="button" class="btn btn-primary text-white" data-toggle="modal"
                        data-target="#query-modal" data-query-type="period" data-title="Edit Period Parameters">
-                        &#9998;
+                        <span class="oi oi-pencil"></span>
                     </a>
                 </h5>
                 <ul class="list-group list-group-flush">
@@ -46,9 +46,9 @@
             <div class="card text-center">
                 <h5 class="card-header">
                     Event Types
-                    <a type="button" class="badge badge-primary text-white" data-toggle="modal"
+                    <a type="button" class="btn btn-primary text-white" data-toggle="modal"
                        data-target="#query-modal" data-query-type="event" data-title="Edit Event Query Parameters">
-                        &#9998;
+                        <span class="oi oi-pencil"></span>
                     </a>
                 </h5>
                 <ul class="list-group list-group-flush">
@@ -132,7 +132,6 @@
             {% endfor %}
             </tbody>
         </table>
-
     {% endif %}
     <div class="modal fade" id="query-modal" tabindex="-1" role="dialog">
         <div class="modal-dialog" role="document">

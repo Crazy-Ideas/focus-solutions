@@ -15,7 +15,11 @@ class Config:
     ANY = "Any"
     CITIES = ("Mumbai", "Pune")
     NO_MEAL = "No Meal"
-    MEALS = ("Breakfast", "Lunch", "Dinner", "Hi Tea", NO_MEAL)
+    BREAKFAST = "Breakfast"
+    LUNCH = "Lunch"
+    DINNER = "Dinner"
+    HI_TEA = "Hi Tea"
+    MEALS = (BREAKFAST, LUNCH, HI_TEA, DINNER, NO_MEAL)
     MORNING = "Morning"
     EVENING = "Evening"
     TIMINGS = (MORNING, EVENING)

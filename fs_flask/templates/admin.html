@@ -3,60 +3,78 @@
 {% block app_content %}
     <div class="row justify-content-center">
         <div class="col-md-4">
-            <div class="card text-center">
-                <h5 class="card-header">{{ current_user.name }}</h5>
+            <div class="card ">
+                <h5 class="card-header text-center">{{ current_user.name }}</h5>
                 <ul class="list-group list-group-flush">
-                    <li class="list-group-item">
+                    <li class="list-group-item text-center">
                         <strong>{{ current_user.email }}</strong>
                     </li>
                     <li class="list-group-item">
-                        Default City
-                        <a type="button" class="badge badge-warning text-white" data-toggle="modal"
-                           data-target="#admin_modal" data-type="{{ form.EDIT_DEFAULT_CITY }}" data-title="Edit City">
-                            &#9998;
-                        </a>
-                        <br>
-                        <strong>{{ current_user.city }}</strong>
+                        <div class="row">
+                            <div class="col-9">
+                                Default City
+                                <br>
+                                <strong>{{ current_user.city }}</strong>
+                            </div>
+                            <div class="col-3">
+                                <a type="button" class="btn btn-warning" data-toggle="modal"
+                                   data-target="#admin_modal" data-type="{{ form.EDIT_DEFAULT_CITY }}"
+                                   data-title="Edit City">
+                                    <span class="oi oi-pencil"></span>
+                                </a>
+                            </div>
+                        </div>
                     </li>
                     <li class="list-group-item">
-                        Default Hotel View
-                        <a type="button" class="badge badge-warning text-white" data-toggle="modal"
-                           data-target="#admin_modal" data-type="{{ form.EDIT_DEFAULT_HOTEL }}" data-title="Edit Hotel">
-                            &#9998;
-                        </a>
-                        <br>
-                        <strong>{{ current_user.hotel }}</strong>
+                        <div class="row">
+                            <div class="col-9">
+                                Default Hotel View
+                                <br>
+                                <strong>{{ current_user.hotel }}</strong>
+                            </div>
+                            <div class="col-3">
+                                <a type="button" class="btn btn-warning" data-toggle="modal"
+                                   data-target="#admin_modal" data-type="{{ form.EDIT_DEFAULT_HOTEL }}"
+                                   data-title="Edit Hotel">
+                                    <span class="oi oi-pencil"></span>
+                                </a>
+                            </div>
+                        </div>
                     </li>
                 </ul>
             </div>
         </div>
-        <div class="col-md-4">
-            <div class="card text-center">
-                <h5 class="card-header">
+        <div class="col-md-6">
+            <div class="card">
+                <h5 class="card-header text-center">
                     {{ current_user.city }} Hotels
-                    <a type="button" class="badge badge-success text-white" data-toggle="modal"
+                    <a type="button" class="btn btn-success text-white" data-toggle="modal"
                        data-target="#admin_modal" data-type="{{ form.NEW_HOTEL }}"
                        data-title="New Hotel in {{ current_user.city }}">
-                        +
+                        <span class="oi oi-plus" title="plus"></span>
                     </a>
                 </h5>
                 <ul class="list-group list-group-flush">
                     {% for hotel in form.hotels %}
-                        <li class="list-group-item {{ hotel.display }}">
-                            <strong>{{ hotel.name }}</strong>
-                            <a class="badge badge-primary" href="{{ url_for('hotel_manage', hotel_id=hotel.id) }}">
-                                &#9432;
-                            </a>
-                            {% if not hotel.used and hotel.name != current_user.hotel %}
-                                <a type="button" class="badge badge-danger text-white" data-toggle="modal"
-                                   data-target="#admin_modal" data-type="{{ form.DELETE_HOTEL }}"
-                                   data-title="Delete Hotel" data-hotel="{{ hotel.name }}">
-                                    X
-                                </a>
-                            {% endif %}
-                            <br>
-                            <strong>{{ hotel.ballrooms|length }}</strong> ball rooms,
-                            <strong>{{ hotel.competitions|length }}</strong> competitions
+                        <li class="list-group-item {{ hotel.display_default }}">
+                            <div class="row">
+                                <div class="col-8">
+                                    <strong>{{ hotel.name }}</strong>
+                                    <br>
+                                    <strong>{{ hotel.ballrooms|length }}</strong> ball rooms
+                                    <strong>{{ hotel.competitions|length }}</strong> hotels
+                                </div>
+                                <div class="col-4 text-right">
+                                    <a class="btn btn-primary" href="{{ url_for('hotel_manage', hotel_id=hotel.id) }}">
+                                        <span class="oi oi-target" title="target"></span>
+                                    </a>
+                                    <a type="button" class="btn btn-danger text-white {{ hotel.display_delete }}"
+                                       data-toggle="modal" data-target="#admin_modal" data-hotel="{{ hotel.name }}"
+                                       data-type="{{ form.DELETE_HOTEL }}" data-title="Delete Hotel">
+                                        <span class="oi oi-x" title="x"></span>
+                                    </a>
+                                </div>
+                            </div>
                         </li>
                     {% endfor %}
                 </ul>

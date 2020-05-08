@@ -4,7 +4,8 @@ from flask_login import login_required, current_user
 from config import Config
 from fs_flask import fs_app
 from fs_flask.hotel import Hotel, HotelForm, AdminForm
-from fs_flask.usage import QueryForm
+from fs_flask.report import QueryForm
+from fs_flask.usage import Usage, UsageForm
 
 
 @fs_app.route("/")
@@ -65,3 +66,33 @@ def hotel_manage(hotel_id: str) -> Response:
         return render_template("hotel.html", title=hotel.name, form=form, hotel=hotel)
     form.update()
     return render_template("hotel.html", title=hotel.name, form=form, hotel=hotel)
+
+
+@fs_app.route("/data_entry")
+@login_required
+def data_entry() -> Response:
+    hotel = Hotel.objects.filter_by(city=current_user.city, name=current_user.hotel).first()
+    date, timing = Usage.get_data_entry_date(hotel)
+    if not date:
+        flash("Error in data entry")
+        return redirect(url_for("home"))
+    if not timing:
+        flash("All Done - Here is your last evening entry")
+        timing = Config.EVENING
+    return redirect(url_for("usage_manage", hotel_id=hotel.id, date=Usage.db_date(date), timing=timing))
+
+
+@fs_app.route("/hotels/<hotel_id>/dates/<date>/timings/<timing>", methods=["GET", "POST"])
+@login_required
+def usage_manage(hotel_id: str, date: str, timing: str):
+    hotel = Hotel.get_by_id(hotel_id)
+    date = Usage.date_in_datetime(date)
+    if not hotel or not date or timing not in Config.TIMINGS:
+        flash("Error in viewing events on this date")
+        return redirect(url_for("home"))
+    form = UsageForm(hotel, date, timing)
+    if not form.validate_on_submit():
+        form.flash_form_errors()
+        return render_template("usage.html", form=form, title="Data Entry")
+    form.update()
+    return render_template("usage.html", form=form, title="Data Entry")

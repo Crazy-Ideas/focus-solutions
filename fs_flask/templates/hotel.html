@@ -6,10 +6,10 @@
             <div class="card text-center">
                 <h5 class="card-header">
                     {{ hotel.name }}
-                    <a type="button" class="badge badge-warning text-white" data-toggle="modal"
+                    <a type="button" class="btn btn-warning" data-toggle="modal"
                        data-target="#hotel_modal" data-type="{{ form.INITIAL }}"
                        data-title="Edit Initial">
-                        &#9998;
+                        <span class="oi oi-pencil"></span>
                     </a>
                 </h5>
                 <ul class="list-group list-group-flush">
@@ -41,31 +41,38 @@
             </div>
         </div>
         <div class="col-md-4">
-            <div class="card text-center">
-                <h5 class="card-header">
+            <div class="card ">
+                <h5 class="card-header text-center">
                     Ballrooms
-                    <a type="button" class="badge badge-success text-white" data-toggle="modal"
+                    <a type="button" class="btn btn-success text-white" data-toggle="modal"
                        data-target="#hotel_modal" data-type="{{ form.NEW_BALLROOM }}"
                        data-title="New Ballroom">
-                        +
+                        <span class="oi oi-plus"></span>
                     </a>
                 </h5>
                 <ul class="list-group list-group-flush">
                     {% for ballroom in hotel.ballrooms %}
                         <li class="list-group-item">
-                            {{ ballroom }}
-                            {% if ballroom != config.OTHER and not hotel.get_ballroom(ballroom).used %}
-                                <a type="button" class="badge badge-warning text-white" data-toggle="modal"
-                                   data-target="#hotel_modal" data-type="{{ form.EDIT_BALLROOM }}"
-                                   data-title="Edit Ballroom {{ ballroom }}" data-ballroom="{{ ballroom }}">
-                                    &#9998;
-                                </a>
-                                <a type="button" class="badge badge-danger text-white" data-toggle="modal"
-                                   data-target="#hotel_modal" data-type="{{ form.REMOVE_BALLROOM }}"
-                                   data-title="Remove Ballroom" data-ballroom="{{ ballroom }}">
-                                    X
-                                </a>
-                            {% endif %}
+                            <div class="row">
+                                <div class="col">
+                                    <h6>{{ ballroom }}</h6>
+                                </div>
+                                <div class="col text-right">
+                                    <a type="button" class="btn btn-warning {{ hotel.display_ballroom(ballroom) }}"
+                                       data-toggle="modal" data-target="#hotel_modal"
+                                       data-type="{{ form.EDIT_BALLROOM }}"
+                                       data-title="Edit Ballroom {{ ballroom }}" data-ballroom="{{ ballroom }}">
+                                        <span class="oi oi-pencil"></span>
+                                    </a>
+                                    <a type="button"
+                                       class="btn btn-danger text-white {{ hotel.display_ballroom(ballroom) }}"
+                                       data-toggle="modal" data-target="#hotel_modal"
+                                       data-type="{{ form.REMOVE_BALLROOM }}"
+                                       data-title="Remove Ballroom" data-ballroom="{{ ballroom }}">
+                                        <span class="oi oi-x"></span>
+                                    </a>
+                                </div>
+                            </div>
                         </li>
                     {% endfor %}
                 </ul>
@@ -75,10 +82,10 @@
             <div class="card text-center">
                 <h5 class="card-header">
                     Default Hotels
-                    <a type="button" class="badge badge-warning text-white" data-toggle="modal"
+                    <a type="button" class="btn btn-warning" data-toggle="modal"
                        data-target="#hotel_modal" data-type="{{ form.COMPETITION }}"
                        data-title="Select Other Hotels">
-                        &#9998;
+                        <span class="oi oi-pencil"></span>
                     </a>
                 </h5>
                 <ul class="list-group list-group-flush">
