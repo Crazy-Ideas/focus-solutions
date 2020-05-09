@@ -1,7 +1,7 @@
 from flask import render_template, url_for, redirect, Response, flash
 from flask_login import login_required, current_user
 
-from config import Config
+from config import Config, today
 from fs_flask import fs_app
 from fs_flask.hotel import Hotel, HotelForm, AdminForm
 from fs_flask.report import QueryForm
@@ -77,7 +77,7 @@ def data_entry() -> Response:
         flash("Error in data entry")
         return redirect(url_for("home"))
     if not timing:
-        flash("All Done - Here is your last evening entry")
+        flash("All Done - Here are your last evening events")
         timing = Config.EVENING
     return redirect(url_for("usage_manage", hotel_id=hotel.id, date=Usage.db_date(date), timing=timing))
 
@@ -85,11 +85,21 @@ def data_entry() -> Response:
 @fs_app.route("/hotels/<hotel_id>/dates/<date>/timings/<timing>", methods=["GET", "POST"])
 @login_required
 def usage_manage(hotel_id: str, date: str, timing: str):
-    hotel = Hotel.get_by_id(hotel_id)
+    hotel: Hotel = Hotel.get_by_id(hotel_id)
     date = Usage.date_in_datetime(date)
-    if not hotel or not date or timing not in Config.TIMINGS:
+    if not hotel or not date or timing not in Config.TIMINGS or \
+            not hotel.contract[0] <= date <= max(today(), hotel.contract[1]):
         flash("Error in viewing events on this date")
         return redirect(url_for("home"))
+    # data_entry_date, data_entry_timing = Usage.get_data_entry_date(hotel)
+    # if not data_entry_date:
+    #     flash("Error in viewing events on this date")
+    #     return redirect(url_for("home"))
+    # if (date == data_entry_date and timing == Config.EVENING and data_entry_timing == Config.MORNING) or \
+    #         date > data_entry_date:
+    #     flash("Please complete the data entry for events on this date")
+    #     date = data_entry_date
+    #     timing = data_entry_timing if data_entry_timing else Config.EVENING
     form = UsageForm(hotel, date, timing)
     if not form.validate_on_submit():
         form.flash_form_errors()

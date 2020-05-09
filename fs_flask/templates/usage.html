@@ -19,25 +19,61 @@
         <div class="col-lg-4">
             <ul class="list-group text-center">
                 <li class="list-group-item list-group-item">
-                    <a type="button" class="btn btn-success text-white" href="#">
+                    <a type="button" class="btn btn-success text-white" id="create-button">
                         <span class="oi oi-plus"></span>
                     </a>
-                    <a type="button" class="btn btn-danger text-white" href="#">
+                    <a type="button" class="btn btn-danger text-white {{ form.display_no_event }}" id="no-event-button">
                         <span class="oi oi-ban"></span>
                     </a>
-                    <a type="button" class="btn btn-primary text-white" href="#">
+                    <a class="btn btn-primary {{ form.display_previous }}" href="{{ form.link_previous }}">
                         <span class="oi oi-arrow-thick-left"></span>
                     </a>
                     <a class="btn btn-primary" href="#">
                         <span class="oi oi-calendar"></span>
                     </a>
-                    <a class="btn btn-primary" href="#">
+                    <a class="btn btn-primary {{ form.display_next }}" href="{{ form.link_next }}">
                         <span class="oi oi-arrow-thick-right"></span>
                     </a>
                 </li>
             </ul>
         </div>
     </div>
+    {% if form.usages %}
+        {% for usage_batch in form.usages|batch(3) %}
+            <br>
+            <div class="row justify-content-center">
+                {% for usage in usage_batch %}
+                    <div class="col-lg-4">
+                        <div class="card text-center">
+                            <h5 class="card-header text-center">
+                                {{ usage.event_type }}
+                            </h5>
+                            <ul class="list-group list-group-flush">
+                                <li class="list-group-item font-weight-bold">
+                                    {{ usage.company }}
+                                </li>
+                                <li class="list-group-item font-weight-bold">
+                                    {{ usage.event_description }}
+                                </li>
+                                <li class="list-group-item">
+                                    {{ usage.formatted_ballroom }}
+                                </li>
+                                <li class="list-group-item">
+                                    {{ usage.formatted_meal }}
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endfor %}
+    {% else %}
+        <div class="row">
+            <div class="col text-center">
+                <strong>No events recorded</strong>
+            </div>
+        </div>
+    {% endif %}
 
     <br>
 

@@ -2,6 +2,7 @@ import datetime as dt
 from typing import Optional, List, Tuple
 
 from firestore_ci import FirestoreDocument
+from flask import url_for
 from wtforms import SelectField, SelectMultipleField, ValidationError, HiddenField, \
     StringField, BooleanField
 
@@ -109,7 +110,8 @@ class UsageForm(FSForm):
         self.timing: str = timing
         self.ballrooms.choices.extend([(room, room) for room in hotel.ballrooms])
         self.usage: Optional[Usage] = None
-        self.usages = Usage.objects.filter_by(city=hotel.city, hotel=hotel.name, date=Usage.db_date(date)).get()
+        query = Usage.objects.filter_by(city=hotel.city, hotel=hotel.name)
+        self.usages = query.filter_by(date=Usage.db_date(date), timing=timing).get()
 
     def validate_usage_id(self, usage_id: StringField):
         if self.form_type.data != self.UPDATE and self.form_type.data != self.DELETE:
@@ -176,3 +178,38 @@ class UsageForm(FSForm):
     @property
     def formatted_date(self) -> str:
         return self.date.strftime("%a, %d-%b-%Y")
+
+    @property
+    def display_previous(self) -> str:
+        return "disabled" if self.date <= self.hotel.contract[0] else str()
+
+    @property
+    def link_previous(self) -> str:
+        if self.timing == Config.EVENING:
+            date = self.date
+            timing = Config.MORNING
+        else:
+            date = self.date - dt.timedelta(days=1)
+            timing = Config.EVENING
+        return url_for("usage_manage", hotel_id=self.hotel.id, date=Usage.db_date(date), timing=timing)
+
+    @property
+    def display_next(self) -> str:
+        if not self.usages:
+            return "disabled"
+        end_date = max(self.hotel.contract[1], today())
+        return "disabled" if self.date >= end_date else str()
+
+    @property
+    def link_next(self) -> str:
+        if self.timing == Config.EVENING:
+            date = self.date + dt.timedelta(days=1)
+            timing = Config.MORNING
+        else:
+            date = self.date
+            timing = Config.EVENING
+        return url_for("usage_manage", hotel_id=self.hotel.id, date=Usage.db_date(date), timing=timing)
+
+    @property
+    def display_no_event(self) -> str:
+        return "disabled" if self.usages else str()
