@@ -39,34 +39,45 @@
         </div>
     </div>
     {% if form.usages %}
-        {% for usage_batch in form.usages|batch(3) %}
-            <br>
-            <div class="row justify-content-center">
-                {% for usage in usage_batch %}
-                    <div class="col-lg-4">
-                        <div class="card text-center">
-                            <h5 class="card-header text-center">
-                                {{ usage.event_type }}
-                            </h5>
-                            <ul class="list-group list-group-flush">
-                                <li class="list-group-item font-weight-bold">
-                                    {{ usage.company }}
-                                </li>
-                                <li class="list-group-item font-weight-bold">
-                                    {{ usage.event_description }}
-                                </li>
-                                <li class="list-group-item">
-                                    {{ usage.formatted_ballroom }}
-                                </li>
-                                <li class="list-group-item">
-                                    {{ usage.formatted_meal }}
-                                </li>
-                            </ul>
-                        </div>
-                    </div>
-                {% endfor %}
-            </div>
-        {% endfor %}
+        <br>
+        <table id="usage_list" class="table table-bordered table-hover ">
+            <thead class="thead-dark">
+            <tr>
+                <th class="" scope="col">Client</th>
+                <th class="text-center d-none d-md-table-cell" scope="col">Meal</th>
+                <th class="text-center d-none d-md-table-cell" scope="col">Type</th>
+                <th class="text-center d-none d-md-table-cell" scope="col">Ballroom</th>
+                <th class="d-none d-md-table-cell" scope="col">Event</th>
+                <th class="text-center" scope="col">
+                    <span class="oi oi-pencil"></span>
+                </th>
+                <th class="text-center" scope="col">
+                    <span class="oi oi-trash"></span>
+                </th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for usage in form.usages %}
+                <tr>
+                    <td class="">{{ usage.company }}</td>
+                    <td class="text-center d-none d-md-table-cell">{{ usage.formatted_meal }}</td>
+                    <td class="text-center d-none d-md-table-cell">{{ usage.event_type }}</td>
+                    <td class="text-center d-none d-md-table-cell">{{ usage.formatted_ballroom }}</td>
+                    <td class="d-none d-md-table-cell">{{ usage.event_description }}</td>
+                    <td class="text-center">
+                        <a class="btn btn-warning">
+                            <span class="oi oi-pencil"></span>
+                        </a>
+                    </td>
+                    <td class="text-center text-white">
+                        <a class="btn btn-danger">
+                            <span class="oi oi-trash"></span>
+                        </a>
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
     {% else %}
         <div class="row">
             <div class="col text-center">
@@ -75,7 +86,14 @@
         </div>
     {% endif %}
 
-    <br>
 
+{% endblock %}
 
+{% block scripts %}
+    {{ super() }}
+    <script>
+        $(document).ready(function () {
+            $('#usage_list').DataTable();
+        });
+    </script>
 {% endblock %}

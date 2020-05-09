@@ -7,7 +7,7 @@
                 <h5 class="card-header">
                     Hotels
                     <a type="button" class="btn btn-primary text-white" data-toggle="modal"
-                       data-target="#query-modal" data-query-type="hotel" data-title="Edit Hotel Query Parameters">
+                       data-target="#query-modal" data-query-type="hotel" data-title="Select Hotels">
                         <span class="oi oi-pencil"></span>
                     </a>
                 </h5>
@@ -23,9 +23,9 @@
             <br>
             <div class="card text-center">
                 <h5 class="card-header">
-                    Period
+                    Filter
                     <a type="button" class="btn btn-primary text-white" data-toggle="modal"
-                       data-target="#query-modal" data-query-type="period" data-title="Edit Period Parameters">
+                       data-target="#query-modal" data-query-type="period" data-title="Edit Query Parameters">
                         <span class="oi oi-pencil"></span>
                     </a>
                 </h5>
@@ -36,22 +36,9 @@
                         To Date <span class="badge badge-primary">{{ form.formatted_end_date }}</span>
                     </li>
                     <li class="list-group-item">
-                        Day(s)
-                        <br>
+                        Days
                         <span class="badge badge-primary">{{ form.day.data }}</span>
                     </li>
-                </ul>
-            </div>
-            <br>
-            <div class="card text-center">
-                <h5 class="card-header">
-                    Event Types
-                    <a type="button" class="btn btn-primary text-white" data-toggle="modal"
-                       data-target="#query-modal" data-query-type="event" data-title="Edit Event Query Parameters">
-                        <span class="oi oi-pencil"></span>
-                    </a>
-                </h5>
-                <ul class="list-group list-group-flush">
                     <li class="list-group-item">
                         Timing
                         <span class="badge badge-primary">{{ form.timing.data }}</span>
@@ -107,27 +94,27 @@
         <table id="usage_list" class="table table-bordered table-hover ">
             <thead class="thead-dark">
             <tr>
+                <th class="text-center" scope="col">Hotel</th>
                 <th class="text-center" scope="col">Date</th>
                 <th class="text-center d-none d-md-table-cell" scope="col">Timing</th>
-                <th class="text-center" scope="col">Company</th>
-                <th class="text-center d-none d-md-table-cell" scope="col">Event</th>
+                <th class="text-center" scope="col">Client</th>
                 <th class="text-center d-none d-md-table-cell" scope="col">Meal</th>
                 <th class="text-center d-none d-md-table-cell" scope="col">Type</th>
-                <th class="text-center" scope="col">Hotel</th>
                 <th class="text-center d-none d-md-table-cell" scope="col">Ballroom</th>
+                <th class="text-center d-none d-md-table-cell" scope="col">Event</th>
             </tr>
             </thead>
             <tbody>
             {% for usage in form.usage_data %}
                 <tr>
+                    <td class="text-center">{{ usage.hotel }}</td>
                     <td class="text-center">{{ usage.formatted_date }}</td>
                     <td class="text-center d-none d-md-table-cell">{{ usage.timing }}</td>
                     <td class="text-center">{{ usage.company }}</td>
-                    <td class="text-center d-none d-md-table-cell">{{ usage.event_description }}</td>
                     <td class="text-center d-none d-md-table-cell">{{ usage.formatted_meal }}</td>
                     <td class="text-center d-none d-md-table-cell">{{ usage.event_type }}</td>
-                    <td class="text-center">{{ usage.hotel }}</td>
                     <td class="text-center d-none d-md-table-cell">{{ usage.formatted_ballroom }}</td>
+                    <td class="text-center d-none d-md-table-cell">{{ usage.event_description }}</td>
                 </tr>
             {% endfor %}
             </tbody>
@@ -144,11 +131,6 @@
                 </div>
                 <div class="modal-body justify-content-center">
                     <form class="form" method="POST" id="query-form">
-                        <div id="event-select">
-                            {{ form_group_no_error(form.timing) }}
-                            {{ form_group_no_error(form.meals) }}
-                            {{ form_group_no_error(form.event) }}
-                        </div>
                         <div id="hotel-select">
                             {{ form_group_no_error(form.hotels) }}
                         </div>
@@ -156,6 +138,11 @@
                             {{ form_group_no_error(form.start_date) }}
                             {{ form_group_no_error(form.end_date) }}
                             {{ form_group_no_error(form.day) }}
+                        </div>
+                        <div id="event-select">
+                            {{ form_group_no_error(form.timing) }}
+                            {{ form_group_no_error(form.meals) }}
+                            {{ form_group_no_error(form.event) }}
                         </div>
                         {{ form.csrf_token() }}
                     </form>
@@ -181,18 +168,14 @@
             let query_type = $(event.relatedTarget).data("query-type")
             let title = $(event.relatedTarget).data("title")
             $(this).find(".modal-title").text(title)
-            if (query_type === "event") {
-                $(this).find("#event-select").show()
-                $(this).find("#hotel-select").hide()
-                $(this).find("#period-select").hide()
-            } else if (query_type === "hotel") {
+            if (query_type === "hotel") {
                 $(this).find("#hotel-select").show()
                 $(this).find("#event-select").hide()
                 $(this).find("#period-select").hide()
             } else if (query_type === "period") {
                 $(this).find("#period-select").show()
+                $(this).find("#event-select").show()
                 $(this).find("#hotel-select").hide()
-                $(this).find("#event-select").hide()
             }
         })
     </script>
