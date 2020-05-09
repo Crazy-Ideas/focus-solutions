@@ -59,12 +59,13 @@ class Hotel(FirestoreDocument):
         return any(room["used"] for room in self.ballroom_maps)
 
     @property
-    def contract(self) -> Tuple[dt.datetime, dt.datetime]:
-        return dt.datetime.strptime(self.start_date, "%Y-%m-%d"), dt.datetime.strptime(self.end_date, "%Y-%m-%d")
+    def contract(self) -> Tuple[dt.date, dt.date]:
+        return (dt.datetime.strptime(self.start_date, "%Y-%m-%d").date(),
+                dt.datetime.strptime(self.end_date, "%Y-%m-%d").date())
 
     @property
-    def last_entry_date(self) -> dt.datetime:
-        return dt.datetime.strptime(self._last_entry_date, "%Y-%m-%d")
+    def last_entry_date(self) -> dt.date:
+        return dt.datetime.strptime(self._last_entry_date, "%Y-%m-%d").date()
 
     @property
     def formatted_contract(self) -> Tuple[str, str]:
@@ -111,11 +112,11 @@ class Hotel(FirestoreDocument):
                 room_changed = True
         return room_changed
 
-    def set_contract(self, start_date: dt.datetime, end_date: dt.datetime) -> None:
+    def set_contract(self, start_date: dt.date, end_date: dt.date) -> None:
         self.start_date = start_date.strftime("%Y-%m-%d")
         self.end_date = end_date.strftime("%Y-%m-%d")
 
-    def set_last_entry_date(self, date: dt.datetime) -> None:
+    def set_last_entry_date(self, date: dt.date) -> None:
         self._last_entry_date = date.strftime("%Y-%m-%d")
 
 

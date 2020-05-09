@@ -86,7 +86,7 @@ def data_entry() -> Response:
 @login_required
 def usage_manage(hotel_id: str, date: str, timing: str):
     hotel: Hotel = Hotel.get_by_id(hotel_id)
-    date = Usage.date_in_datetime(date)
+    date = Usage.to_date(date)
     if not hotel or not date or timing not in Config.TIMINGS or \
             not hotel.contract[0] <= date <= max(today(), hotel.contract[1]):
         flash("Error in viewing events on this date")

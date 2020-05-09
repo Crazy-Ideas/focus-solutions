@@ -50,4 +50,4 @@ class BaseMap:
 
 
 def today():
-    return dt.datetime.today()
+    return dt.date.today()

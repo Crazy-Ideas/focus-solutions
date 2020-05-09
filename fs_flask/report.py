@@ -17,7 +17,7 @@ class QueryForm(FSForm):
     MAX_WEEKDAYS = int(MAX_ALL_DAYS * 7 / 5)
     MAX_WEEKENDS = int(MAX_ALL_DAYS * 7 / 2)
     MAX_SPECIFIC_DAYS = int(MAX_ALL_DAYS * 7 / 1)
-    DEFAULT_DATE = dt.datetime(year=2018, month=8, day=1)
+    DEFAULT_DATE = dt.date(year=2018, month=8, day=1)
     ALL_DAY = "All Days"
     WEEKDAY = "Weekdays"
     WEEKEND = "Weekends"

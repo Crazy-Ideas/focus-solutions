@@ -65,7 +65,7 @@ def mumbai_usage():
     for index, row in enumerate(hotel_table[1:]):
         usage = Usage()
         usage.city = "Mumbai"
-        date_pass = usage.set_date(dt.datetime.strptime(row[0], "%d/%m/%Y"))
+        date_pass = usage.set_date(dt.datetime.strptime(row[0], "%d/%m/%Y").date())
         usage.timing = row[1]
         usage.company = row[2]
         usage.event_description = row[3]

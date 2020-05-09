@@ -31,18 +31,18 @@ class Usage(FirestoreDocument):
         return f"{self.hotel}:{self.date}:{self.timing}:{self.company}:{self.event_type}"
 
     @classmethod
-    def db_date(cls, date: dt.datetime) -> str:
+    def db_date(cls, date: dt.date) -> str:
         return date.strftime("%Y-%m-%d")
 
     @classmethod
-    def date_in_datetime(cls, yyyy_mm_dd: str) -> Optional[dt.datetime]:
+    def to_date(cls, yyyy_mm_dd: str) -> Optional[dt.date]:
         try:
-            return dt.datetime.strptime(yyyy_mm_dd, "%Y-%m-%d")
+            return dt.datetime.strptime(yyyy_mm_dd, "%Y-%m-%d").date()
         except ValueError:
             return None
 
     @classmethod
-    def get_data_entry_date(cls, hotel: Hotel) -> Tuple[Optional[dt.datetime], str]:
+    def get_data_entry_date(cls, hotel: Hotel) -> Tuple[Optional[dt.date], str]:
         start_date, end_date = hotel.contract
         end_date = today() if end_date > today() else end_date
         query = cls.objects.filter_by(city=hotel.city, hotel=hotel.name)
@@ -51,7 +51,7 @@ class Usage(FirestoreDocument):
         if not last_usage:
             return start_date, Config.MORNING
         last_day_usage = cls.objects.filter_by(city=hotel.city, hotel=hotel.name, date=last_usage.date).get()
-        data_entry_date = cls.date_in_datetime(last_day_usage[0].date)
+        data_entry_date = cls.to_date(last_day_usage[0].date)
         if not data_entry_date:
             return None, str()
         if any(usage.timing == Config.EVENING for usage in last_day_usage):
@@ -65,7 +65,7 @@ class Usage(FirestoreDocument):
 
     @property
     def formatted_date(self) -> str:
-        date = self.date_in_datetime(self.date)
+        date = self.to_date(self.date)
         return date.strftime("%d-%b-%Y") if date else str()
 
     @property
@@ -76,7 +76,7 @@ class Usage(FirestoreDocument):
     def formatted_ballroom(self) -> str:
         return ", ".join(self.ballrooms)
 
-    def set_date(self, date: dt.datetime) -> bool:
+    def set_date(self, date: dt.date) -> bool:
         self.date = date.strftime("%Y-%m-%d")
         self.day = date.strftime("%A")
         self.weekday = self.day not in ("Saturday", "Sunday")
@@ -103,10 +103,10 @@ class UsageForm(FSForm):
     no_meal = BooleanField(Config.NO_MEAL)
     ballrooms = SelectMultipleField("Select ballrooms", choices=list())
 
-    def __init__(self, hotel: Hotel, date: dt.datetime, timing: str, *args, **kwargs):
+    def __init__(self, hotel: Hotel, date: dt.date, timing: str, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.hotel: Hotel = hotel
-        self.date: dt.datetime = date
+        self.date: dt.date = date
         self.timing: str = timing
         self.ballrooms.choices.extend([(room, room) for room in hotel.ballrooms])
         self.usage: Optional[Usage] = None
