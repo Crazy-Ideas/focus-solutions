@@ -26,6 +26,7 @@ class Usage(FirestoreDocument):
         self.meals: List[str] = list()
         self.ballrooms: List[str] = list()
         self.event_description: str = str()
+        self.no_event: bool = False
 
     def __repr__(self):
         return f"{self.hotel}:{self.date}:{self.timing}:{self.company}:{self.event_type}"
@@ -125,6 +126,14 @@ class UsageForm(FSForm):
             return
         if not client.data:
             raise ValidationError("Client name cannot be left blank")
+        if self.form_type.data == self.CREATE and any(client.data == usage.company for usage in self.usages):
+            raise ValidationError("Client name must be unique within a day")
+
+    def validate_ballrooms(self, ballrooms: SelectMultipleField):
+        if self.form_type.data != self.UPDATE and self.form_type.data != self.CREATE:
+            return
+        if not ballrooms.data:
+            raise ValidationError("At least one ballroom needs to be selected")
 
     def validate_no_meal(self, no_meal: BooleanField):
         if self.form_type.data != self.UPDATE and self.form_type.data != self.CREATE:
@@ -162,6 +171,7 @@ class UsageForm(FSForm):
     def update(self):
         if self.form_type.data == self.CREATE:
             self.usage = Usage()
+            self.usage.city = self.hotel.city
             self.usage.hotel = self.hotel.name
             self.usage.set_date(self.date)
             self.usage.timing = self.timing

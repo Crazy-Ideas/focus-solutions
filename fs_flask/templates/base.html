@@ -104,8 +104,8 @@
     <div class="container-xl">
         {% with messages = get_flashed_messages() %}
             {% if messages %}
+                <br>
                 {% for message in messages %}
-                    <br>
                     <div class="alert alert-info" role="alert">
                         {{ message }}
                     </div>

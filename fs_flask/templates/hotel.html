@@ -142,43 +142,43 @@
             document.forms["hotel-form"].submit()
         });
         $("#hotel_modal").on("show.bs.modal", function (event) {
-            let form_type = $(event.relatedTarget).data("type")
-            let title = $(event.relatedTarget).data("title")
-            let old_ballroom = $(event.relatedTarget).data("ballroom")
-            $(this).find(".modal-title").text(title)
-            $(this).find("#form_type").val(form_type)
+            let form_type = $(event.relatedTarget).data("type");
+            let title = $(event.relatedTarget).data("title");
+            let old_ballroom = $(event.relatedTarget).data("ballroom");
+            $(this).find(".modal-title").text(title);
+            $(this).find("#form_type").val(form_type);
             if (form_type === "remove_ballroom") {
-                $(this).find("#comment").text("Are you sure you want to remove " + old_ballroom + "?")
-                $(this).find("#save-button").addClass("btn-danger").removeClass("btn-warning").html("Delete")
+                $(this).find("#comment").text("Are you sure you want to remove " + old_ballroom + "?");
+                $(this).find("#save-button").addClass("btn-danger").removeClass("btn-warning").html("Delete");
             } else {
-                $(this).find("#comment").text("")
-                $(this).find("#save-button").addClass("btn-warning").removeClass("btn-danger").html("Save")
+                $(this).find("#comment").text("");
+                $(this).find("#save-button").addClass("btn-warning").removeClass("btn-danger").html("Save");
             }
             if (form_type === "hotel") {
-                $(this).find("#select-hotel").show()
-                $(this).find("#edit-ballroom").hide()
-                $(this).find("#edit-initial").hide()
+                $(this).find("#select-hotel").show();
+                $(this).find("#edit-ballroom").hide();
+                $(this).find("#edit-initial").hide();
             } else if (form_type === "initial") {
-                $(this).find("#edit-initial").show()
-                $(this).find("#select-hotel").hide()
-                $(this).find("#edit-ballroom").hide()
+                $(this).find("#edit-initial").show();
+                $(this).find("#select-hotel").hide();
+                $(this).find("#edit-ballroom").hide();
             } else if (form_type === "new_ballroom") {
-                $(this).find("#edit-ballroom").show()
-                $(this).find("#ballroom").val("")
-                $(this).find("#select-hotel").hide()
-                $(this).find("#edit-initial").hide()
+                $(this).find("#edit-ballroom").show();
+                $(this).find("#ballroom").val("");
+                $(this).find("#select-hotel").hide();
+                $(this).find("#edit-initial").hide();
             } else if (form_type === "edit_ballroom") {
-                $(this).find("#edit-ballroom").show()
-                $(this).find("#ballroom").val(old_ballroom)
-                $(this).find("#select-hotel").hide()
-                $(this).find("#edit-initial").hide()
-                $(this).find("#old_ballroom").val(old_ballroom)
+                $(this).find("#edit-ballroom").show();
+                $(this).find("#ballroom").val(old_ballroom);
+                $(this).find("#select-hotel").hide();
+                $(this).find("#edit-initial").hide();
+                $(this).find("#old_ballroom").val(old_ballroom);
             } else if (form_type === "remove_ballroom") {
-                $(this).find("#edit-ballroom").hide()
-                $(this).find("#select-hotel").hide()
-                $(this).find("#edit-initial").hide()
-                $(this).find("#old_ballroom").val(old_ballroom)
+                $(this).find("#edit-ballroom").hide();
+                $(this).find("#select-hotel").hide();
+                $(this).find("#edit-initial").hide();
+                $(this).find("#old_ballroom").val(old_ballroom);
             }
-        })
+        });
     </script>
 {% endblock %}
