@@ -12,6 +12,7 @@ class Config:
     HOTEL = "Hotel"
     ROLES = (ADMIN, HOTEL)
     DEFAULT_CITY = "Mumbai"
+    EMPTY_CHOICE = (str(), str())
     ANY = "Any"
     CITIES = ("Mumbai", "Pune")
     NO_MEAL = "No Meal"

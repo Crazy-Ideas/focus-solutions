@@ -4,7 +4,7 @@ from typing import Optional, List, Tuple
 from firestore_ci import FirestoreDocument
 from flask import url_for
 from wtforms import SelectMultipleField, ValidationError, HiddenField, \
-    StringField, BooleanField, RadioField
+    StringField, RadioField
 
 from config import Config, today
 from fs_flask import FSForm
@@ -89,6 +89,10 @@ Usage.init()
 
 
 class UsageForm(FSForm):
+    BREAKFAST_LUNCH = f"{Config.BREAKFAST} & {Config.LUNCH}"
+    HI_TEA_DINNER = f"{Config.HI_TEA} & {Config.DINNER}"
+    MORNING_MEALS = [Config.BREAKFAST, Config.LUNCH, BREAKFAST_LUNCH, Config.NO_MEAL]
+    EVENING_MEALS = [Config.HI_TEA, Config.DINNER, HI_TEA_DINNER, Config.NO_MEAL]
     CREATE = "create"
     UPDATE = "update"
     DELETE = "delete"
@@ -97,11 +101,8 @@ class UsageForm(FSForm):
     client = StringField("Enter client name")
     event_description = StringField("Enter event description")
     event_type = RadioField("Select event type", choices=[(event, event) for event in Config.EVENTS])
-    breakfast = BooleanField(Config.BREAKFAST)
-    lunch = BooleanField(Config.LUNCH)
-    hi_tea = BooleanField(Config.HI_TEA)
-    dinner = BooleanField(Config.DINNER)
-    no_meal = BooleanField(Config.NO_MEAL)
+    morning_meal = RadioField("Select meal", choices=[(meal, meal) for meal in MORNING_MEALS])
+    evening_meal = RadioField("Select meal", choices=[(meal, meal) for meal in EVENING_MEALS])
     ballrooms = SelectMultipleField("Select ballrooms", choices=list())
 
     def __init__(self, hotel: Hotel, date: dt.date, timing: str, *args, **kwargs):
@@ -119,7 +120,7 @@ class UsageForm(FSForm):
             return
         if usage_id.data not in [usage.id for usage in self.usages]:
             raise ValidationError("Error in processing data")
-        self.usage = next(usage for usage in self.usages if usage_id == usage.id)
+        self.usage = next(usage for usage in self.usages if usage_id.data == usage.id)
 
     def validate_client(self, client: StringField):
         if self.form_type.data != self.UPDATE and self.form_type.data != self.CREATE:
@@ -135,23 +136,17 @@ class UsageForm(FSForm):
         if not ballrooms.data:
             raise ValidationError("At least one ballroom needs to be selected")
 
-    def validate_no_meal(self, no_meal: BooleanField):
+    def validate_morning_meal(self, morning_meal: RadioField):
         if self.form_type.data != self.UPDATE and self.form_type.data != self.CREATE:
             return
-        if no_meal.data:
-            if self.breakfast.data or self.lunch.data or self.hi_tea.data or self.dinner.data:
-                raise ValidationError(f"Cannot select a meal with a {Config.NO_MEAL} option")
+        if not morning_meal.data or not self.evening_meal.data:
+            morning_meal.data = self.evening_meal.data = Config.NO_MEAL
+            raise ValidationError(f"One meal option needs to be selected")
         elif self.timing == Config.MORNING:
-            if not self.breakfast.data and not self.lunch.data:
-                raise ValidationError(f"Please select {Config.BREAKFAST} or {Config.LUNCH} or {Config.NO_MEAL} for "
-                                      f"{Config.MORNING} events")
-            if self.hi_tea.data or self.dinner.data:
+            if self.evening_meal.data != Config.NO_MEAL:
                 raise ValidationError(f"Cannot select {Config.HI_TEA} or {Config.DINNER} for {Config.MORNING} events")
         elif self.timing == Config.EVENING:
-            if not self.hi_tea.data and not self.dinner.data:
-                raise ValidationError(f"Please select {Config.HI_TEA} or {Config.DINNER} or {Config.NO_MEAL} for "
-                                      f"{Config.EVENING} events")
-            if self.breakfast.data or self.lunch.data:
+            if morning_meal.data != Config.NO_MEAL:
                 raise ValidationError(f"Cannot select {Config.BREAKFAST} or {Config.LUNCH} for {Config.EVENING} events")
 
     def update_from_form(self):
@@ -159,14 +154,12 @@ class UsageForm(FSForm):
         self.usage.event_description = self.event_description.data
         self.usage.event_type = self.event_type.data
         self.usage.ballrooms = self.ballrooms.data
-        self.usage.meals = [
-            Config.BREAKFAST if self.breakfast.data else str(),
-            Config.LUNCH if self.lunch.data else str(),
-            Config.HI_TEA if self.hi_tea.data else str(),
-            Config.DINNER if self.dinner.data else str(),
-            Config.NO_MEAL if self.no_meal.data else str(),
-        ]
-        self.usage.meals = [meal for meal in self.usage.meals if meal]
+        if self.timing == Config.MORNING:
+            self.usage.meals = [Config.BREAKFAST, Config.LUNCH] if self.morning_meal.data == self.BREAKFAST_LUNCH \
+                else [self.morning_meal.data]
+        else:
+            self.usage.meals = [Config.HI_TEA, Config.DINNER] if self.evening_meal.data == self.HI_TEA_DINNER \
+                else [self.evening_meal.data]
 
     def update(self):
         if self.form_type.data == self.CREATE:

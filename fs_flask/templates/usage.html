@@ -59,7 +59,7 @@
             </thead>
             <tbody>
             {% for usage in form.usages %}
-                <tr>
+                <tr id="{{ usage.id }}">
                     <td class="">{{ usage.company }}</td>
                     <td class="text-center d-none d-md-table-cell">{{ usage.formatted_meal }}</td>
                     <td class="text-center d-none d-md-table-cell">{{ usage.event_type }}</td>
@@ -71,7 +71,9 @@
                         </a>
                     </td>
                     <td class="text-center text-white">
-                        <a class="btn btn-danger">
+                        <a type="button" class="btn btn-danger" data-toggle="modal" data-target="#usage-modal"
+                           data-type="{{ form.DELETE }}" data-title="Delete Event" data-id="{{ usage.id }}"
+                           data-client="{{ usage.company }}">
                             <span class="oi oi-trash"></span>
                         </a>
                     </td>
@@ -104,22 +106,17 @@
                             {{ form_group_no_error(form.client) }}
                             <div class="row">
                                 <div class="col">
-                                    <p>Select Meal</p>
                                     <div id="morning-meal">
-                                        {{ check_box(form.breakfast) }}
-                                        {{ check_box(form.lunch) }}
+                                        {{ radio_field(form.morning_meal) }}
                                     </div>
                                     <div id="evening-meal">
-                                        {{ check_box(form.hi_tea) }}
-                                        {{ check_box(form.dinner) }}
+                                        {{ radio_field(form.evening_meal) }}
                                     </div>
-                                    {{ check_box(form.no_meal) }}
                                 </div>
                                 <div class="col">
                                     {{ radio_field(form.event_type) }}
                                 </div>
                             </div>
-                            <br>
                             {{ form_group_no_error(form.ballrooms) }}
                             {{ form_group_no_error(form.event_description) }}
                         </div>
@@ -149,21 +146,18 @@
         $("#usage-modal").on("show.bs.modal", function (event) {
             let form_type = $(event.relatedTarget).data("type");
             let title = $(event.relatedTarget).data("title");
-            // let usage_id = $(event.relatedTarget).data("id");
-            let timing = $(event.relatedTarget).data("timing");
+            //
             $(this).find(".modal-title").text(title);
             $(this).find("#form_type").val(form_type);
+            $(this).find("#morning_meal-4").prop("checked", true);
+            $(this).find("#evening_meal-4").prop("checked", true);
+            $(this).find("#event_type-1").prop("checked", true);
             if (form_type === "{{ form.CREATE }}") {
-                $(this).find("#save-button").addClass("btn-success").removeClass("btn-danger").html("Create");
+                let timing = $(event.relatedTarget).data("timing");
+                $(this).find("#save-button").removeClass().addClass("btn btn-success").html("Create");
                 $(this).find("#edit-usage").show();
                 $(this).find("#comment").hide();
                 $(this).find("#client").val("");
-                $(this).find("#breakfast").prop("checked", false);
-                $(this).find("#lunch").prop("checked", false);
-                $(this).find("#hi_tea").prop("checked", false);
-                $(this).find("#dinner").prop("checked", false);
-                $(this).find("#no_meal").prop("checked", true);
-                $(this).find("#event_type-1").prop("checked", true);
                 $(this).find("#ballrooms").val(null).trigger("change");
                 $(this).find("#event_description").val("")
                 if (timing === "{{ config.MORNING }}") {
@@ -173,17 +167,14 @@
                     $(this).find("#evening-meal").show()
                     $(this).find("#morning-meal").hide()
                 }
-            }
-        });
-        $("#usage-form").on("change", ":checkbox", function () {
-            if (["breakfast", "lunch", "hi_tea", "dinner"].includes(this.id) && this.checked) {
-                $("#no_meal").prop("checked", false);
-            }
-            if (this.id === "no_meal" && this.checked) {
-                $("#breakfast").prop("checked", false);
-                $("#lunch").prop("checked", false);
-                $("#hi_tea").prop("checked", false);
-                $("#dinner").prop("checked", false);
+            } else if (form_type === "{{ form.DELETE }}") {
+                let usage_id = $(event.relatedTarget).data("id");
+                let client = $(event.relatedTarget).data("client");
+                $(this).find("#save-button").removeClass().addClass("btn btn-danger").html("Delete");
+                $(this).find("#edit-usage").hide()
+                $(this).find("#comment").show()
+                $(this).find("#comment").text("Are you sure you want to delete the event for " + client + "?")
+                $(this).find("#usage_id").val(usage_id)
             }
         });
     </script>
