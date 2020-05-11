@@ -99,6 +99,19 @@
     </div>
 {%- endmacro %}
 
+{%- macro radio_field(field) %}
+    <div id="{{ field.id }}">
+        {{ field.label }}
+        {% for value, label in field.choices %}
+            <div class="custom-control custom-radio">
+                <input class="custom-control-input" type="radio" id="{{ field.id + '-' + loop.index|string }}"
+                       name="{{ field.name }}" value="{{ value }}">
+                <label class="custom-control-label" for="{{ field.id + '-' + loop.index|string }}">{{ label }}</label>
+            </div>
+        {% endfor %}
+        <br>
+    </div>
+{%- endmacro %}
 
 {% block content %}
     <div class="container-xl">

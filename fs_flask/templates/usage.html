@@ -102,16 +102,24 @@
                         {{ form.usage_id() }}
                         <div id="edit-usage">
                             {{ form_group_no_error(form.client) }}
-                            <div id="morning-meal">
-                                {{ check_box(form.breakfast) }}
-                                {{ check_box(form.lunch) }}
+                            <div class="row">
+                                <div class="col">
+                                    <p>Select Meal</p>
+                                    <div id="morning-meal">
+                                        {{ check_box(form.breakfast) }}
+                                        {{ check_box(form.lunch) }}
+                                    </div>
+                                    <div id="evening-meal">
+                                        {{ check_box(form.hi_tea) }}
+                                        {{ check_box(form.dinner) }}
+                                    </div>
+                                    {{ check_box(form.no_meal) }}
+                                </div>
+                                <div class="col">
+                                    {{ radio_field(form.event_type) }}
+                                </div>
                             </div>
-                            <div id="evening-meal">
-                                {{ check_box(form.hi_tea) }}
-                                {{ check_box(form.dinner) }}
-                            </div>
-                            {{ check_box(form.no_meal) }}
-                            {{ form_group_no_error(form.event_type) }}
+                            <br>
                             {{ form_group_no_error(form.ballrooms) }}
                             {{ form_group_no_error(form.event_description) }}
                         </div>
@@ -155,7 +163,7 @@
                 $(this).find("#hi_tea").prop("checked", false);
                 $(this).find("#dinner").prop("checked", false);
                 $(this).find("#no_meal").prop("checked", true);
-                $(this).find("#event_type").val($(this).find("#event_type option:first").val());
+                $(this).find("#event_type-1").prop("checked", true);
                 $(this).find("#ballrooms").val(null).trigger("change");
                 $(this).find("#event_description").val("")
                 if (timing === "{{ config.MORNING }}") {

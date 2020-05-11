@@ -3,8 +3,8 @@ from typing import Optional, List, Tuple
 
 from firestore_ci import FirestoreDocument
 from flask import url_for
-from wtforms import SelectField, SelectMultipleField, ValidationError, HiddenField, \
-    StringField, BooleanField
+from wtforms import SelectMultipleField, ValidationError, HiddenField, \
+    StringField, BooleanField, RadioField
 
 from config import Config, today
 from fs_flask import FSForm
@@ -96,7 +96,7 @@ class UsageForm(FSForm):
     usage_id = HiddenField()
     client = StringField("Enter client name")
     event_description = StringField("Enter event description")
-    event_type = SelectField("Select event type", choices=[(event, event) for event in Config.EVENTS])
+    event_type = RadioField("Select event type", choices=[(event, event) for event in Config.EVENTS])
     breakfast = BooleanField(Config.BREAKFAST)
     lunch = BooleanField(Config.LUNCH)
     hi_tea = BooleanField(Config.HI_TEA)
