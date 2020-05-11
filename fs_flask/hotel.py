@@ -1,6 +1,6 @@
 import datetime as dt
 from operator import itemgetter
-from typing import List, Optional, Tuple
+from typing import List, Optional, Tuple, Union
 
 from firestore_ci import FirestoreDocument
 from flask import request
@@ -31,10 +31,22 @@ class Hotel(FirestoreDocument):
         self.start_date: str = str()
         self.end_date: str = str()
         self.set_contract(today(), today())
-        self._last_entry_date: str = str()
+        self.last_date: str = str()
+        self.last_timing: str = str()
 
     def __repr__(self):
         return f"{self.city}:{self.name}:Ballrooms={len(self.ballrooms)}:Competitions={len(self.competitions)}"
+
+    @classmethod
+    def db_date(cls, date: dt.date) -> str:
+        return date.strftime("%Y-%m-%d")
+
+    @classmethod
+    def to_date(cls, yyyy_mm_dd: str) -> Optional[dt.date]:
+        try:
+            return dt.datetime.strptime(yyyy_mm_dd, "%Y-%m-%d").date()
+        except ValueError:
+            return None
 
     @classmethod
     def get_competitions(cls, city: str, hotel: str) -> List[str]:
@@ -60,17 +72,11 @@ class Hotel(FirestoreDocument):
 
     @property
     def contract(self) -> Tuple[dt.date, dt.date]:
-        return (dt.datetime.strptime(self.start_date, "%Y-%m-%d").date(),
-                dt.datetime.strptime(self.end_date, "%Y-%m-%d").date())
-
-    @property
-    def last_entry_date(self) -> dt.date:
-        return dt.datetime.strptime(self._last_entry_date, "%Y-%m-%d").date()
+        return self.to_date(self.start_date), self.to_date(self.end_date)
 
     @property
     def formatted_contract(self) -> Tuple[str, str]:
-        return (dt.datetime.strptime(self.start_date, "%Y-%m-%d").strftime("%d-%b-%Y"),
-                dt.datetime.strptime(self.end_date, "%Y-%m-%d").strftime("%d-%b-%Y"))
+        return self.contract[0].strftime("%d-%b-%Y"), self.contract[1].strftime("%d-%b-%Y")
 
     @property
     def display_default(self) -> str:
@@ -113,11 +119,36 @@ class Hotel(FirestoreDocument):
         return room_changed
 
     def set_contract(self, start_date: dt.date, end_date: dt.date) -> None:
-        self.start_date = start_date.strftime("%Y-%m-%d")
-        self.end_date = end_date.strftime("%Y-%m-%d")
+        self.start_date = self.db_date(start_date)
+        self.end_date = self.db_date(end_date)
 
-    def set_last_entry_date(self, date: dt.date) -> None:
-        self._last_entry_date = date.strftime("%Y-%m-%d")
+    def set_last_entry(self, date: Union[str, dt.date], timing: str) -> bool:
+        date = self.to_date(date) if isinstance(date, str) else date
+        if not date:
+            return False
+        last_date = self.to_date(self.last_date)
+        if not self.last_date or date > last_date:
+            self.last_date = self.db_date(date)
+            self.last_timing = timing
+            return True
+        elif date == last_date and self.last_timing == Config.MORNING and timing == Config.EVENING:
+            self.last_timing = timing
+            return True
+        return False
+
+    def remove_last_entry(self):
+        if self.last_timing == Config.EVENING:
+            self.last_timing = Config.MORNING
+        else:
+            self.last_timing = Config.EVENING
+            last_date = self.to_date(self.last_date)
+            if not last_date:
+                last_date = self.to_date(self.start_date)
+                if not last_date:
+                    return
+            last_date -= dt.timedelta(days=1)
+            self.last_date = self.db_date(last_date)
+        return
 
 
 Hotel.init()

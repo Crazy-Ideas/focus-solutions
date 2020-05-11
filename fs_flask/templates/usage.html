@@ -30,7 +30,8 @@
                     <a class="btn btn-primary {{ form.display_previous }}" href="{{ form.link_previous }}">
                         <span class="oi oi-arrow-thick-left"></span>
                     </a>
-                    <a class="btn btn-primary" href="#">
+                    <a type="button" class="btn btn-primary text-white" data-toggle="modal"
+                       data-target="#usage-modal" data-type="{{ form.GOTO_DATE }}" data-title="Goto Date">
                         <span class="oi oi-calendar"></span>
                     </a>
                     <a class="btn btn-primary {{ form.display_next }}" href="{{ form.link_next }}">
@@ -127,6 +128,10 @@
                             {{ form_group_no_error(form.ballrooms) }}
                             {{ form_group_no_error(form.event_description) }}
                         </div>
+                        <div id="goto-date">
+                            {{ form_group_no_error(form.goto_date) }}
+                            {{ radio_field(form.goto_timing) }}
+                        </div>
                         <div id="comment">
                             Placeholder comment
                         </div>
@@ -155,10 +160,12 @@
             $(this).find("#morning_meal-4").prop("checked", true);
             $(this).find("#evening_meal-4").prop("checked", true);
             $(this).find("#event_type-1").prop("checked", true);
+            $(this).find("#goto_date-1").prop("checked", true);
             if (form_type === "{{ form.CREATE }}") {
                 let timing = $(event.relatedTarget).data("timing");
                 $(this).find("#save-button").removeClass().addClass("btn btn-success").html("Create");
                 $(this).find("#edit-usage").show();
+                $(this).find("#goto-date").hide()
                 $(this).find("#comment").hide();
                 $(this).find("#client").val("");
                 $(this).find("#event_description").val("");
@@ -175,6 +182,7 @@
                 let client = $(event.relatedTarget).data("client");
                 $(this).find("#save-button").removeClass().addClass("btn btn-danger").html("Delete");
                 $(this).find("#edit-usage").hide();
+                $(this).find("#goto-date").hide()
                 $(this).find("#comment").show();
                 $(this).find("#comment").text("Are you sure you want to delete the event for " + client + "?");
                 $(this).find("#usage_id").val(usage_id);
@@ -183,6 +191,7 @@
                 const timing = $(event.relatedTarget).data("timing");
                 $(this).find("#save-button").removeClass().addClass("btn btn-warning").html("Save");
                 $(this).find("#edit-usage").show();
+                $(this).find("#goto-date").hide()
                 $(this).find("#comment").hide();
                 $(this).find("#usage_id").val(usage_id);
                 $(this).find("#client").val($("#" + usage_id + " #client").text());
@@ -226,8 +235,14 @@
             } else if (form_type === "{{ form.NO_EVENT }}") {
                 $(this).find("#save-button").removeClass().addClass("btn btn-danger").html("Create No Event");
                 $(this).find("#edit-usage").hide();
+                $(this).find("#goto-date").hide()
                 $(this).find("#comment").show();
                 $(this).find("#comment").text("Are you sure there are no events on this day?");
+            } else if (form_type === "{{ form.GOTO_DATE }}") {
+                $(this).find("#save-button").removeClass().addClass("btn btn-primary").html("Goto");
+                $(this).find("#edit-usage").hide();
+                $(this).find("#goto-date").show()
+                $(this).find("#comment").hide();
             }
         });
     </script>

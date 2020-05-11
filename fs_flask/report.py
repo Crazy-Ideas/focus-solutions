@@ -47,7 +47,7 @@ class QueryForm(FSForm):
         hotels.sort(key=lambda hotel: hotel.name)
         self.hotels.choices.extend([(hotel.name, hotel.name) for hotel in hotels if hotel.name != current_user.hotel])
         self.competitions = Hotel.get_competitions(current_user.city, current_user.hotel)
-        self.query = Usage.objects.filter_by(city=current_user.city)
+        self.query = Usage.objects.filter_by(city=current_user.city, no_event=False)
         self.usage_data: List[Usage] = list()
         self.hotel_counts: List[Tuple[Hotel, int]] = list()
         if request.method == "GET":
@@ -85,8 +85,8 @@ class QueryForm(FSForm):
         hotels = self.hotels.data[:9]
         hotels.append(current_user.hotel)
         self.query = self.query.filter("hotel", self.query.IN, hotels)
-        self.query = self.query.filter("date", ">=", Usage.db_date(self.start_date.data))
-        self.query = self.query.filter("date", "<=", Usage.db_date(self.end_date.data))
+        self.query = self.query.filter("date", ">=", Hotel.db_date(self.start_date.data))
+        self.query = self.query.filter("date", "<=", Hotel.db_date(self.end_date.data))
         self.usage_data.extend(self.query.get())
         if filter_meals:
             self.usage_data = [usage for usage in self.usage_data

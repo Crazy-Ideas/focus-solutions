@@ -2,9 +2,9 @@ import datetime as dt
 from typing import Optional, List, Tuple
 
 from firestore_ci import FirestoreDocument
-from flask import url_for
+from flask import url_for, request
 from wtforms import SelectMultipleField, ValidationError, HiddenField, \
-    StringField, RadioField
+    StringField, RadioField, DateField
 
 from config import Config, today
 from fs_flask import FSForm
@@ -32,30 +32,13 @@ class Usage(FirestoreDocument):
         return f"{self.hotel}:{self.date}:{self.timing}:{self.company}:{self.event_type}"
 
     @classmethod
-    def db_date(cls, date: dt.date) -> str:
-        return date.strftime("%Y-%m-%d")
-
-    @classmethod
-    def to_date(cls, yyyy_mm_dd: str) -> Optional[dt.date]:
-        try:
-            return dt.datetime.strptime(yyyy_mm_dd, "%Y-%m-%d").date()
-        except ValueError:
-            return None
-
-    @classmethod
     def get_data_entry_date(cls, hotel: Hotel) -> Tuple[Optional[dt.date], str]:
         start_date, end_date = hotel.contract
         end_date = today() if end_date > today() else end_date
-        query = cls.objects.filter_by(city=hotel.city, hotel=hotel.name)
-        query = query.filter("date", ">=", cls.db_date(start_date)).filter("date", "<=", cls.db_date(end_date))
-        last_usage = query.order_by("date", cls.objects.ORDER_DESCENDING).first()
-        if not last_usage:
+        data_entry_date = Hotel.to_date(hotel.last_date)
+        if not data_entry_date or data_entry_date < start_date:
             return start_date, Config.MORNING
-        last_day_usage = cls.objects.filter_by(city=hotel.city, hotel=hotel.name, date=last_usage.date).get()
-        data_entry_date = cls.to_date(last_day_usage[0].date)
-        if not data_entry_date:
-            return None, str()
-        if any(usage.timing == Config.EVENING for usage in last_day_usage):
+        if hotel.last_timing == Config.EVENING:
             data_entry_date = data_entry_date + dt.timedelta(days=1)
             if data_entry_date > end_date:
                 return end_date, str()
@@ -66,7 +49,7 @@ class Usage(FirestoreDocument):
 
     @property
     def formatted_date(self) -> str:
-        date = self.to_date(self.date)
+        date = Hotel.to_date(self.date)
         return date.strftime("%d-%b-%Y") if date else str()
 
     @property
@@ -97,6 +80,7 @@ class UsageForm(FSForm):
     UPDATE = "update"
     DELETE = "delete"
     NO_EVENT = "no event"
+    GOTO_DATE = "goto date"
     form_type = HiddenField()
     usage_id = HiddenField()
     client = StringField("Enter client name")
@@ -105,6 +89,8 @@ class UsageForm(FSForm):
     morning_meal = RadioField("Select meal", choices=[(meal, meal) for meal in MORNING_MEALS])
     evening_meal = RadioField("Select meal", choices=[(meal, meal) for meal in EVENING_MEALS])
     ballrooms = SelectMultipleField("Select ballrooms", choices=list())
+    goto_date = DateField("Select date")
+    goto_timing = RadioField("Select timing", choices=[(timing, timing) for timing in Config.TIMINGS])
 
     def __init__(self, hotel: Hotel, date: dt.date, timing: str, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -114,8 +100,11 @@ class UsageForm(FSForm):
         self.ballrooms.choices.extend([(room, room) for room in hotel.ballrooms])
         self.usage: Optional[Usage] = None
         query = Usage.objects.filter_by(city=hotel.city, hotel=hotel.name)
-        self.usages = query.filter_by(date=Usage.db_date(date), timing=timing).get()
+        self.usages = query.filter_by(date=Hotel.db_date(date), timing=timing).get()
         self.sort_usages()
+        if request.method == "GET" or self.form_type.data != self.GOTO_DATE:
+            self.goto_date.data = self.date
+            self.goto_timing.data = self.timing
 
     def validate_form_type(self, form_type: HiddenField):
         if form_type.data == self.NO_EVENT and self.usages:
@@ -157,6 +146,19 @@ class UsageForm(FSForm):
             if morning_meal.data != Config.NO_MEAL:
                 raise ValidationError(f"Cannot select {Config.BREAKFAST} or {Config.LUNCH} for {Config.EVENING} events")
 
+    def validate_goto_date(self, goto_date: DateField):
+        if not goto_date.data:
+            raise ValidationError(str())
+        if goto_date.data < self.hotel.contract[0]:
+            raise ValidationError(f"Cannot goto a date before the contract start date of "
+                                  f"{self.hotel.formatted_contract[0]}")
+        data_entry_date, data_entry_timing = Usage.get_data_entry_date(self.hotel)
+        if goto_date.data > data_entry_date:
+            raise ValidationError(f"Cannot goto a date beyond the last data entry date")
+        if goto_date.data == data_entry_date and data_entry_timing == Config.MORNING \
+                and self.goto_timing.data == Config.EVENING:
+            raise ValidationError(f"Cannot goto Evening till the data entry of Morning is completed")
+
     def update_from_form(self):
         self.usage.company = self.client.data
         self.usage.event_description = self.event_description.data
@@ -175,12 +177,16 @@ class UsageForm(FSForm):
         self.usage.hotel = self.hotel.name
         self.usage.set_date(self.date)
         self.usage.timing = self.timing
+        if self.hotel.set_last_entry(self.usage.date, self.usage.timing):
+            self.hotel.save()
 
     def sort_usages(self):
         self.usages.sort(key=lambda usage: usage.company)
 
     def update(self):
-        if self.form_type.data == self.CREATE:
+        if self.form_type.data == self.GOTO_DATE:
+            return
+        elif self.form_type.data == self.CREATE:
             self.update_default_fields()
             self.update_from_form()
             self.usage.create()
@@ -195,12 +201,17 @@ class UsageForm(FSForm):
         elif self.form_type.data == self.DELETE:
             self.usages.remove(self.usage)
             self.usage.delete()
+            last_date = Hotel.to_date(self.hotel.last_date)
+            if self.date == last_date and not self.usages:
+                self.hotel.remove_last_entry()
+                self.hotel.save()
         elif self.form_type.data == self.NO_EVENT:
             self.update_default_fields()
             self.usage.no_event = True
             self.usage.create()
             self.usages.append(self.usage)
         self.sort_usages()
+        return
 
     @property
     def formatted_date(self) -> str:
@@ -208,7 +219,8 @@ class UsageForm(FSForm):
 
     @property
     def display_previous(self) -> str:
-        return "disabled" if self.date <= self.hotel.contract[0] else str()
+        return "disabled" if (self.date == self.hotel.contract[0] and self.timing == Config.MORNING) \
+                             or self.date < self.hotel.contract[0] else str()
 
     @property
     def link_previous(self) -> str:
@@ -218,14 +230,15 @@ class UsageForm(FSForm):
         else:
             date = self.date - dt.timedelta(days=1)
             timing = Config.EVENING
-        return url_for("usage_manage", hotel_id=self.hotel.id, date=Usage.db_date(date), timing=timing)
+        return url_for("usage_manage", hotel_id=self.hotel.id, date=Hotel.db_date(date), timing=timing)
 
     @property
     def display_next(self) -> str:
         if not self.usages:
             return "disabled"
-        end_date = max(self.hotel.contract[1], today())
-        return "disabled" if self.date >= end_date else str()
+        end_date = min(self.hotel.contract[1], today())
+        return "disabled" if (self.data == end_date and self.timing == Config.EVENING) or self.date > end_date \
+            else str()
 
     @property
     def link_next(self) -> str:
@@ -235,8 +248,13 @@ class UsageForm(FSForm):
         else:
             date = self.date
             timing = Config.EVENING
-        return url_for("usage_manage", hotel_id=self.hotel.id, date=Usage.db_date(date), timing=timing)
+        return url_for("usage_manage", hotel_id=self.hotel.id, date=Hotel.db_date(date), timing=timing)
 
     @property
     def display_no_event(self) -> str:
         return "disabled" if self.usages else str()
+
+    @property
+    def link_goto(self) -> str:
+        return url_for("usage_manage", hotel_id=self.hotel.id, date=Hotel.db_date(self.goto_date.data),
+                       timing=self.goto_timing.data)

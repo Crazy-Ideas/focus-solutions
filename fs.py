@@ -49,6 +49,8 @@ def mumbai_hotels():
     hotels = [Hotel(hotel["name"], hotel["rooms"], hotel["competitions"], "Mumbai").doc_to_dict()
               for _, hotel in hotel_dict.items()]
     for hotel in hotels:
+        hotel["start_date"] = "2020-01-01"
+        hotel["end_date"] = "2020-03-31"
         print(hotel)
     Hotel.objects.delete()
     Hotel.create_from_list_of_dict(hotels)
@@ -97,6 +99,7 @@ def mumbai_usage():
             errors.append(f"{index + 1}:BALL_ROOM_ERROR:{usage}")
             continue
         hotel.set_ballroom_used(usage.ballrooms)
+        hotel.set_last_entry(usage.date, usage.timing)
         usages.append(usage.doc_to_dict())
     if errors:
         for error in errors:

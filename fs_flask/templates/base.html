@@ -105,7 +105,7 @@
         {% for value, label in field.choices %}
             <div class="custom-control custom-radio">
                 <input class="custom-control-input" type="radio" id="{{ field.id + '-' + loop.index|string }}"
-                       name="{{ field.name }}" value="{{ value }}">
+                       name="{{ field.name }}" value="{{ value }}" {% if field.data == value %} checked {% endif %}>
                 <label class="custom-control-label" for="{{ field.id + '-' + loop.index|string }}">{{ label }}</label>
             </div>
         {% endfor %}
