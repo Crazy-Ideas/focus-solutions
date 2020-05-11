@@ -71,7 +71,7 @@ class Usage(FirestoreDocument):
 
     @property
     def formatted_meal(self) -> str:
-        return ", ".join(self.meals)
+        return " & ".join(self.meals)
 
     @property
     def formatted_ballroom(self) -> str:
@@ -127,7 +127,9 @@ class UsageForm(FSForm):
             return
         if not client.data:
             raise ValidationError("Client name cannot be left blank")
-        if self.form_type.data == self.CREATE and any(client.data == usage.company for usage in self.usages):
+        client_exists = any(client.data == usage.company for usage in self.usages)
+        if (self.form_type.data == self.CREATE and client_exists) or \
+                (self.form_type.data == self.UPDATE and client_exists and self.usage.company != client.data):
             raise ValidationError("Client name must be unique within a day")
 
     def validate_ballrooms(self, ballrooms: SelectMultipleField):

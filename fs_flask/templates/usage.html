@@ -60,13 +60,15 @@
             <tbody>
             {% for usage in form.usages %}
                 <tr id="{{ usage.id }}">
-                    <td class="">{{ usage.company }}</td>
-                    <td class="text-center d-none d-md-table-cell">{{ usage.formatted_meal }}</td>
-                    <td class="text-center d-none d-md-table-cell">{{ usage.event_type }}</td>
-                    <td class="text-center d-none d-md-table-cell">{{ usage.formatted_ballroom }}</td>
-                    <td class="d-none d-md-table-cell">{{ usage.event_description }}</td>
+                    <td id="client" class="">{{ usage.company }}</td>
+                    <td id="meal" class="text-center d-none d-md-table-cell">{{ usage.formatted_meal }}</td>
+                    <td id="event-type" class="text-center d-none d-md-table-cell">{{ usage.event_type }}</td>
+                    <td id="ballroom" class="text-center d-none d-md-table-cell">{{ usage.formatted_ballroom }}</td>
+                    <td id="event-description" class="d-none d-md-table-cell">{{ usage.event_description }}</td>
                     <td class="text-center">
-                        <a class="btn btn-warning">
+                        <a type="button" class="btn btn-warning" data-toggle="modal" data-target="#usage-modal"
+                           data-type="{{ form.UPDATE }}" data-title="Edit Event" data-id="{{ usage.id }}"
+                           data-timing="{{ form.timing }}">
                             <span class="oi oi-pencil"></span>
                         </a>
                     </td>
@@ -144,9 +146,8 @@
             document.forms["usage-form"].submit();
         });
         $("#usage-modal").on("show.bs.modal", function (event) {
-            let form_type = $(event.relatedTarget).data("type");
-            let title = $(event.relatedTarget).data("title");
-            //
+            const form_type = $(event.relatedTarget).data("type");
+            const title = $(event.relatedTarget).data("title");
             $(this).find(".modal-title").text(title);
             $(this).find("#form_type").val(form_type);
             $(this).find("#morning_meal-4").prop("checked", true);
@@ -158,23 +159,68 @@
                 $(this).find("#edit-usage").show();
                 $(this).find("#comment").hide();
                 $(this).find("#client").val("");
+                $(this).find("#event_description").val("");
                 $(this).find("#ballrooms").val(null).trigger("change");
-                $(this).find("#event_description").val("")
                 if (timing === "{{ config.MORNING }}") {
-                    $(this).find("#morning-meal").show()
-                    $(this).find("#evening-meal").hide()
+                    $(this).find("#morning-meal").show();
+                    $(this).find("#evening-meal").hide();
                 } else {
-                    $(this).find("#evening-meal").show()
-                    $(this).find("#morning-meal").hide()
+                    $(this).find("#evening-meal").show();
+                    $(this).find("#morning-meal").hide();
                 }
             } else if (form_type === "{{ form.DELETE }}") {
                 let usage_id = $(event.relatedTarget).data("id");
                 let client = $(event.relatedTarget).data("client");
                 $(this).find("#save-button").removeClass().addClass("btn btn-danger").html("Delete");
-                $(this).find("#edit-usage").hide()
-                $(this).find("#comment").show()
-                $(this).find("#comment").text("Are you sure you want to delete the event for " + client + "?")
-                $(this).find("#usage_id").val(usage_id)
+                $(this).find("#edit-usage").hide();
+                $(this).find("#comment").show();
+                $(this).find("#comment").text("Are you sure you want to delete the event for " + client + "?");
+                $(this).find("#usage_id").val(usage_id);
+            } else if (form_type === "{{ form.UPDATE }}") {
+                const usage_id = $(event.relatedTarget).data("id");
+                const timing = $(event.relatedTarget).data("timing");
+                $(this).find("#save-button").removeClass().addClass("btn btn-warning").html("Save");
+                $(this).find("#edit-usage").show();
+                $(this).find("#comment").hide();
+                $(this).find("#usage_id").val(usage_id);
+                $(this).find("#client").val($("#" + usage_id + " #client").text());
+                $(this).find("#event_description").val($("#" + usage_id + " #event-description").text());
+                const rooms = $("#" + usage_id + " #ballroom").text().split(", ");
+                $(this).find("#ballrooms").val(rooms).trigger("change");
+                const event_type = $("#" + usage_id + " #event-type").text();
+                if (event_type === "{{ config.MICE }}") {
+                    $(this).find("#event_type-1").prop("checked", true);
+                } else if (event_type === "{{ config.SOCIAL }}") {
+                    $(this).find("#event_type-2").prop("checked", true);
+                } else {
+                    $(this).find("#event_type-3").prop("checked", true);
+                }
+                const meal = $("#" + usage_id + " #meal").text().replace('&', '&amp;');
+                if (timing === "{{ config.MORNING }}") {
+                    $(this).find("#morning-meal").show();
+                    $(this).find("#evening-meal").hide();
+                    if (meal === "{{ form.MORNING_MEALS[0] }}") {
+                        $(this).find("#morning_meal-1").prop("checked", true);
+                    } else if (meal === "{{ form.MORNING_MEALS[1] }}") {
+                        $(this).find("#morning_meal-2").prop("checked", true);
+                    } else if (meal === "{{ form.MORNING_MEALS[2] }}") {
+                        $(this).find("#morning_meal-3").prop("checked", true);
+                    } else {
+                        $(this).find("#morning_meal-4").prop("checked", true);
+                    }
+                } else {
+                    $(this).find("#evening-meal").show();
+                    $(this).find("#morning-meal").hide();
+                    if (meal === "{{ form.EVENING_MEALS[0] }}") {
+                        $(this).find("#evening-meal-1").prop("checked", true);
+                    } else if (meal === "{{ form.EVENING_MEALS[1] }}") {
+                        $(this).find("#evening-meal-2").prop("checked", true);
+                    } else if (meal === "{{ form.EVENING_MEALS[2] }}") {
+                        $(this).find("#evening-meal-3").prop("checked", true);
+                    } else {
+                        $(this).find("#evening-meal-4").prop("checked", true);
+                    }
+                }
             }
         });
     </script>
