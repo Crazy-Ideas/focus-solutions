@@ -23,7 +23,8 @@
                        data-type="{{ form.CREATE }}" data-title="New Event" data-timing="{{ form.timing }}">
                         <span class="oi oi-plus"></span>
                     </a>
-                    <a type="button" class="btn btn-danger text-white {{ form.display_no_event }}" id="no-event-button">
+                    <a type="button" class="btn btn-danger text-white {{ form.display_no_event }}" data-toggle="modal"
+                       data-target="#usage-modal" data-type="{{ form.NO_EVENT }}" data-title="No Event">
                         <span class="oi oi-ban"></span>
                     </a>
                     <a class="btn btn-primary {{ form.display_previous }}" href="{{ form.link_previous }}">
@@ -60,25 +61,29 @@
             <tbody>
             {% for usage in form.usages %}
                 <tr id="{{ usage.id }}">
-                    <td id="client" class="">{{ usage.company }}</td>
-                    <td id="meal" class="text-center d-none d-md-table-cell">{{ usage.formatted_meal }}</td>
-                    <td id="event-type" class="text-center d-none d-md-table-cell">{{ usage.event_type }}</td>
-                    <td id="ballroom" class="text-center d-none d-md-table-cell">{{ usage.formatted_ballroom }}</td>
-                    <td id="event-description" class="d-none d-md-table-cell">{{ usage.event_description }}</td>
-                    <td class="text-center">
-                        <a type="button" class="btn btn-warning" data-toggle="modal" data-target="#usage-modal"
-                           data-type="{{ form.UPDATE }}" data-title="Edit Event" data-id="{{ usage.id }}"
-                           data-timing="{{ form.timing }}">
-                            <span class="oi oi-pencil"></span>
-                        </a>
-                    </td>
-                    <td class="text-center text-white">
-                        <a type="button" class="btn btn-danger" data-toggle="modal" data-target="#usage-modal"
-                           data-type="{{ form.DELETE }}" data-title="Delete Event" data-id="{{ usage.id }}"
-                           data-client="{{ usage.company }}">
-                            <span class="oi oi-trash"></span>
-                        </a>
-                    </td>
+                    {% if usage.no_event %}
+                        <td colspan="7" class="text-center table-danger"> No event</td>
+                    {% else %}
+                        <td id="client" class="">{{ usage.company }}</td>
+                        <td id="meal" class="text-center d-none d-md-table-cell">{{ usage.formatted_meal }}</td>
+                        <td id="event-type" class="text-center d-none d-md-table-cell">{{ usage.event_type }}</td>
+                        <td id="ballroom" class="text-center d-none d-md-table-cell">{{ usage.formatted_ballroom }}</td>
+                        <td id="event-description" class="d-none d-md-table-cell">{{ usage.event_description }}</td>
+                        <td class="text-center">
+                            <a type="button" class="btn btn-warning" data-toggle="modal" data-target="#usage-modal"
+                               data-type="{{ form.UPDATE }}" data-title="Edit Event" data-id="{{ usage.id }}"
+                               data-timing="{{ form.timing }}">
+                                <span class="oi oi-pencil"></span>
+                            </a>
+                        </td>
+                        <td class="text-center text-white">
+                            <a type="button" class="btn btn-danger" data-toggle="modal" data-target="#usage-modal"
+                               data-type="{{ form.DELETE }}" data-title="Delete Event" data-id="{{ usage.id }}"
+                               data-client="{{ usage.company }}">
+                                <span class="oi oi-trash"></span>
+                            </a>
+                        </td>
+                    {% endif %}
                 </tr>
             {% endfor %}
             </tbody>
@@ -139,9 +144,6 @@
 {% block scripts %}
     {{ super() }}
     <script>
-        $(document).ready(function () {
-            $('#usage_list').DataTable();
-        });
         $("#save-button").on("click", function () {
             document.forms["usage-form"].submit();
         });
@@ -221,6 +223,11 @@
                         $(this).find("#evening-meal-4").prop("checked", true);
                     }
                 }
+            } else if (form_type === "{{ form.NO_EVENT }}") {
+                $(this).find("#save-button").removeClass().addClass("btn btn-danger").html("Create No Event");
+                $(this).find("#edit-usage").hide();
+                $(this).find("#comment").show();
+                $(this).find("#comment").text("Are you sure there are no events on this day?");
             }
         });
     </script>

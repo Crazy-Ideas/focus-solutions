@@ -96,6 +96,7 @@ class UsageForm(FSForm):
     CREATE = "create"
     UPDATE = "update"
     DELETE = "delete"
+    NO_EVENT = "no event"
     form_type = HiddenField()
     usage_id = HiddenField()
     client = StringField("Enter client name")
@@ -114,6 +115,11 @@ class UsageForm(FSForm):
         self.usage: Optional[Usage] = None
         query = Usage.objects.filter_by(city=hotel.city, hotel=hotel.name)
         self.usages = query.filter_by(date=Usage.db_date(date), timing=timing).get()
+        self.sort_usages()
+
+    def validate_form_type(self, form_type: HiddenField):
+        if form_type.data == self.NO_EVENT and self.usages:
+            raise ValidationError("Cannot create a no event when there are already events present")
 
     def validate_usage_id(self, usage_id: StringField):
         if self.form_type.data != self.UPDATE and self.form_type.data != self.DELETE:
@@ -163,22 +169,38 @@ class UsageForm(FSForm):
             self.usage.meals = [Config.HI_TEA, Config.DINNER] if self.evening_meal.data == self.HI_TEA_DINNER \
                 else [self.evening_meal.data]
 
+    def update_default_fields(self):
+        self.usage = Usage()
+        self.usage.city = self.hotel.city
+        self.usage.hotel = self.hotel.name
+        self.usage.set_date(self.date)
+        self.usage.timing = self.timing
+
+    def sort_usages(self):
+        self.usages.sort(key=lambda usage: usage.company)
+
     def update(self):
         if self.form_type.data == self.CREATE:
-            self.usage = Usage()
-            self.usage.city = self.hotel.city
-            self.usage.hotel = self.hotel.name
-            self.usage.set_date(self.date)
-            self.usage.timing = self.timing
+            self.update_default_fields()
             self.update_from_form()
             self.usage.create()
             self.usages.append(self.usage)
+            no_event = next((usage for usage in self.usages if usage.no_event), None)
+            if no_event:
+                self.usages.remove(no_event)
+                no_event.delete()
         elif self.form_type.data == self.UPDATE:
             self.update_from_form()
             self.usage.save()
         elif self.form_type.data == self.DELETE:
             self.usages.remove(self.usage)
             self.usage.delete()
+        elif self.form_type.data == self.NO_EVENT:
+            self.update_default_fields()
+            self.usage.no_event = True
+            self.usage.create()
+            self.usages.append(self.usage)
+        self.sort_usages()
 
     @property
     def formatted_date(self) -> str:
