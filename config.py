@@ -1,6 +1,9 @@
 import datetime as dt
 import os
 from base64 import b64encode
+from typing import Union, Optional
+
+from pytz import timezone
 
 os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = 'google-cloud.json'
 
@@ -50,5 +53,42 @@ class BaseMap:
         return ':'.join(str(value) for _, value in self.to_dict().items())
 
 
-def today():
-    return dt.date.today()
+class Date:
+    TODAY = dt.date(2020, 3, 3)
+    INDIA_TIME_ZONE = timezone("Asia/Kolkata")
+
+    def __init__(self, date: Union[dt.date, str] = None):
+        self._date = date
+
+    @classmethod
+    def today(cls):
+        return cls.TODAY or dt.datetime.now(tz=cls.INDIA_TIME_ZONE).date()
+
+    @classmethod
+    def last_sunday(cls) -> dt.date:
+        date = cls.today()
+        return date - dt.timedelta(days=date.isoweekday())
+
+    @classmethod
+    def last_monday(cls) -> Optional[dt.date]:
+        date = cls.last_sunday()
+        return date - dt.timedelta(days=6)
+
+    @property
+    def date(self) -> Optional[dt.date]:
+        if isinstance(self._date, dt.date):
+            return self._date
+        try:
+            date = dt.datetime.strptime(self._date, "%Y-%m-%d").date()
+        except (ValueError, TypeError):
+            return None
+        return date
+
+    @property
+    def db_date(self) -> str:
+        return self._date.strftime("%Y-%m-%d") if isinstance(self._date, dt.date) else str()
+
+    @property
+    def formatted_date(self) -> str:
+        date = self.date
+        return date.strftime("%d-%b-%Y") if isinstance(date, dt.date) else str()

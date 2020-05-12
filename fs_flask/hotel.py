@@ -7,7 +7,7 @@ from flask import request
 from flask_login import current_user
 from wtforms import StringField, SelectMultipleField, HiddenField, SubmitField, ValidationError, SelectField, DateField
 
-from config import Config, BaseMap, today
+from config import Config, BaseMap, Date
 from fs_flask import FSForm
 
 
@@ -30,23 +30,12 @@ class Hotel(FirestoreDocument):
         self.email: str = str()
         self.start_date: str = str()
         self.end_date: str = str()
-        self.set_contract(today(), today())
+        self.set_contract(Date.today(), Date.today())
         self.last_date: str = str()
         self.last_timing: str = str()
 
     def __repr__(self):
         return f"{self.city}:{self.name}:Ballrooms={len(self.ballrooms)}:Competitions={len(self.competitions)}"
-
-    @classmethod
-    def db_date(cls, date: dt.date) -> str:
-        return date.strftime("%Y-%m-%d")
-
-    @classmethod
-    def to_date(cls, yyyy_mm_dd: str) -> Optional[dt.date]:
-        try:
-            return dt.datetime.strptime(yyyy_mm_dd, "%Y-%m-%d").date()
-        except ValueError:
-            return None
 
     @classmethod
     def get_competitions(cls, city: str, hotel: str) -> List[str]:
@@ -72,11 +61,11 @@ class Hotel(FirestoreDocument):
 
     @property
     def contract(self) -> Tuple[dt.date, dt.date]:
-        return self.to_date(self.start_date), self.to_date(self.end_date)
+        return Date(self.start_date).date, Date(self.end_date).date
 
     @property
     def formatted_contract(self) -> Tuple[str, str]:
-        return self.contract[0].strftime("%d-%b-%Y"), self.contract[1].strftime("%d-%b-%Y")
+        return Date(self.start_date).formatted_date, Date(self.end_date).formatted_date
 
     @property
     def display_default(self) -> str:
@@ -119,16 +108,16 @@ class Hotel(FirestoreDocument):
         return room_changed
 
     def set_contract(self, start_date: dt.date, end_date: dt.date) -> None:
-        self.start_date = self.db_date(start_date)
-        self.end_date = self.db_date(end_date)
+        self.start_date = Date(start_date).db_date
+        self.end_date = Date(end_date).db_date
 
     def set_last_entry(self, date: Union[str, dt.date], timing: str) -> bool:
-        date = self.to_date(date) if isinstance(date, str) else date
+        date = Date(date).date
         if not date:
             return False
-        last_date = self.to_date(self.last_date)
+        last_date = Date(self.last_date).date
         if not self.last_date or date > last_date:
-            self.last_date = self.db_date(date)
+            self.last_date = Date(date).db_date
             self.last_timing = timing
             return True
         elif date == last_date and self.last_timing == Config.MORNING and timing == Config.EVENING:
@@ -136,18 +125,18 @@ class Hotel(FirestoreDocument):
             return True
         return False
 
-    def remove_last_entry(self):
+    def remove_last_entry(self) -> None:
         if self.last_timing == Config.EVENING:
             self.last_timing = Config.MORNING
         else:
             self.last_timing = Config.EVENING
-            last_date = self.to_date(self.last_date)
+            last_date = Date(self.last_date).date
             if not last_date:
-                last_date = self.to_date(self.start_date)
+                last_date = Date(self.start_date).date
                 if not last_date:
                     return
             last_date -= dt.timedelta(days=1)
-            self.last_date = self.db_date(last_date)
+            self.last_date = Date(last_date).db_date
         return
 
 
@@ -155,7 +144,7 @@ Hotel.init()
 
 
 class HotelForm(FSForm):
-    DEFAULT_DATE = today()
+    DEFAULT_DATE = Date.today()
     INITIAL = "initial"
     EDIT_BALLROOM = "edit_ballroom"
     NEW_BALLROOM = "new_ballroom"

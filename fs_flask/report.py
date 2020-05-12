@@ -1,4 +1,3 @@
-import datetime as dt
 from operator import itemgetter
 from typing import List, Tuple
 
@@ -6,7 +5,7 @@ from flask import request
 from flask_login import current_user
 from wtforms import SelectField, SelectMultipleField, DateField, SubmitField, ValidationError
 
-from config import Config, today
+from config import Config, Date
 from fs_flask import FSForm
 from fs_flask.hotel import Hotel
 from fs_flask.usage import Usage
@@ -17,7 +16,7 @@ class QueryForm(FSForm):
     MAX_WEEKDAYS = int(MAX_ALL_DAYS * 7 / 5)
     MAX_WEEKENDS = int(MAX_ALL_DAYS * 7 / 2)
     MAX_SPECIFIC_DAYS = int(MAX_ALL_DAYS * 7 / 1)
-    DEFAULT_DATE = dt.date(year=2018, month=8, day=1)
+    DEFAULT_DATE = Date.last_monday()
     ALL_DAY = "All Days"
     WEEKDAY = "Weekdays"
     WEEKEND = "Weekends"
@@ -66,8 +65,9 @@ class QueryForm(FSForm):
     def validate_end_date(self, end_date: DateField):
         if not self.start_date.data or not self.end_date.data:
             self.raise_date_error(str())
-        if end_date.data > today():
-            self.raise_date_error("To Date cannot be greater than today")
+        if end_date.data > Date.last_sunday():
+            self.raise_date_error(f"To Date cannot be greater than last Sunday "
+                                  f"({Date(Date.last_sunday()).formatted_date})")
         if self.start_date.data > end_date.data:
             self.raise_date_error("From Date cannot be greater than To Date")
         days = (end_date.data - self.start_date.data).days + 1
@@ -85,8 +85,8 @@ class QueryForm(FSForm):
         hotels = self.hotels.data[:9]
         hotels.append(current_user.hotel)
         self.query = self.query.filter("hotel", self.query.IN, hotels)
-        self.query = self.query.filter("date", ">=", Hotel.db_date(self.start_date.data))
-        self.query = self.query.filter("date", "<=", Hotel.db_date(self.end_date.data))
+        self.query = self.query.filter("date", ">=", Date(self.start_date.data).db_date)
+        self.query = self.query.filter("date", "<=", Date(self.end_date.data).db_date)
         self.usage_data.extend(self.query.get())
         if filter_meals:
             self.usage_data = [usage for usage in self.usage_data

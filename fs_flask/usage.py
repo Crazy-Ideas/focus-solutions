@@ -6,7 +6,7 @@ from flask import url_for, request
 from wtforms import SelectMultipleField, ValidationError, HiddenField, \
     StringField, RadioField, DateField
 
-from config import Config, today
+from config import Config, Date
 from fs_flask import FSForm
 from fs_flask.hotel import Hotel
 
@@ -34,8 +34,8 @@ class Usage(FirestoreDocument):
     @classmethod
     def get_data_entry_date(cls, hotel: Hotel) -> Tuple[Optional[dt.date], str]:
         start_date, end_date = hotel.contract
-        end_date = today() if end_date > today() else end_date
-        data_entry_date = Hotel.to_date(hotel.last_date)
+        end_date = Date.today() if end_date > Date.today() else end_date
+        data_entry_date = Date(hotel.last_date).date
         if not data_entry_date or data_entry_date < start_date:
             return start_date, Config.MORNING
         if hotel.last_timing == Config.EVENING:
@@ -49,8 +49,7 @@ class Usage(FirestoreDocument):
 
     @property
     def formatted_date(self) -> str:
-        date = Hotel.to_date(self.date)
-        return date.strftime("%d-%b-%Y") if date else str()
+        return Date(self.date).formatted_date
 
     @property
     def formatted_meal(self) -> str:
@@ -61,7 +60,7 @@ class Usage(FirestoreDocument):
         return ", ".join(self.ballrooms)
 
     def set_date(self, date: dt.date) -> bool:
-        self.date = date.strftime("%Y-%m-%d")
+        self.date = Date(date).db_date
         self.day = date.strftime("%A")
         self.weekday = self.day not in ("Saturday", "Sunday")
         self.month = date.strftime("%Y-%m")
@@ -100,7 +99,7 @@ class UsageForm(FSForm):
         self.ballrooms.choices.extend([(room, room) for room in hotel.ballrooms])
         self.usage: Optional[Usage] = None
         query = Usage.objects.filter_by(city=hotel.city, hotel=hotel.name)
-        self.usages = query.filter_by(date=Hotel.db_date(date), timing=timing).get()
+        self.usages = query.filter_by(date=Date(date).db_date, timing=timing).get()
         self.sort_usages()
         if request.method == "GET" or self.form_type.data != self.GOTO_DATE:
             self.goto_date.data = self.date
@@ -154,7 +153,8 @@ class UsageForm(FSForm):
                                   f"{self.hotel.formatted_contract[0]}")
         data_entry_date, data_entry_timing = Usage.get_data_entry_date(self.hotel)
         if goto_date.data > data_entry_date:
-            raise ValidationError(f"Cannot goto a date beyond the last data entry date")
+            raise ValidationError(f"Cannot goto a date beyond the last data entry date of "
+                                  f"{Date(data_entry_date).formatted_date}")
         if goto_date.data == data_entry_date and data_entry_timing == Config.MORNING \
                 and self.goto_timing.data == Config.EVENING:
             raise ValidationError(f"Cannot goto Evening till the data entry of Morning is completed")
@@ -201,7 +201,7 @@ class UsageForm(FSForm):
         elif self.form_type.data == self.DELETE:
             self.usages.remove(self.usage)
             self.usage.delete()
-            last_date = Hotel.to_date(self.hotel.last_date)
+            last_date = Date(self.hotel.last_date).date
             if self.date == last_date and not self.usages:
                 self.hotel.remove_last_entry()
                 self.hotel.save()
@@ -230,14 +230,14 @@ class UsageForm(FSForm):
         else:
             date = self.date - dt.timedelta(days=1)
             timing = Config.EVENING
-        return url_for("usage_manage", hotel_id=self.hotel.id, date=Hotel.db_date(date), timing=timing)
+        return url_for("usage_manage", hotel_id=self.hotel.id, date=Date(date).db_date, timing=timing)
 
     @property
     def display_next(self) -> str:
         if not self.usages:
             return "disabled"
-        end_date = min(self.hotel.contract[1], today())
-        return "disabled" if (self.data == end_date and self.timing == Config.EVENING) or self.date > end_date \
+        end_date = min(self.hotel.contract[1], Date.today())
+        return "disabled" if (self.date == end_date and self.timing == Config.EVENING) or self.date > end_date \
             else str()
 
     @property
@@ -248,7 +248,7 @@ class UsageForm(FSForm):
         else:
             date = self.date
             timing = Config.EVENING
-        return url_for("usage_manage", hotel_id=self.hotel.id, date=Hotel.db_date(date), timing=timing)
+        return url_for("usage_manage", hotel_id=self.hotel.id, date=Date(date).db_date, timing=timing)
 
     @property
     def display_no_event(self) -> str:
@@ -256,5 +256,5 @@ class UsageForm(FSForm):
 
     @property
     def link_goto(self) -> str:
-        return url_for("usage_manage", hotel_id=self.hotel.id, date=Hotel.db_date(self.goto_date.data),
+        return url_for("usage_manage", hotel_id=self.hotel.id, date=Date(self.goto_date.data).db_date,
                        timing=self.goto_timing.data)

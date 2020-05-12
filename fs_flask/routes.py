@@ -1,7 +1,7 @@
 from flask import render_template, url_for, redirect, Response, flash
 from flask_login import login_required, current_user
 
-from config import Config
+from config import Config, Date
 from fs_flask import fs_app
 from fs_flask.hotel import Hotel, HotelForm, AdminForm
 from fs_flask.report import QueryForm
@@ -79,21 +79,23 @@ def data_entry() -> Response:
     if not timing:
         flash("All Done - Here are your last evening events")
         timing = Config.EVENING
-    return redirect(url_for("usage_manage", hotel_id=hotel.id, date=Hotel.db_date(date), timing=timing))
+    return redirect(url_for("usage_manage", hotel_id=hotel.id, date=Date(date).db_date, timing=timing))
 
 
 @fs_app.route("/hotels/<hotel_id>/dates/<date>/timings/<timing>", methods=["GET", "POST"])
 @login_required
 def usage_manage(hotel_id: str, date: str, timing: str):
     hotel: Hotel = Hotel.get_by_id(hotel_id)
-    date = Hotel.to_date(date)
+    date = Date(date).date
     if not hotel or not date or timing not in Config.TIMINGS:
         flash("Error in viewing events on this date")
         return redirect(url_for("home"))
     data_entry_date, data_entry_timing = Usage.get_data_entry_date(hotel)
     if (date == data_entry_date and timing == Config.EVENING and data_entry_timing == Config.MORNING) or \
             date > data_entry_date:
-        flash("Please complete the data entry for events on this date")
+        message = "Please complete the data entry for events on this date" if data_entry_timing \
+            else "All Done - Here are your last evening events"
+        flash(message)
         date = data_entry_date
         timing = data_entry_timing if data_entry_timing else Config.EVENING
     if date < hotel.contract[0]:
