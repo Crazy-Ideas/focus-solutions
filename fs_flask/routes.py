@@ -74,7 +74,7 @@ def data_entry() -> Response:
     hotel = Hotel.objects.filter_by(city=current_user.city, name=current_user.hotel).first()
     date, timing = Usage.get_data_entry_date(hotel)
     if not date:
-        flash("Error in data entry")
+        flash(timing)
         return redirect(url_for("home"))
     if not timing:
         flash("All Done - Here are your last evening events")
@@ -91,6 +91,9 @@ def usage_manage(hotel_id: str, date: str, timing: str):
         flash("Error in viewing events on this date")
         return redirect(url_for("home"))
     data_entry_date, data_entry_timing = Usage.get_data_entry_date(hotel)
+    if not data_entry_date:
+        flash(data_entry_timing)
+        return redirect(url_for("home"))
     if (date == data_entry_date and timing == Config.EVENING and data_entry_timing == Config.MORNING) or \
             date > data_entry_date:
         message = "Please complete the data entry for events on this date" if data_entry_timing \
@@ -98,9 +101,6 @@ def usage_manage(hotel_id: str, date: str, timing: str):
         flash(message)
         date = data_entry_date
         timing = data_entry_timing if data_entry_timing else Config.EVENING
-    if date < hotel.contract[0]:
-        flash("Date reset to contract start date")
-        date = hotel.contract[0]
     form = UsageForm(hotel, date, timing)
     if not form.validate_on_submit():
         form.flash_form_errors()

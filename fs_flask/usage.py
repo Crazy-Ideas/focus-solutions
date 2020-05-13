@@ -34,18 +34,24 @@ class Usage(FirestoreDocument):
     @classmethod
     def get_data_entry_date(cls, hotel: Hotel) -> Tuple[Optional[dt.date], str]:
         start_date, end_date = hotel.contract
-        end_date = Date.today() if end_date > Date.today() else end_date
+        today = Date.today()
         data_entry_date = Date(hotel.last_date).date
+        if end_date < start_date:
+            return None, "Invalid Contract"
+        if today < start_date:
+            return None, "Cannot enter events for future contract"
         if not data_entry_date or data_entry_date < start_date:
             return start_date, Config.MORNING
-        if hotel.last_timing == Config.EVENING:
-            data_entry_date = data_entry_date + dt.timedelta(days=1)
-            if data_entry_date > end_date:
-                return end_date, str()
-            else:
-                return data_entry_date, Config.MORNING
+        if today > end_date and data_entry_date > end_date:
+            return end_date, str()
+        if data_entry_date < today:
+            return (data_entry_date + dt.timedelta(days=1), Config.MORNING) if hotel.last_timing == Config.EVENING \
+                else (data_entry_date, Config.EVENING)
+        elif data_entry_date == today:
+            return (data_entry_date, str()) if hotel.last_timing == Config.EVENING \
+                else (data_entry_date, Config.EVENING)
         else:
-            return data_entry_date, Config.EVENING
+            return today, Config.EVENING
 
     @property
     def formatted_date(self) -> str:
