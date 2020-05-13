@@ -4,7 +4,7 @@ from flask_login import login_required, current_user
 from config import Config, Date
 from fs_flask import fs_app
 from fs_flask.hotel import Hotel, HotelForm, AdminForm
-from fs_flask.report import QueryForm
+from fs_flask.report import QueryForm, Dashboard
 from fs_flask.usage import Usage, UsageForm
 
 
@@ -12,7 +12,7 @@ from fs_flask.usage import Usage, UsageForm
 @fs_app.route("/home")
 @login_required
 def home() -> Response:
-    return render_template("home.html", title="Dashboard")
+    return render_template("home.html", d=Dashboard())
 
 
 @fs_app.route("/reports/main", methods=["GET", "POST"])

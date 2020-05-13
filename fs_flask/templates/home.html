@@ -1,5 +1,61 @@
 {% extends "base.html" %}
 
 {% block app_content %}
-    <h1>{{ title }}</h1>
+    <div class="row justify-content-center">
+        <div class="col-lg-4">
+            <ul class="list-group text-center">
+                <li class="list-group-item list-group-item-secondary">
+                    <strong>{{ d.hotel }}</strong>
+                </li>
+            </ul>
+        </div>
+        <div class="col-lg-4">
+            <ul class="list-group text-center">
+                <li class="list-group-item list-group-item-secondary">
+                    <strong>{{ d.today }}</strong>
+                </li>
+            </ul>
+        </div>
+        <div class="col-lg-4">
+            <ul class="list-group text-center">
+                <li class="list-group-item {{ d.status[1] }}">
+                    <strong>{{ d.status[0] }}</strong>
+                </li>
+            </ul>
+        </div>
+    </div>
+    <br>
+    {% if d.hotels %}
+        <table id="usage_list" class="table table-bordered table-hover">
+            <thead class="thead-dark">
+            <tr>
+                <th class="" scope="col">Hotel</th>
+                {% for column in d.header %}
+                    <th class="text-center {{ column[1] }}">{{ column[0] }}</th>
+                {% endfor %}
+            </tr>
+            </thead>
+            <tbody>
+            {% for hotel in d.hotels %}
+                <tr>
+                    <td {% if hotel[0] == current_user.hotel %}
+                        class="bg-primary text-white font-weight-bold" {% endif %}>
+                        {{ hotel[0] }}
+                    </td>
+                    {% for status in hotel[1] %}
+                        <td class="text-center {{ status[1] }} {{ status[2] }}">
+                            <span class="{{ status[0] }}"></span>
+                        </td>
+                    {% endfor %}
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <div class="row">
+            <div class="col text-center">
+                <strong>No Hotels</strong>
+            </div>
+        </div>
+    {% endif %}
 {% endblock %}

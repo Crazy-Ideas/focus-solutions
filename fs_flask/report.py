@@ -1,3 +1,4 @@
+import datetime as dt
 from operator import itemgetter
 from typing import List, Tuple
 
@@ -130,3 +131,67 @@ class QueryForm(FSForm):
     @property
     def formatted_end_date(self) -> str:
         return self.end_date.data.strftime("%d-%b-%Y") if self.end_date.data else "Invalid date"
+
+
+class Dashboard:
+    PAST_DAYS = 14
+    DONE = ["oi oi-check", "bg-success text-white"]
+    NOT_DONE = ["oi oi-x", "bg-danger text-white"]
+    PARTIAL = ["oi oi-minus", "bg-warning"]
+    NA = ["oi oi-ban", "bg-secondary text-white"]
+    STATUS_ALL_DONE = ("All Done", "list-group-item-success")
+    STATUS_PARTIAL = ("Yesterday evening entry remaining", "list-group-item-warning")
+    STATUS_ERROR = ("Error", "list-group-item-danger")
+    STATUS_NO_CONTRACT = ("No Contract", "list-group-item-secondary")
+
+    def __init__(self):
+        self.hotels: List[Tuple[str, List[List[str]]]] = list()
+        self.header: List[Tuple[int, str]] = self.generate_header()
+        self.hotel: str = current_user.hotel
+        self.today: str = Date().formatted_date
+        self.status: Tuple[str, str] = self.STATUS_ERROR
+        self.display_status: str = "list-group-item-danger"
+        self.generate_hotel_status()
+
+    def generate_hotel_status(self):
+        hotels = Hotel.objects.filter_by(city=current_user.city).get()
+        self.hotels = [(hotel.name, list()) for hotel in hotels]
+        for index, hotel in enumerate(hotels):
+            last_date = Date(hotel.last_date).date
+            if last_date < hotel.contract[0]:
+                last_date = None
+            for day in range(self.PAST_DAYS, 0, -1):
+                date = Date.today() - dt.timedelta(days=day)
+                if not last_date:
+                    self.add_status(index, day, self.NOT_DONE if hotel.is_contract_valid(date) else self.NA)
+                    continue
+                if date < last_date:
+                    self.add_status(index, day, self.DONE if hotel.is_contract_valid(date) else self.NA)
+                elif date > last_date:
+                    self.add_status(index, day, self.NOT_DONE if hotel.is_contract_valid(date) else self.NA)
+                else:
+                    self.add_status(index, day, self.DONE if hotel.last_timing == Config.EVENING else self.PARTIAL)
+            if current_user.hotel != hotel.name:
+                continue
+            end_date = min(Date.yesterday(), hotel.contract[1])
+            last_date = last_date or hotel.contract[0]
+            if hotel.contract[0] > Date.today():
+                self.status = self.STATUS_NO_CONTRACT
+                continue
+            if last_date >= end_date:
+                self.status = self.STATUS_ALL_DONE if last_date > end_date or hotel.last_timing == Config.EVENING \
+                    else self.STATUS_PARTIAL
+                continue
+            days = (end_date - last_date).days
+            self.status = (f"{days} days entry remaining", "list-group-item-danger")
+        self.hotels.sort(key=itemgetter(0))
+        return
+
+    def add_status(self, index: int, day: int, status: List[str]):
+        status = status.copy()
+        status.append("d-none d-lg-table-cell" if day > 2 else str())
+        self.hotels[index][1].append(status)
+
+    def generate_header(self) -> List[Tuple[int, str]]:
+        return [((Date.today() - dt.timedelta(days=day)).day, "d-none d-lg-table-cell" if day > 2 else str())
+                for day in range(self.PAST_DAYS, 0, -1)]

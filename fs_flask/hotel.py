@@ -139,6 +139,9 @@ class Hotel(FirestoreDocument):
             self.last_date = Date(last_date).db_date
         return
 
+    def is_contract_valid(self, date: dt.date) -> bool:
+        return self.contract[0] <= date <= self.contract[1]
+
 
 Hotel.init()
 

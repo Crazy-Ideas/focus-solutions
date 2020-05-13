@@ -58,11 +58,15 @@ class Date:
     INDIA_TIME_ZONE = timezone("Asia/Kolkata")
 
     def __init__(self, date: Union[dt.date, str] = None):
-        self._date = date
+        self._date = date if date else self.today()
 
     @classmethod
-    def today(cls):
+    def today(cls) -> dt.date:
         return cls.TODAY or dt.datetime.now(tz=cls.INDIA_TIME_ZONE).date()
+
+    @classmethod
+    def yesterday(cls) -> dt.date:
+        return cls.today() - dt.timedelta(days=1)
 
     @classmethod
     def last_sunday(cls) -> dt.date:
