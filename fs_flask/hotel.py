@@ -65,7 +65,7 @@ class Hotel(FirestoreDocument):
 
     @property
     def formatted_contract(self) -> Tuple[str, str]:
-        return Date(self.start_date).formatted_date, Date(self.end_date).formatted_date
+        return Date(self.start_date).format_date, Date(self.end_date).format_date
 
     @property
     def display_default(self) -> str:

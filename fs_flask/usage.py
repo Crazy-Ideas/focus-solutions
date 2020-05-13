@@ -49,7 +49,7 @@ class Usage(FirestoreDocument):
 
     @property
     def formatted_date(self) -> str:
-        return Date(self.date).formatted_date
+        return Date(self.date).format_date
 
     @property
     def formatted_meal(self) -> str:
@@ -95,6 +95,7 @@ class UsageForm(FSForm):
         super().__init__(*args, **kwargs)
         self.hotel: Hotel = hotel
         self.date: dt.date = date
+        self.format_week: str = Date(self.date).format_week
         self.timing: str = timing
         self.ballrooms.choices.extend([(room, room) for room in hotel.ballrooms])
         self.usage: Optional[Usage] = None
@@ -154,7 +155,7 @@ class UsageForm(FSForm):
         data_entry_date, data_entry_timing = Usage.get_data_entry_date(self.hotel)
         if goto_date.data > data_entry_date:
             raise ValidationError(f"Cannot goto a date beyond the last data entry date of "
-                                  f"{Date(data_entry_date).formatted_date}")
+                                  f"{Date(data_entry_date).format_date}")
         if goto_date.data == data_entry_date and data_entry_timing == Config.MORNING \
                 and self.goto_timing.data == Config.EVENING:
             raise ValidationError(f"Cannot goto Evening till the data entry of Morning is completed")
@@ -212,10 +213,6 @@ class UsageForm(FSForm):
             self.usages.append(self.usage)
         self.sort_usages()
         return
-
-    @property
-    def formatted_date(self) -> str:
-        return self.date.strftime("%a, %d-%b-%Y")
 
     @property
     def display_previous(self) -> str:

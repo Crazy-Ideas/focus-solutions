@@ -93,6 +93,11 @@ class Date:
         return self._date.strftime("%Y-%m-%d") if isinstance(self._date, dt.date) else str()
 
     @property
-    def formatted_date(self) -> str:
+    def format_date(self) -> str:
         date = self.date
         return date.strftime("%d-%b-%Y") if isinstance(date, dt.date) else str()
+
+    @property
+    def format_week(self) -> str:
+        date = self.date
+        return date.strftime("%a, %d-%b-%Y") if isinstance(date, dt.date) else str()

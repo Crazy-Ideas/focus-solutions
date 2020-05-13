@@ -68,7 +68,7 @@ class QueryForm(FSForm):
             self.raise_date_error(str())
         if end_date.data > Date.last_sunday():
             self.raise_date_error(f"To Date cannot be greater than last Sunday "
-                                  f"({Date(Date.last_sunday()).formatted_date})")
+                                  f"({Date(Date.last_sunday()).format_date})")
         if self.start_date.data > end_date.data:
             self.raise_date_error("From Date cannot be greater than To Date")
         days = (end_date.data - self.start_date.data).days + 1
@@ -125,12 +125,12 @@ class QueryForm(FSForm):
         self.update_data(filter_meals)
 
     @property
-    def formatted_start_date(self) -> str:
-        return self.start_date.data.strftime("%d-%b-%Y") if self.start_date.data else "Invalid date"
+    def format_start_date(self) -> str:
+        return Date(self.start_date.data).format_week if self.start_date.data else "Invalid date"
 
     @property
-    def formatted_end_date(self) -> str:
-        return self.end_date.data.strftime("%d-%b-%Y") if self.end_date.data else "Invalid date"
+    def format_end_date(self) -> str:
+        return Date(self.end_date.data).format_week if self.end_date.data else "Invalid date"
 
 
 class Dashboard:
@@ -148,7 +148,7 @@ class Dashboard:
         self.hotels: List[Tuple[str, List[List[str]]]] = list()
         self.header: List[Tuple[int, str]] = self.generate_header()
         self.hotel: str = current_user.hotel
-        self.today: str = Date().formatted_date
+        self.today: str = Date().format_week
         self.status: Tuple[str, str] = self.STATUS_ERROR
         self.display_status: str = "list-group-item-danger"
         self.generate_hotel_status()
