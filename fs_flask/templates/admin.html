@@ -2,86 +2,82 @@
 
 {% block app_content %}
     <div class="row justify-content-center">
-        <div class="col-md-4">
-            <div class="card ">
-                <h5 class="card-header text-center">{{ current_user.name }}</h5>
-                <ul class="list-group list-group-flush">
-                    <li class="list-group-item text-center">
-                        <strong>{{ current_user.email }}</strong>
-                    </li>
-                    <li class="list-group-item">
-                        <div class="row">
-                            <div class="col-9">
-                                Default City
-                                <br>
-                                <strong>{{ current_user.city }}</strong>
-                            </div>
-                            <div class="col-3">
-                                <a type="button" class="btn btn-warning" data-toggle="modal"
-                                   data-target="#admin_modal" data-type="{{ form.EDIT_DEFAULT_CITY }}"
-                                   data-title="Edit City">
-                                    <span class="oi oi-pencil"></span>
-                                </a>
-                            </div>
-                        </div>
-                    </li>
-                    <li class="list-group-item">
-                        <div class="row">
-                            <div class="col-9">
-                                Default Hotel View
-                                <br>
-                                <strong>{{ current_user.hotel }}</strong>
-                            </div>
-                            <div class="col-3">
-                                <a type="button" class="btn btn-warning" data-toggle="modal"
-                                   data-target="#admin_modal" data-type="{{ form.EDIT_DEFAULT_HOTEL }}"
-                                   data-title="Edit Hotel">
-                                    <span class="oi oi-pencil"></span>
-                                </a>
-                            </div>
-                        </div>
-                    </li>
-                </ul>
+        <div class="col-lg-6">
+            <div class="card text-center">
+                <h5 class="card-header">
+                    Default City: <strong>{{ current_user.city }}</strong>
+                    <a type="button" class="btn btn-warning" data-toggle="modal" data-target="#admin-modal"
+                       data-type="{{ form.EDIT_DEFAULT_CITY }}" data-title="Edit City" title="Change Default City">
+                        <span class="oi oi-pencil"></span>
+                    </a>
+                </h5>
             </div>
         </div>
-        <div class="col-md-6">
-            <div class="card">
-                <h5 class="card-header text-center">
-                    {{ current_user.city }} Hotels
-                    <a type="button" class="btn btn-success text-white" data-toggle="modal"
-                       data-target="#admin_modal" data-type="{{ form.NEW_HOTEL }}"
-                       data-title="New Hotel in {{ current_user.city }}">
+        <div class="col-lg-6">
+            <div class="card text-center">
+                <h5 class="card-header">
+                    Hotels: <strong>{{ form.hotels|length }}</strong>
+                    <a type="button" class="btn btn-success text-white" data-toggle="modal" data-target="#admin-modal"
+                       data-type="{{ form.NEW_HOTEL }}" data-title="New Hotel in {{ current_user.city }}"
+                       title="New Hotel">
                         <span class="oi oi-plus" title="plus"></span>
                     </a>
                 </h5>
-                <ul class="list-group list-group-flush">
-                    {% for hotel in form.hotels %}
-                        <li class="list-group-item {{ hotel.display_default }}">
-                            <div class="row">
-                                <div class="col-8">
-                                    <strong>{{ hotel.name }}</strong>
-                                    <br>
-                                    <strong>{{ hotel.ballrooms|length }}</strong> ball rooms
-                                    <strong>{{ hotel.competitions|length }}</strong> hotels
-                                </div>
-                                <div class="col-4 text-right">
-                                    <a class="btn btn-primary" href="{{ url_for('hotel_manage', hotel_id=hotel.id) }}">
-                                        <span class="oi oi-target" title="target"></span>
-                                    </a>
-                                    <a type="button" class="btn btn-danger text-white {{ hotel.display_delete }}"
-                                       data-toggle="modal" data-target="#admin_modal" data-hotel="{{ hotel.name }}"
-                                       data-type="{{ form.DELETE_HOTEL }}" data-title="Delete Hotel">
-                                        <span class="oi oi-trash"></span>
-                                    </a>
-                                </div>
-                            </div>
-                        </li>
-                    {% endfor %}
-                </ul>
             </div>
         </div>
     </div>
-    <div class="modal fade" id="admin_modal" tabindex="-1" role="dialog">
+    <br>
+    {% if form.hotels %}
+        <table id="hotel-list" class="table table-bordered table-hover ">
+            <thead class="thead-dark">
+            <tr>
+                <th class="text-center d-none d-md-table-cell" scope="col">Sr. No.</th>
+                <th class="" scope="col">Hotel</th>
+                <th class="text-center d-none d-md-table-cell" scope="col">Start</th>
+                <th class="text-center d-none d-md-table-cell" scope="col">End</th>
+                <th class="text-center d-none d-md-table-cell" scope="col">Ballrooms</th>
+                <th class="text-center d-none d-md-table-cell" scope="col">Hotels</th>
+                <th class="text-center" scope="col">Actions</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for hotel in form.hotels %}
+                <tr class="{{ hotel.display_default }}">
+                    <td class="text-center d-none d-md-table-cell">{{ loop.index }}</td>
+                    <td class="">{{ hotel.name }}</td>
+                    <td class="text-center d-none d-md-table-cell">{{ hotel.formatted_contract[0] }}</td>
+                    <td class="text-center d-none d-md-table-cell">{{ hotel.formatted_contract[1] }}</td>
+                    <td class="text-center d-none d-md-table-cell">{{ hotel.ballrooms|length }}</td>
+                    <td class="text-center d-none d-md-table-cell">{{ hotel.competitions|length }}</td>
+                    <td class="text-center">
+                        <a type="button" class="btn btn-warning" title="Set Default Hotel" data-toggle="modal"
+                           data-target="#admin-modal" data-id="{{ hotel.id }}" data-hotel="{{ hotel.name }}"
+                           data-type="{{ form.EDIT_DEFAULT_HOTEL }}" data-title="Default Hotel">
+                            <span class="oi oi-star"></span>
+                        </a>
+                        <a class="btn btn-primary" href="{{ url_for('hotel_manage', hotel_id=hotel.id) }}"
+                           title="Open Hotel View">
+                            <span class="oi oi-target"></span>
+                        </a>
+                        <a type="button" class="btn btn-danger text-white {{ hotel.display_delete }}"
+                           data-toggle="modal" data-target="#admin-modal" data-id="{{ hotel.id }}"
+                           data-type="{{ form.DELETE_HOTEL }}" data-title="Delete Hotel" data-hotel="{{ hotel.name }}">
+                            <span class="oi oi-trash"></span>
+                        </a>
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <div class="row">
+            <div class="col text-center">
+                <strong>No hotels</strong>
+            </div>
+        </div>
+    {% endif %}
+
+    <div class="modal fade" id="admin-modal" tabindex="-1" role="dialog">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
@@ -91,12 +87,9 @@
                     </button>
                 </div>
                 <div class="modal-body justify-content-center">
-                    <form class="form" method="POST" id="edit-form">
+                    <form class="form" method="POST" id="admin-form">
                         {{ form.form_type() }}
-                        {{ form.delete_hotel() }}
-                        <div id="hotel-select">
-                            {{ form_group_no_error(form.default_hotel) }}
-                        </div>
+                        {{ form.hotel_id() }}
                         <div id="city-select">
                             {{ form_group_no_error(form.default_city) }}
                         </div>
@@ -121,40 +114,37 @@
 {% block scripts %}
     {{ super() }}
     <script>
-        $("#save-button").on("click", () => {
-            document.forms["edit-form"].submit()
+        $("#save-button").on("click", function () {
+            document.forms["admin-form"].submit()
         });
-        $("#admin_modal").on("show.bs.modal", function (event) {
-            let form_type = $(event.relatedTarget).data("type")
-            let hotel = $(event.relatedTarget).data("hotel")
-            let title = $(event.relatedTarget).data("title")
+        $("#admin-modal").on("show.bs.modal", function (event) {
+            const form_type = $(event.relatedTarget).data("type")
+            const hotel_id = $(event.relatedTarget).data("id")
+            const hotel = $(event.relatedTarget).data("hotel")
+            const title = $(event.relatedTarget).data("title")
             $(this).find(".modal-title").text(title)
             $(this).find("#form_type").val(form_type)
-            $(this).find("#delete_hotel").val(hotel)
-            if (form_type === "delete_hotel") {
-                $(this).find("#comment").text("Are you sure you want to delete " + hotel + "?")
-                $(this).find("#save-button").addClass("btn-danger").removeClass("btn-warning").html("Delete")
-            } else {
-                $(this).find("#comment").text("")
-                $(this).find("#save-button").addClass("btn-warning").removeClass("btn-danger").html("Save")
-            }
-            if (form_type === "hotel") {
-                $(this).find("#hotel-select").show()
+            $(this).find("#hotel_id").val(hotel_id)
+            $(this).find("#comment").text("")
+            if (form_type === "{{ form.EDIT_DEFAULT_HOTEL }}") {
                 $(this).find("#city-select").hide()
                 $(this).find("#new-hotel").hide()
-            } else if (form_type === "city") {
+                $(this).find("#comment").text("Are you sure you want to make " + hotel + " as your default hotel?")
+                $(this).find("#save-button").removeClass().addClass("btn btn-warning").html("Set Default")
+            } else if (form_type === "{{ form.EDIT_DEFAULT_CITY }}") {
                 $(this).find("#city-select").show()
-                $(this).find("#hotel-select").hide()
                 $(this).find("#new-hotel").hide()
                 $(this).find("#comment").text("If you change the city then your hotel will be reset.")
-            } else if (form_type === "new_hotel") {
+                $(this).find("#save-button").removeClass().addClass("btn btn-warning").html("Save")
+            } else if (form_type === "{{ form.NEW_HOTEL }}") {
                 $(this).find("#new-hotel").show()
                 $(this).find("#city-select").hide()
-                $(this).find("#hotel-select").hide()
-            } else if (form_type === "delete_hotel") {
+                $(this).find("#save-button").removeClass().addClass("btn btn-success").html("Create")
+            } else if (form_type === "{{ form.DELETE_HOTEL }}") {
                 $(this).find("#new-hotel").hide()
                 $(this).find("#city-select").hide()
-                $(this).find("#hotel-select").hide()
+                $(this).find("#comment").text("Are you sure you want to delete " + hotel + "?")
+                $(this).find("#save-button").removeClass().addClass("btn btn-danger").html("Delete")
             }
         })
     </script>

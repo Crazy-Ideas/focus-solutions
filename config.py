@@ -58,7 +58,7 @@ class Date:
     INDIA_TIME_ZONE = timezone("Asia/Kolkata")
 
     def __init__(self, date: Union[dt.date, str] = None):
-        self._date = date if date else self.today()
+        self._date = date if date is not None else self.today()
 
     @classmethod
     def today(cls) -> dt.date:

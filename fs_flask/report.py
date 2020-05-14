@@ -158,7 +158,7 @@ class Dashboard:
         self.hotels = [(hotel.name, list()) for hotel in hotels]
         for index, hotel in enumerate(hotels):
             last_date = Date(hotel.last_date).date
-            if last_date < hotel.contract[0]:
+            if last_date and last_date < hotel.contract[0]:
                 last_date = None
             for day in range(self.PAST_DAYS, 0, -1):
                 date = Date.today() - dt.timedelta(days=day)

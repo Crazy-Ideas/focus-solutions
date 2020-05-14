@@ -45,12 +45,6 @@ class Hotel(FirestoreDocument):
             competitions.extend(sorted(my_hotel.competitions))
         return competitions[:9]
 
-    @classmethod
-    def get_hotels(cls, city: str) -> List['Hotel']:
-        hotels = cls.objects.filter_by(city=city).get()
-        hotels.sort(key=lambda hotel: hotel.name)
-        return hotels
-
     @property
     def ballrooms(self):
         return sorted([room["name"] for room in self.ballroom_maps])
@@ -69,7 +63,7 @@ class Hotel(FirestoreDocument):
 
     @property
     def display_default(self) -> str:
-        return "list-group-item-warning" if current_user.hotel == self.name else str()
+        return "table-warning" if current_user.hotel == self.name else str()
 
     @property
     def display_delete(self) -> str:
@@ -165,7 +159,8 @@ class HotelForm(FSForm):
     def __init__(self, hotel: Hotel, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.hotel = hotel
-        hotels = Hotel.get_hotels(hotel.city)
+        hotels = Hotel.objects.filter_by(city=current_user.city).get()
+        hotels.sort(key=lambda hotel_item: hotel_item.name)
         self.competitions.choices.extend([(hotel.name, hotel.name) for hotel in hotels])
         self.competitions.choices.remove((hotel.name, hotel.name))
         if request.method == "GET":
@@ -237,35 +232,30 @@ class AdminForm(FSForm):
     NEW_HOTEL = "new_hotel"
     DELETE_HOTEL = "delete_hotel"
     default_city = SelectField("Select City", choices=list())
-    default_hotel = SelectField("Select Hotel", choices=list())
     new_hotel = StringField("Enter hotel name (It must be unique)")
-    delete_hotel = HiddenField()
+    hotel_id = HiddenField()
     form_type = HiddenField()
     submit = SubmitField("Delete")
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        if not hasattr(self, "hotels"):
-            self.hotels = Hotel.get_hotels(current_user.city)
-        self.default_hotel.choices = [(hotel.name, hotel.name) for hotel in self.hotels] if self.hotels else [("", "")]
+        self.hotel: Optional[Hotel] = None
+        self.hotels = Hotel.objects.filter_by(city=current_user.city).get()
+        self.sort_hotels()
         cities = [(city, city) for city in Config.CITIES]
         cities.sort(key=itemgetter(0))
         self.default_city.choices = cities
         if request.method == "GET":
             self.default_city.data = current_user.city
-            self.default_hotel.data = current_user.hotel
+
+    def sort_hotels(self):
+        self.hotels.sort(key=lambda hotel: hotel.name)
 
     def validate_default_city(self, city: SelectField):
         if self.form_type.data != self.EDIT_DEFAULT_CITY:
             return
         if current_user.city == city.data:
             raise ValidationError("No changes made in default city")
-
-    def validate_default_hotel(self, hotel: SelectField):
-        if self.form_type.data != self.EDIT_DEFAULT_HOTEL:
-            return
-        if current_user.hotel == hotel.data:
-            raise ValidationError("No changes made in default hotel")
 
     def validate_new_hotel(self, hotel: StringField):
         if self.form_type.data != self.NEW_HOTEL:
@@ -276,45 +266,43 @@ class AdminForm(FSForm):
         if Hotel.objects.filter_by(city=current_user.city, name=hotel.data).first():
             raise ValidationError("Hotel name must be unique")
 
-    def validate_delete_hotel(self, delete_hotel: StringField):
-        if self.form_type.data != self.DELETE_HOTEL:
+    def validate_hotel_id(self, hotel_id: HiddenField):
+        if self.form_type.data not in (self.DELETE_HOTEL, self.EDIT_DEFAULT_HOTEL):
             return
-        hotel: Hotel = next((hotel for hotel in self.hotels if delete_hotel.data == hotel.name), None)
-        if not hotel:
+        self.hotel: Hotel = Hotel.get_by_id(hotel_id.data)
+        if not self.hotel:
             raise ValidationError("Hotel not found")
-        if hotel.used:
-            raise ValidationError("Cannot delete a hotel with an event")
-        if hotel.name == current_user.hotel:
-            raise ValidationError("Cannot delete the hotel with default view")
+        if self.form_type.data == self.DELETE_HOTEL:
+            if self.hotel.used:
+                raise ValidationError("Cannot delete a hotel with an event")
+            if self.hotel.name == current_user.hotel:
+                raise ValidationError("Cannot delete the hotel with default view")
+        else:
+            if self.hotel.name == current_user.hotel:
+                raise ValidationError("No changes made in default hotel")
 
     def update(self) -> bool:
         if self.form_type.data == self.EDIT_DEFAULT_HOTEL:
-            current_user.hotel = self.default_hotel.data
+            current_user.hotel = self.hotel.name
             return current_user.save()
         elif self.form_type.data == self.EDIT_DEFAULT_CITY:
             current_user.city = self.default_city.data
-            self.hotels = Hotel.get_hotels(current_user.city)
+            self.hotels = Hotel.objects.filter_by(city=current_user.city).get()
+            self.sort_hotels()
             current_user.hotel = self.hotels[0].name if self.hotels else str()
-            self.default_hotel.data = current_user.hotel
-            self.default_hotel.choices = [(hotel.name, hotel.name) for hotel in self.hotels]
             return current_user.save()
         elif self.form_type.data == self.NEW_HOTEL:
             hotel = Hotel(name=self.new_hotel.data, city=current_user.city)
             hotel.create()
             self.hotels.append(hotel)
-            self.hotels.sort(key=lambda hotel_item: hotel_item.name)
-            self.default_hotel.choices.append((hotel.name, hotel.name))
-            if not self.default_hotel.data:
-                self.default_hotel.data = hotel.name
-                self.default_hotel.choices.remove(("", ""))
+            self.sort_hotels()
             if not current_user.hotel:
                 current_user.hotel = hotel.name
                 current_user.save()
             return True
         elif self.form_type.data == self.DELETE_HOTEL:
-            hotel: Hotel = next((hotel for hotel in self.hotels if self.delete_hotel.data == hotel.name), None)
-            hotel.delete()
-            self.hotels.remove(hotel)
-            self.default_hotel.choices.remove((hotel.name, hotel.name))
+            self.hotels.remove(self.hotel)
+            self.sort_hotels()
+            self.hotel.delete()
             return True
         return False
