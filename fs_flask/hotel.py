@@ -69,7 +69,7 @@ class Hotel(FirestoreDocument):
 
     @property
     def display_default(self) -> str:
-        return "list-group-item-primary" if current_user.hotel == self.name else str()
+        return "list-group-item-warning" if current_user.hotel == self.name else str()
 
     @property
     def display_delete(self) -> str:

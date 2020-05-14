@@ -27,11 +27,9 @@ def main_report() -> Response:
     return render_template("main_report.html", form=form, title="Report")
 
 
-@fs_app.route("/profile")
+@fs_app.route("/hotels/profile")
 @login_required
-def profile() -> Response:
-    if current_user.role == Config.ADMIN:
-        return redirect(url_for("admin_manage"))
+def hotel_profile() -> Response:
     hotel = Hotel.objects.filter_by(city=current_user.city, name=current_user.hotel).first()
     if not hotel:
         flash("Error in retrieving hotel profile")

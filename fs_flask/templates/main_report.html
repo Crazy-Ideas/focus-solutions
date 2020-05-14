@@ -74,7 +74,7 @@
                     <tbody>
                     {% for hotel_count in form.hotel_counts %}
                         <tr {% if hotel_count[0] == current_user.hotel %}
-                            class="table-primary font-weight-bold" {% endif %}>
+                            class="table-warning font-weight-bold" {% endif %}>
                             <td class="text-center">{{ loop.index }}</td>
                             <td class="">{{ hotel_count[0] }}</td>
                             <td class="text-center">{{ hotel_count[1] }}</td>

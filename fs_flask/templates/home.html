@@ -39,7 +39,7 @@
             {% for hotel in d.hotels %}
                 <tr>
                     <td {% if hotel[0] == current_user.hotel %}
-                        class="bg-primary text-white font-weight-bold" {% endif %}>
+                        class="table-warning font-weight-bold" {% endif %}>
                         {{ hotel[0] }}
                     </td>
                     {% for status in hotel[1] %}
