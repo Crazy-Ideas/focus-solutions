@@ -97,20 +97,37 @@ class UsageForm(FSForm):
     goto_date = DateField("Select date")
     goto_timing = RadioField("Select timing", choices=[(timing, timing) for timing in Config.TIMINGS])
 
-    def __init__(self, hotel: Hotel, date: dt.date, timing: str, *args, **kwargs):
+    def __init__(self, hotel_id: str, date: str, timing: str, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.hotel: Hotel = hotel
-        self.date: dt.date = date
+        self.error_message: str = str()
+        self.redirect: bool = False
+        self.hotel: Hotel = Hotel.get_by_id(hotel_id)
+        if not self.hotel:
+            self._error_redirect("Error in retrieving hotel details")
+            return
+        self.date = Date(date).date
+        self.timing = timing
+        if not self.date or self.timing not in Config.TIMINGS:
+            self._error_redirect("Error in retrieving event details")
+            return
+        try:
+            self._validate_date(self.date, self.timing)
+        except ValidationError as error:
+            self._error_redirect(str(error))
+            return
         self.format_week: str = Date(self.date).format_week
-        self.timing: str = timing
-        self.ballrooms.choices.extend([(room, room) for room in hotel.ballrooms])
+        self.ballrooms.choices.extend([(room, room) for room in self.hotel.ballrooms])
         self.usage: Optional[Usage] = None
-        query = Usage.objects.filter_by(city=hotel.city, hotel=hotel.name)
-        self.usages = query.filter_by(date=Date(date).db_date, timing=timing).get()
+        query = Usage.objects.filter_by(city=self.hotel.city, hotel=self.hotel.name)
+        self.usages = query.filter_by(date=Date(self.date).db_date, timing=timing).get()
         self.sort_usages()
         if request.method == "GET" or self.form_type.data != self.GOTO_DATE:
             self.goto_date.data = self.date
             self.goto_timing.data = self.timing
+
+    def _error_redirect(self, message: str):
+        self.error_message = message
+        self.redirect = True
 
     def validate_form_type(self, form_type: HiddenField):
         if form_type.data == self.NO_EVENT and self.usages:
@@ -152,19 +169,22 @@ class UsageForm(FSForm):
             if morning_meal.data != Config.NO_MEAL:
                 raise ValidationError(f"Cannot select {Config.BREAKFAST} or {Config.LUNCH} for {Config.EVENING} events")
 
-    def validate_goto_date(self, goto_date: DateField):
-        if not goto_date.data:
+    def _validate_date(self, date: dt.date, timing: str):
+        if not date:
             raise ValidationError(str())
-        if goto_date.data < self.hotel.contract[0]:
-            raise ValidationError(f"Cannot goto a date before the contract start date of "
-                                  f"{self.hotel.formatted_contract[0]}")
+        start_date = Date(self.hotel.start_date).date
+        if date < start_date:
+            raise ValidationError(f"Date is before the contract start date ({Date(start_date).format_date})")
         data_entry_date, data_entry_timing = Usage.get_data_entry_date(self.hotel)
-        if goto_date.data > data_entry_date:
-            raise ValidationError(f"Cannot goto a date beyond the last data entry date of "
-                                  f"{Date(data_entry_date).format_date}")
-        if goto_date.data == data_entry_date and data_entry_timing == Config.MORNING \
-                and self.goto_timing.data == Config.EVENING:
+        if not data_entry_date:
+            raise ValidationError(data_entry_timing)
+        if date > data_entry_date:
+            raise ValidationError(f"Date is beyond the last data entry date ({Date(data_entry_date).format_date})")
+        if date == data_entry_date and data_entry_timing == Config.MORNING and timing == Config.EVENING:
             raise ValidationError(f"Cannot goto Evening till the data entry of Morning is completed")
+
+    def validate_goto_date(self, goto_date: DateField):
+        self._validate_date(goto_date.data, self.goto_timing.data)
 
     def update_from_form(self):
         self.usage.company = self.client.data
@@ -192,6 +212,7 @@ class UsageForm(FSForm):
 
     def update(self):
         if self.form_type.data == self.GOTO_DATE:
+            self.redirect = True
             return
         elif self.form_type.data == self.CREATE:
             self.update_default_fields()
