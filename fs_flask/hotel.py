@@ -26,7 +26,6 @@ class Hotel(FirestoreDocument):
             else [BallroomMap(Config.OTHER).to_dict()]
         self.city: str = city if city else str()
         self.competitions: List[str] = competitions if competitions else list()
-        self.initial: str = "".join([word[0] for word in name.split()][:3]).upper() if name else str()
         self.email: str = str()
         self.start_date: str = str()
         self.end_date: str = str()
@@ -63,7 +62,7 @@ class Hotel(FirestoreDocument):
 
     @property
     def display_default(self) -> str:
-        return "table-warning" if current_user.hotel == self.name else str()
+        return "table-warning font-weight-bold" if current_user.hotel == self.name else str()
 
     @property
     def display_delete(self) -> str:
@@ -142,12 +141,11 @@ Hotel.init()
 
 class HotelForm(FSForm):
     DEFAULT_DATE = Date.today()
-    INITIAL = "initial"
+    EDIT_HOTEL = "edit_hotel"
     EDIT_BALLROOM = "edit_ballroom"
     NEW_BALLROOM = "new_ballroom"
     REMOVE_BALLROOM = "remove_ballroom"
     COMPETITION = "hotel"
-    initial = StringField("Enter Initial (Can be 2 or 3 alphabets)")
     start_date = DateField("Select contract start date")
     end_date = DateField("Select contract end date")
     ballroom = StringField("Ball room name")
@@ -165,24 +163,14 @@ class HotelForm(FSForm):
         self.competitions.choices.remove((hotel.name, hotel.name))
         if request.method == "GET":
             self.competitions.data = hotel.competitions
-            self.initial.data = hotel.initial
             self.start_date.data, self.end_date.data = hotel.contract
-
-    def validate_initial(self, initial: StringField):
-        if self.form_type.data != self.INITIAL:
-            return
-        initial.data = initial.data.strip().upper()
-        if not initial.data.isalpha() or not 2 <= len(initial.data) <= 3:
-            raise ValidationError("Invalid Initial")
-        if current_user.role != Config.ADMIN:
-            raise ValidationError("Only Admin can modify hotels private information")
 
     def raise_date_error(self, message):
         self.start_date.data, self.end_date.data = self.hotel.contract
         raise ValidationError(message)
 
     def validate_end_date(self, end_date: DateField):
-        if self.form_type.data != self.INITIAL:
+        if self.form_type.data != self.EDIT_HOTEL:
             return
         if not self.start_date.data or not end_date.data:
             self.raise_date_error(str())
@@ -210,10 +198,8 @@ class HotelForm(FSForm):
                 raise ValidationError("Cannot remove a ballroom with an event")
 
     def update(self):
-        if self.form_type.data == self.INITIAL:
-            self.hotel.initial = self.initial.data
+        if self.form_type.data == self.EDIT_HOTEL:
             self.hotel.set_contract(self.start_date.data, self.end_date.data)
-            current_user.update_initial(self.initial.data)
         elif self.form_type.data == self.COMPETITION:
             self.hotel.competitions = self.competitions.data[:9]
         elif self.form_type.data == self.NEW_BALLROOM:

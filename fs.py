@@ -21,10 +21,9 @@ def create_user(email: str, name: str, role: str, hotel_name: str = None):
     if not hotel:
         print("Hotel not found in the database")
         return
-    initial = "".join([word[0] for word in name.split()][:3]).upper() if Config.ADMIN else hotel.initial
-    password = User.create_user(email, name, initial, role, hotel_name)
+    password = User.create_user(email, name, role, hotel_name)
     if not password:
-        print("Invalid email or role")
+        print("Invalid email")
     else:
         print(f"User {email} created. Your password is {password}")
     return
@@ -69,7 +68,7 @@ def mumbai_usage():
         usage.city = "Mumbai"
         date_pass = usage.set_date(dt.datetime.strptime(row[0], "%d/%m/%Y").date())
         usage.timing = row[1]
-        usage.company = row[2]
+        usage.client = row[2]
         usage.event_description = row[3]
         usage.meals = [row[4]]
         usage.event_type = row[5]

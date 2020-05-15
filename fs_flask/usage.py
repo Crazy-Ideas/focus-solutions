@@ -21,7 +21,7 @@ class Usage(FirestoreDocument):
         self.month: str = str()
         self.weekday: Optional[bool] = None
         self.timing: str = str()
-        self.company: str = str()
+        self.client: str = str()
         self.event_type: str = str()
         self.meals: List[str] = list()
         self.ballrooms: List[str] = list()
@@ -29,7 +29,7 @@ class Usage(FirestoreDocument):
         self.no_event: bool = False
 
     def __repr__(self):
-        return f"{self.hotel}:{self.date}:{self.timing}:{self.company}:{self.event_type}"
+        return f"{self.hotel}:{self.date}:{self.timing}:{self.client}:{self.event_type}"
 
     @classmethod
     def get_data_entry_date(cls, hotel: Hotel) -> Tuple[Optional[dt.date], str]:
@@ -145,9 +145,9 @@ class UsageForm(FSForm):
             return
         if not client.data:
             raise ValidationError("Client name cannot be left blank")
-        client_exists = any(client.data == usage.company for usage in self.usages)
+        client_exists = any(client.data == usage.client for usage in self.usages)
         if (self.form_type.data == self.CREATE and client_exists) or \
-                (self.form_type.data == self.UPDATE and client_exists and self.usage.company != client.data):
+                (self.form_type.data == self.UPDATE and client_exists and self.usage.client != client.data):
             raise ValidationError("Client name must be unique within a day")
 
     def validate_ballrooms(self, ballrooms: SelectMultipleField):
@@ -187,7 +187,7 @@ class UsageForm(FSForm):
         self._validate_date(goto_date.data, self.goto_timing.data)
 
     def update_from_form(self):
-        self.usage.company = self.client.data
+        self.usage.client = self.client.data
         self.usage.event_description = self.event_description.data
         self.usage.event_type = self.event_type.data
         self.usage.ballrooms = self.ballrooms.data
@@ -208,7 +208,7 @@ class UsageForm(FSForm):
             self.hotel.save()
 
     def sort_usages(self):
-        self.usages.sort(key=lambda usage: usage.company)
+        self.usages.sort(key=lambda usage: usage.client)
 
     def update(self):
         if self.form_type.data == self.GOTO_DATE:

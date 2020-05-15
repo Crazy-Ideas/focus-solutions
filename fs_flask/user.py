@@ -23,7 +23,6 @@ class User(FirestoreDocument, UserMixin):
         self.email: str = str()
         self.password_hash: str = str()
         self.name: str = str()
-        self.initial: str = str()
         self.city: str = Config.DEFAULT_CITY
         self.hotel: str = str()
         self.role: str = str()
@@ -32,17 +31,15 @@ class User(FirestoreDocument, UserMixin):
         return f"{self.email.lower()}"
 
     @classmethod
-    def create_user(cls, email: str, name: str, initial: str, role: str, hotel: str) -> str:
+    def create_user(cls, email: str, name: str, role: str, hotel: str) -> str:
         if not isinstance(email, str) or sum(1 for char in email if char == "@") != 1:
             return str()
-        db_user = cls.objects.filter_by(email=email).first()
-        if db_user:
+        if cls.objects.filter_by(email=email).first():
             return str()
         user = cls()
         user.email = email
         user.name = name
         user.hotel = hotel
-        user.initial = initial.upper()[:2]
         user.role = role
         password = b64encode(os.urandom(24)).decode()
         user.set_password(password)
@@ -59,15 +56,6 @@ class User(FirestoreDocument, UserMixin):
 
     def get_id(self) -> str:
         return self.email
-
-    def update_initial(self, initial: str) -> bool:
-        user = self
-        if self.role == Config.ADMIN:
-            user = User.objects.filter_by(name=self.hotel).first()
-        if user:
-            user.initial = initial
-            return user.save()
-        return False
 
 
 User.init()

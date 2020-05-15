@@ -7,8 +7,8 @@
                 <h5 class="card-header">
                     {{ hotel.name }}
                     <a type="button" class="btn btn-warning" data-toggle="modal"
-                       data-target="#hotel_modal" data-type="{{ form.INITIAL }}"
-                       data-title="Edit Initial">
+                       data-target="#hotel-modal" data-type="{{ form.EDIT_HOTEL }}"
+                       data-title="Edit Hotel Details">
                         <span class="oi oi-pencil"></span>
                     </a>
                 </h5>
@@ -26,11 +26,6 @@
                         <strong>{{ hotel.city }}</strong>
                     </li>
                     <li class="list-group-item">
-                        Initial
-                        <br>
-                        <strong>{{ hotel.initial }}</strong>
-                    </li>
-                    <li class="list-group-item">
                         Contract
                         <br>
                         Start Date: <strong>{{ hotel.formatted_contract[0] }}</strong>
@@ -45,7 +40,7 @@
                 <h5 class="card-header text-center">
                     Ballrooms
                     <a type="button" class="btn btn-success text-white" data-toggle="modal"
-                       data-target="#hotel_modal" data-type="{{ form.NEW_BALLROOM }}"
+                       data-target="#hotel-modal" data-type="{{ form.NEW_BALLROOM }}"
                        data-title="New Ballroom">
                         <span class="oi oi-plus"></span>
                     </a>
@@ -59,14 +54,14 @@
                                 </div>
                                 <div class="col text-right">
                                     <a type="button" class="btn btn-warning {{ hotel.display_ballroom(ballroom) }}"
-                                       data-toggle="modal" data-target="#hotel_modal"
+                                       data-toggle="modal" data-target="#hotel-modal"
                                        data-type="{{ form.EDIT_BALLROOM }}"
                                        data-title="Edit Ballroom {{ ballroom }}" data-ballroom="{{ ballroom }}">
                                         <span class="oi oi-pencil"></span>
                                     </a>
                                     <a type="button"
                                        class="btn btn-danger text-white {{ hotel.display_ballroom(ballroom) }}"
-                                       data-toggle="modal" data-target="#hotel_modal"
+                                       data-toggle="modal" data-target="#hotel-modal"
                                        data-type="{{ form.REMOVE_BALLROOM }}"
                                        data-title="Remove Ballroom" data-ballroom="{{ ballroom }}">
                                         <span class="oi oi-trash"></span>
@@ -83,7 +78,7 @@
                 <h5 class="card-header">
                     Default Hotels
                     <a type="button" class="btn btn-warning" data-toggle="modal"
-                       data-target="#hotel_modal" data-type="{{ form.COMPETITION }}"
+                       data-target="#hotel-modal" data-type="{{ form.COMPETITION }}"
                        data-title="Select Other Hotels">
                         <span class="oi oi-pencil"></span>
                     </a>
@@ -96,7 +91,7 @@
             </div>
         </div>
     </div>
-    <div class="modal fade" id="hotel_modal" tabindex="-1" role="dialog">
+    <div class="modal fade" id="hotel-modal" tabindex="-1" role="dialog">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
@@ -109,8 +104,7 @@
                     <form class="form" method="POST" id="hotel-form">
                         {{ form.form_type() }}
                         {{ form.old_ballroom() }}
-                        <div id="edit-initial">
-                            {{ form_group_no_error(form.initial) }}
+                        <div id="edit-hotel">
                             {{ form_group_no_error(form.start_date) }}
                             {{ form_group_no_error(form.end_date) }}
                         </div>
@@ -127,7 +121,7 @@
                     </form>
                 </div>
                 <div class="modal-footer justify-content-center d-flex">
-                    <button type="button" class="btn btn-warning" id="save-button">Placeholder</button>
+                    <button type="button" class="btn" id="save-button">Placeholder</button>
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
                 </div>
             </div>
@@ -138,46 +132,46 @@
 {% block scripts %}
     {{ super() }}
     <script>
-        $("#save-button").on("click", () => {
+        $("#save-button").on("click", function () {
             document.forms["hotel-form"].submit()
         });
-        $("#hotel_modal").on("show.bs.modal", function (event) {
+        $("#hotel-modal").on("show.bs.modal", function (event) {
             let form_type = $(event.relatedTarget).data("type");
             let title = $(event.relatedTarget).data("title");
             let old_ballroom = $(event.relatedTarget).data("ballroom");
             $(this).find(".modal-title").text(title);
             $(this).find("#form_type").val(form_type);
-            if (form_type === "remove_ballroom") {
-                $(this).find("#comment").text("Are you sure you want to remove " + old_ballroom + "?");
-                $(this).find("#save-button").addClass("btn-danger").removeClass("btn-warning").html("Delete");
-            } else {
-                $(this).find("#comment").text("");
-                $(this).find("#save-button").addClass("btn-warning").removeClass("btn-danger").html("Save");
-            }
-            if (form_type === "hotel") {
+            $(this).find("#comment").text("");
+            if (form_type === "{{ form.COMPETITION }}") {
                 $(this).find("#select-hotel").show();
                 $(this).find("#edit-ballroom").hide();
-                $(this).find("#edit-initial").hide();
-            } else if (form_type === "initial") {
-                $(this).find("#edit-initial").show();
+                $(this).find("#edit-hotel").hide();
+                $(this).find("#save-button").removeClass().addClass("btn btn-warning").html("Save");
+            } else if (form_type === "{{ form.EDIT_HOTEL }}") {
+                $(this).find("#edit-hotel").show();
                 $(this).find("#select-hotel").hide();
                 $(this).find("#edit-ballroom").hide();
-            } else if (form_type === "new_ballroom") {
+                $(this).find("#save-button").removeClass().addClass("btn btn-warning").html("Save");
+            } else if (form_type === "{{ form.NEW_BALLROOM }}") {
                 $(this).find("#edit-ballroom").show();
                 $(this).find("#ballroom").val("");
                 $(this).find("#select-hotel").hide();
-                $(this).find("#edit-initial").hide();
-            } else if (form_type === "edit_ballroom") {
+                $(this).find("#edit-hotel").hide();
+                $(this).find("#save-button").removeClass().addClass("btn btn-success").html("Create");
+            } else if (form_type === "{{ form.EDIT_BALLROOM }}") {
                 $(this).find("#edit-ballroom").show();
                 $(this).find("#ballroom").val(old_ballroom);
                 $(this).find("#select-hotel").hide();
-                $(this).find("#edit-initial").hide();
+                $(this).find("#edit-hotel").hide();
                 $(this).find("#old_ballroom").val(old_ballroom);
-            } else if (form_type === "remove_ballroom") {
+                $(this).find("#save-button").removeClass().addClass("btn btn-warning").html("Save");
+            } else if (form_type === "{{ form.REMOVE_BALLROOM }}") {
                 $(this).find("#edit-ballroom").hide();
                 $(this).find("#select-hotel").hide();
-                $(this).find("#edit-initial").hide();
+                $(this).find("#edit-hotel").hide();
                 $(this).find("#old_ballroom").val(old_ballroom);
+                $(this).find("#comment").text("Are you sure you want to remove " + old_ballroom + "?");
+                $(this).find("#save-button").removeClass().addClass("btn btn-danger").html("Delete");
             }
         });
     </script>
