@@ -108,9 +108,11 @@ def mumbai_usage():
         return
     for usage in usages:
         print(usage)
+    start = time.perf_counter()
     Usage.objects.delete()
     Usage.create_from_list_of_dict(usages)
-    print(f"{len(usages)} occupancy records created")
+    end = time.perf_counter() - start
+    print(f"{len(usages)} occupancy records created in {end:0.2f} seconds")
     Hotel.save_all(hotels)
     print(f"{len(hotels)} hotel occupancy updated")
 
