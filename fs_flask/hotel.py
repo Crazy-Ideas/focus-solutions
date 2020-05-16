@@ -91,12 +91,12 @@ class Hotel(FirestoreDocument):
         self.ballroom_maps.remove(room.to_dict())
         return True
 
-    def set_ballroom_used(self, names: List[str]) -> bool:
+    def set_ballroom_used(self, names: List[str], used: bool = True) -> bool:
         room_changed = False
         for name in names:
-            room = next((room for room in self.ballroom_maps if room["name"] == name and not room["used"]), None)
+            room = next((room for room in self.ballroom_maps if room["name"] == name and room["used"] != used), None)
             if room:
-                room["used"] = True
+                room["used"] = used
                 room_changed = True
         return room_changed
 

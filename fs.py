@@ -1,4 +1,6 @@
 import datetime as dt
+import time
+from concurrent.futures import as_completed, ThreadPoolExecutor
 
 # noinspection PyPackageRequirements
 from googleapiclient.discovery import build
@@ -111,3 +113,27 @@ def mumbai_usage():
     print(f"{len(usages)} occupancy records created")
     Hotel.save_all(hotels)
     print(f"{len(hotels)} hotel occupancy updated")
+
+
+def check_room(hotel: Hotel, ballroom: str):
+    query = Usage.objects.filter_by(city=hotel.city, hotel=hotel.name)
+    usage = query.filter('ballrooms', Usage.objects.ARRAY_CONTAINS, ballroom).first()
+    used = True if usage else False
+    changed = hotel.set_ballroom_used([ballroom], used)
+    return hotel, ballroom, changed
+
+
+def update_ballroom_maps(workers: int = 200):
+    hotels = Hotel.objects.get()
+    start = time.perf_counter()
+    with ThreadPoolExecutor(max_workers=workers) as executor:
+        threads = [executor.submit(check_room, hotel, room)
+                   for hotel in hotels for room in hotel.ballrooms]
+        rooms = [future.result() for future in as_completed(threads)]
+    end = time.perf_counter() - start
+    print(f"{len(rooms)} checked in {end:0.2f} seconds")
+    updated_hotels = {room[0].name for room in rooms if room[2]}
+    hotels = [hotel for hotel in hotels if hotel.name in updated_hotels]
+    if hotels:
+        Hotel.save_all(hotels)
+    print(f"{len(hotels)} updated")

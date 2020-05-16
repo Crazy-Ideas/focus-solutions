@@ -17,7 +17,7 @@ class QueryForm(FSForm):
     MAX_WEEKDAYS = int(MAX_ALL_DAYS * 7 / 5)
     MAX_WEEKENDS = int(MAX_ALL_DAYS * 7 / 2)
     MAX_SPECIFIC_DAYS = int(MAX_ALL_DAYS * 7 / 1)
-    DEFAULT_DATE = Date.last_monday()
+    DEFAULT_DATE = Date.last_sunday()
     ALL_DAY = "All Days"
     WEEKDAY = "Weekdays"
     WEEKEND = "Weekends"

@@ -191,6 +191,8 @@ class UsageForm(FSForm):
         self.usage.event_description = self.event_description.data
         self.usage.event_type = self.event_type.data
         self.usage.ballrooms = self.ballrooms.data
+        if self.hotel.set_ballroom_used(self.usage.ballrooms):
+            self.hotel.save()
         if self.timing == Config.MORNING:
             self.usage.meals = [Config.BREAKFAST, Config.LUNCH] if self.morning_meal.data == self.BREAKFAST_LUNCH \
                 else [self.morning_meal.data]
