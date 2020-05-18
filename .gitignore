@@ -5,3 +5,4 @@ __pycache__
 *.csv
 google-cloud.json
 fs_flask/static/open-iconic/
+fs_flask/downloads
