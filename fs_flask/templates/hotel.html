@@ -76,15 +76,31 @@
         <div class="col-md-4">
             <div class="card text-center">
                 <h5 class="card-header">
-                    Default Hotels
+                    Primary Hotels
                     <a type="button" class="btn btn-warning" data-toggle="modal"
-                       data-target="#hotel-modal" data-type="{{ form.COMPETITION }}"
-                       data-title="Select Other Hotels">
+                       data-target="#hotel-modal" data-type="{{ form.EDIT_PRIMARY_HOTEL }}"
+                       data-title="Select Primary Hotels">
                         <span class="oi oi-pencil"></span>
                     </a>
                 </h5>
                 <ul class="list-group list-group-flush">
-                    {% for hotel in hotel.competitions %}
+                    {% for hotel in hotel.primary_hotels %}
+                        <li class="list-group-item">{{ hotel }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            <br>
+            <div class="card text-center">
+                <h5 class="card-header">
+                    Secondary Hotels
+                    <a type="button" class="btn btn-warning" data-toggle="modal"
+                       data-target="#hotel-modal" data-type="{{ form.EDIT_SECONDARY_HOTEL }}"
+                       data-title="Select Secondary Hotels">
+                        <span class="oi oi-pencil"></span>
+                    </a>
+                </h5>
+                <ul class="list-group list-group-flush">
+                    {% for hotel in hotel.secondary_hotels %}
                         <li class="list-group-item">{{ hotel }}</li>
                     {% endfor %}
                 </ul>
@@ -111,8 +127,11 @@
                         <div id="edit-ballroom">
                             {{ form_group_no_error(form.ballroom) }}
                         </div>
-                        <div id="select-hotel">
-                            {{ form_group_no_error(form.competitions) }}
+                        <div id="select-primary-hotel">
+                            {{ form_group_no_error(form.primaries) }}
+                        </div>
+                        <div id="select-secondary-hotel">
+                            {{ form_group_no_error(form.secondaries) }}
                         </div>
                         <div id="comment">
                             Placeholder comment
@@ -142,32 +161,43 @@
             $(this).find(".modal-title").text(title);
             $(this).find("#form_type").val(form_type);
             $(this).find("#comment").text("");
-            if (form_type === "{{ form.COMPETITION }}") {
-                $(this).find("#select-hotel").show();
+            if (form_type === "{{ form.EDIT_PRIMARY_HOTEL }}") {
+                $(this).find("#select-primary-hotel").show();
+                $(this).find("#select-secondary-hotel").hide();
+                $(this).find("#edit-ballroom").hide();
+                $(this).find("#edit-hotel").hide();
+                $(this).find("#save-button").removeClass().addClass("btn btn-warning").html("Save");
+            } else if (form_type === "{{ form.EDIT_SECONDARY_HOTEL }}") {
+                $(this).find("#select-secondary-hotel").show();
+                $(this).find("#select-primary-hotel").hide();
                 $(this).find("#edit-ballroom").hide();
                 $(this).find("#edit-hotel").hide();
                 $(this).find("#save-button").removeClass().addClass("btn btn-warning").html("Save");
             } else if (form_type === "{{ form.EDIT_HOTEL }}") {
                 $(this).find("#edit-hotel").show();
-                $(this).find("#select-hotel").hide();
+                $(this).find("#select-primary-hotel").hide();
+                $(this).find("#select-secondary-hotel").hide();
                 $(this).find("#edit-ballroom").hide();
                 $(this).find("#save-button").removeClass().addClass("btn btn-warning").html("Save");
             } else if (form_type === "{{ form.NEW_BALLROOM }}") {
                 $(this).find("#edit-ballroom").show();
                 $(this).find("#ballroom").val("");
-                $(this).find("#select-hotel").hide();
+                $(this).find("#select-primary-hotel").hide();
+                $(this).find("#select-secondary-hotel").hide();
                 $(this).find("#edit-hotel").hide();
                 $(this).find("#save-button").removeClass().addClass("btn btn-success").html("Create");
             } else if (form_type === "{{ form.EDIT_BALLROOM }}") {
                 $(this).find("#edit-ballroom").show();
                 $(this).find("#ballroom").val(old_ballroom);
-                $(this).find("#select-hotel").hide();
+                $(this).find("#select-primary-hotel").hide();
+                $(this).find("#select-secondary-hotel").hide();
                 $(this).find("#edit-hotel").hide();
                 $(this).find("#old_ballroom").val(old_ballroom);
                 $(this).find("#save-button").removeClass().addClass("btn btn-warning").html("Save");
             } else if (form_type === "{{ form.REMOVE_BALLROOM }}") {
                 $(this).find("#edit-ballroom").hide();
-                $(this).find("#select-hotel").hide();
+                $(this).find("#select-primary-hotel").hide();
+                $(this).find("#select-secondary-hotel").hide();
                 $(this).find("#edit-hotel").hide();
                 $(this).find("#old_ballroom").val(old_ballroom);
                 $(this).find("#comment").text("Are you sure you want to remove " + old_ballroom + "?");

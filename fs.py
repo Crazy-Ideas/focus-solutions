@@ -37,24 +37,25 @@ def create_user(email: str, name: str, role: str, hotel_name: str = None):
 
 def mumbai_hotels():
     sheet = build("sheets", "v4").spreadsheets().values()
-    hotel_table = sheet.get(spreadsheetId=Config.SHEET_ID, range="Hotels!A1:Z30").execute().get("values", list())
+    hotel_table = sheet.get(spreadsheetId=Config.SHEET_ID, range="Hotels!A1:AU34").execute().get("values", list())
     hotel_dict = {str(index): {"name": hotel, "rooms": list(), "competitions": list()}
                   for index, hotel in enumerate(hotel_table[0])}
     for rooms in hotel_table[1:]:
         for index, room in enumerate(rooms):
             if room:
                 hotel_dict[str(index)]["rooms"].append(room)
-    hotel_table = sheet.get(spreadsheetId=Config.SHEET_ID, range="Hotels!A31:Z45").execute().get("values", list())
+    hotel_table = sheet.get(spreadsheetId=Config.SHEET_ID, range="Hotels!A35:AU55").execute().get("values", list())
     for hotels in hotel_table[1:]:
         for index, hotel in enumerate(hotels):
             if hotel:
                 hotel_dict[str(index)]["competitions"].append(hotel)
                 if hotel not in hotel_table[0]:
                     raise TypeError
-    hotels = [Hotel(hotel["name"], hotel["rooms"], hotel["competitions"], "Mumbai").doc_to_dict()
-              for _, hotel in hotel_dict.items()]
+    hotels = [Hotel(name=hotel["name"], ballrooms=hotel["rooms"], primary_hotels=hotel["competitions"][:9],
+                    secondary_hotels=hotel["competitions"][9:18] if len(hotel["competitions"]) > 9 else list(),
+                    city="Mumbai").doc_to_dict() for _, hotel in hotel_dict.items()]
     for hotel in hotels:
-        hotel["start_date"] = "2020-01-01"
+        hotel["start_date"] = "2019-01-01"
         hotel["end_date"] = "2020-03-31"
         print(hotel)
     Hotel.objects.delete()
@@ -64,7 +65,7 @@ def mumbai_hotels():
 
 def mumbai_usage():
     sheet = build("sheets", "v4").spreadsheets().values()
-    hotel_table = sheet.get(spreadsheetId=Config.SHEET_ID, range="Usage!A1:H2000").execute().get("values", list())
+    hotel_table = sheet.get(spreadsheetId=Config.SHEET_ID, range="Usage!A1:H5100").execute().get("values", list())
     hotels = Hotel.objects.filter_by(city="Mumbai").get()
     hotel_names = [hotel.name for hotel in hotels]
     usages = list()

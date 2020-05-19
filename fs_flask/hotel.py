@@ -18,14 +18,15 @@ class BallroomMap(BaseMap):
 
 
 class Hotel(FirestoreDocument):
-    def __init__(self, name: str = None, ballrooms: List[str] = None, competitions: List[str] = None,
-                 city: str = None):
+    def __init__(self, name: str = None, ballrooms: List[str] = None, primary_hotels: List[str] = None,
+                 secondary_hotels: List[str] = None, city: str = None):
         super().__init__()
         self.name: str = name if name else str()
         self.ballroom_maps: List[dict] = [BallroomMap(room).to_dict() for room in ballrooms] if ballrooms \
             else [BallroomMap(Config.OTHER).to_dict()]
         self.city: str = city if city else str()
-        self.competitions: List[str] = competitions if competitions else list()
+        self.primary_hotels: List[str] = primary_hotels[:9] if primary_hotels else list()
+        self.secondary_hotels: List[str] = secondary_hotels[:9] if secondary_hotels else list()
         self.email: str = str()
         self.start_date: str = str()
         self.end_date: str = str()
@@ -34,15 +35,7 @@ class Hotel(FirestoreDocument):
         self.last_timing: str = str()
 
     def __repr__(self):
-        return f"{self.city}:{self.name}:Ballrooms={len(self.ballrooms)}:Competitions={len(self.competitions)}"
-
-    @classmethod
-    def get_competitions(cls, city: str, hotel: str) -> List[str]:
-        competitions = list()
-        my_hotel: Hotel = cls.objects.filter_by(city=city, name=hotel).first()
-        if my_hotel:
-            competitions.extend(sorted(my_hotel.competitions))
-        return competitions[:9]
+        return f"{self.city}:{self.name}:Ballrooms={len(self.ballrooms)}:Primary={len(self.primary_hotels)}"
 
     @property
     def ballrooms(self):
@@ -145,11 +138,13 @@ class HotelForm(FSForm):
     EDIT_BALLROOM = "edit_ballroom"
     NEW_BALLROOM = "new_ballroom"
     REMOVE_BALLROOM = "remove_ballroom"
-    COMPETITION = "hotel"
+    EDIT_PRIMARY_HOTEL = "primary_hotel"
+    EDIT_SECONDARY_HOTEL = "secondary_hotel"
     start_date = DateField("Select contract start date")
     end_date = DateField("Select contract end date")
     ballroom = StringField("Ball room name")
-    competitions = SelectMultipleField("Select hotels", choices=list())
+    primaries = SelectMultipleField("Select Primary Hotels", choices=list())
+    secondaries = SelectMultipleField("Select Secondary Hotels", choices=list())
     old_ballroom = HiddenField()
     form_type = HiddenField()
     submit = SubmitField()
@@ -159,10 +154,12 @@ class HotelForm(FSForm):
         self.hotel = hotel
         hotels = Hotel.objects.filter_by(city=current_user.city).get()
         hotels.sort(key=lambda hotel_item: hotel_item.name)
-        self.competitions.choices.extend([(hotel.name, hotel.name) for hotel in hotels])
-        self.competitions.choices.remove((hotel.name, hotel.name))
+        self.primaries.choices.extend([(hotel.name, hotel.name) for hotel in hotels])
+        self.primaries.choices.remove((hotel.name, hotel.name))
+        self.secondaries.choices = self.primaries.choices
         if request.method == "GET":
-            self.competitions.data = hotel.competitions
+            self.primaries.data = hotel.primary_hotels
+            self.secondaries.data = hotel.secondary_hotels
             self.start_date.data, self.end_date.data = hotel.contract
 
     def raise_date_error(self, message):
@@ -200,8 +197,10 @@ class HotelForm(FSForm):
     def update(self):
         if self.form_type.data == self.EDIT_HOTEL:
             self.hotel.set_contract(self.start_date.data, self.end_date.data)
-        elif self.form_type.data == self.COMPETITION:
-            self.hotel.competitions = self.competitions.data[:9]
+        elif self.form_type.data == self.EDIT_PRIMARY_HOTEL:
+            self.hotel.primary_hotels = self.primaries.data[:9]
+        elif self.form_type.data == self.EDIT_SECONDARY_HOTEL:
+            self.hotel.secondary_hotels = self.secondaries.data[:9]
         elif self.form_type.data == self.NEW_BALLROOM:
             self.hotel.add_ballroom(self.ballroom.data)
         elif self.form_type.data == self.EDIT_BALLROOM:

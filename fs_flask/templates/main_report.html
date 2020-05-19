@@ -13,8 +13,8 @@
                 </h5>
                 <ul class="list-group list-group-flush">
                     <li class="list-group-item">
-                        Hotels<br>
-                        {% for hotel in form.hotels.data %}
+                        {{ form.hotel_select.data }}<br>
+                        {% for hotel in form.selected_hotels %}
                             <span class="badge badge-primary">{{ hotel }}</span>
                         {% endfor %}
                     </li>
@@ -132,7 +132,8 @@
                 <div class="modal-body justify-content-center">
                     <form class="form" method="POST" id="query-form">
                         <div id="hotel-select">
-                            {{ form_group_no_error(form.hotels) }}
+                            {{ radio_field(form.hotel_select) }}
+                            {{ form_group_no_error(form.custom_hotels) }}
                         </div>
                         <div id="period-select">
                             {{ form_group_no_error(form.start_date) }}

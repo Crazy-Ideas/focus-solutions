@@ -259,6 +259,10 @@ class UsageForm(FSForm):
         return url_for("usage_manage", hotel_id=self.hotel.id, date=Date(date).db_date, timing=timing)
 
     @property
+    def title_previous(self) -> str:
+        return "Previous Day Evening" if self.timing == Config.MORNING else "This Day Morning"
+
+    @property
     def display_next(self) -> str:
         if not self.usages:
             return "disabled"
@@ -275,6 +279,10 @@ class UsageForm(FSForm):
             date = self.date
             timing = Config.EVENING
         return url_for("usage_manage", hotel_id=self.hotel.id, date=Date(date).db_date, timing=timing)
+
+    @property
+    def title_next(self) -> str:
+        return "This Day Evening" if self.timing == Config.MORNING else "Next Day Morning"
 
     @property
     def display_no_event(self) -> str:

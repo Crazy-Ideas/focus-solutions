@@ -4,7 +4,7 @@ from typing import List, Tuple
 
 from flask import request
 from flask_login import current_user
-from wtforms import SelectField, SelectMultipleField, DateField, SubmitField, ValidationError
+from wtforms import SelectField, SelectMultipleField, DateField, SubmitField, ValidationError, RadioField
 
 from config import Config, Date
 from fs_flask import FSForm
@@ -23,10 +23,16 @@ class QueryForm(FSForm):
     WEEKEND = "Weekends"
     DAY_CHOICES = (ALL_DAY, WEEKDAY, WEEKEND, "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday",
                    "Sunday")
+    PRIMARY_HOTEL = "Primary Hotels"
+    SECONDARY_HOTEL = "Secondary Hotels"
+    CUSTOM_HOTEL = "Custom Hotels"
+    HOTEL_CHOICES = (PRIMARY_HOTEL, SECONDARY_HOTEL, CUSTOM_HOTEL)
     timing = SelectField("Select timing", choices=list())
     meals = SelectMultipleField("Select meals", choices=list())
     event = SelectField("Select event type", choices=list())
-    hotels = SelectMultipleField("Select hotels", choices=list())
+    hotel_select = RadioField("Hotel Selection", choices=[(choice, choice) for choice in HOTEL_CHOICES],
+                              default=PRIMARY_HOTEL)
+    custom_hotels = SelectMultipleField("Select hotels", choices=list())
     start_date = DateField("From Date")
     end_date = DateField("To Date")
     day = SelectField("Select the day(s) of the week", choices=list())
@@ -39,14 +45,17 @@ class QueryForm(FSForm):
         self.timing.choices.append(any_choice)
         self.meals.choices.append(any_choice)
         self.event.choices.append(any_choice)
-        self.hotels.choices.append((current_user.hotel, current_user.hotel))
+        self.custom_hotels.choices.append((current_user.hotel, current_user.hotel))
         self.timing.choices.extend([(timing, timing) for timing in Config.TIMINGS])
         self.meals.choices.extend([(meal, meal) for meal in Config.MEALS])
         self.event.choices.extend([(event, event) for event in Config.EVENTS])
         hotels = Hotel.objects.filter_by(city=current_user.city).get()
         hotels.sort(key=lambda hotel: hotel.name)
-        self.hotels.choices.extend([(hotel.name, hotel.name) for hotel in hotels if hotel.name != current_user.hotel])
-        self.competitions = Hotel.get_competitions(current_user.city, current_user.hotel)
+        self.custom_hotels.choices.extend([(hotel.name, hotel.name) for hotel in hotels
+                                           if hotel.name != current_user.hotel])
+        hotel = next((hotel for hotel in hotels if hotel.name == current_user.hotel), None)
+        self.primaries = hotel.primary_hotels if hotel else list()
+        self.secondaries = hotel.secondary_hotels if hotel else list()
         self.query = Usage.objects.filter_by(city=current_user.city, no_event=False)
         self.usage_data: List[Usage] = list()
         self.hotel_counts: List[Tuple[Hotel, int]] = list()
@@ -54,7 +63,6 @@ class QueryForm(FSForm):
             self.timing.data = Config.ANY
             self.event.data = Config.ANY
             self.meals.data = [Config.ANY]
-            self.hotels.data = self.competitions
             self.start_date.data = self.end_date.data = self.DEFAULT_DATE
             self.day.data = self.ALL_DAY
         return
@@ -83,7 +91,12 @@ class QueryForm(FSForm):
                                   f"{self.MAX_SPECIFIC_DAYS} days")
 
     def update_data(self, filter_meals: bool = False):
-        hotels = self.hotels.data[:9]
+        if self.hotel_select.data == self.PRIMARY_HOTEL:
+            hotels = self.primaries
+        elif self.hotel_select.data == self.SECONDARY_HOTEL:
+            hotels = self.secondaries
+        else:
+            hotels = self.custom_hotels.data
         hotels.append(current_user.hotel)
         self.query = self.query.filter("hotel", self.query.IN, hotels)
         self.query = self.query.filter("date", ">=", Date(self.start_date.data).db_date)
@@ -120,8 +133,8 @@ class QueryForm(FSForm):
             self.meals.data.remove(Config.ANY)
         if self.meals.data[0] != Config.ANY:
             filter_meals = True
-        if not self.hotels.data:
-            self.hotels.data = self.competitions
+        if not self.custom_hotels.data:
+            self.custom_hotels.data = list()
         self.update_data(filter_meals)
 
     @property
@@ -131,6 +144,15 @@ class QueryForm(FSForm):
     @property
     def format_end_date(self) -> str:
         return Date(self.end_date.data).format_week if self.end_date.data else "Invalid date"
+
+    @property
+    def selected_hotels(self) -> str:
+        if self.hotel_select.data == self.PRIMARY_HOTEL:
+            return self.primaries
+        elif self.hotel_select.data == self.SECONDARY_HOTEL:
+            return self.secondaries
+        else:
+            return self.custom_hotels.data
 
 
 class Dashboard:
