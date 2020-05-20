@@ -180,23 +180,48 @@
     {{ super() }}
     <script src="https://www.gstatic.com/charts/loader.js"></script>
     <script>
-        $("#query-button").on("click", () => {
-            document.forms["query-form"].submit()
+        $(document).ready(function () {
+            $("#usage_list").DataTable();
+            $("#timing-1").click();
+        });
+
+        $("#query-button").on("click", function () {
+            $("#query-form").submit();
         });
         $("#query-modal").on("show.bs.modal", function (event) {
-            let query_type = $(event.relatedTarget).data("query-type")
-            let title = $(event.relatedTarget).data("title")
-            $(this).find(".modal-title").text(title)
+            const query_type = $(event.relatedTarget).data("query-type");
+            const title = $(event.relatedTarget).data("title");
+            $(this).find(".modal-title").text(title);
             if (query_type === "hotel") {
-                $(this).find("#hotel-select").show()
-                $(this).find("#event-select").hide()
+                $(this).find("#hotel-select").show();
+                $(this).find("#event-select").hide();
             } else {
-                $(this).find("#event-select").show()
-                $(this).find("#morning_meal").hide()
-                $(this).find("#evening_meal").hide()
-                $(this).find("#hotel-select").hide()
+                $(this).find("#event-select").show();
+                $(this).find("#hotel-select").hide();
             }
-        })
+        });
+        $(".custom-control-input").change(function () {
+            const all_meal = $("#all_meal");
+            const morning_meal = $("#morning_meal")
+            const evening_meal = $("#evening_meal")
+            switch (this.value) {
+                case "{{ form.ALL_TIMING }}":
+                    all_meal.show();
+                    morning_meal.hide();
+                    evening_meal.hide();
+                    break;
+                case "{{ config.MORNING }}":
+                    morning_meal.show();
+                    all_meal.hide();
+                    evening_meal.hide();
+                    break;
+                case "{{ config.EVENING }}":
+                    evening_meal.show();
+                    all_meal.hide();
+                    morning_meal.hide();
+                    break;
+            }
+        });
     </script>
     <!--suppress JSUnresolvedVariable, JSUnresolvedFunction -->
     <script>
@@ -212,13 +237,7 @@
                 ],
                 containerId: "hotel-count-pie",
             });
-            hotel_count_pie.draw()
+            hotel_count_pie.draw();
         });
     </script>
-    <script>
-        $(document).ready(function () {
-            $('#usage_list').DataTable();
-        });
-    </script>
-
 {% endblock %}

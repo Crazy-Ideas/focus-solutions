@@ -229,13 +229,13 @@
                     $(this).find("#evening-meal").show();
                     $(this).find("#morning-meal").hide();
                     if (meal === "{{ config.EVENING_MEALS[0] }}") {
-                        $(this).find("#evening-meal-1").prop("checked", true);
+                        $(this).find("#evening_meal-1").prop("checked", true);
                     } else if (meal === "{{ config.EVENING_MEALS[1] }}") {
-                        $(this).find("#evening-meal-2").prop("checked", true);
+                        $(this).find("#evening_meal-2").prop("checked", true);
                     } else if (meal === "{{ config.EVENING_MEALS[2] }}") {
-                        $(this).find("#evening-meal-3").prop("checked", true);
+                        $(this).find("#evening_meal-3").prop("checked", true);
                     } else {
-                        $(this).find("#evening-meal-4").prop("checked", true);
+                        $(this).find("#evening_meal-4").prop("checked", true);
                     }
                 }
             } else if (form_type === "{{ form.NO_EVENT }}") {

@@ -59,7 +59,7 @@ class Usage(FirestoreDocument):
 
     @property
     def formatted_meal(self) -> str:
-        return " & ".join(self.meals)
+        return " and ".join(self.meals)
 
     @property
     def formatted_ballroom(self) -> str:
