@@ -212,15 +212,15 @@
                 } else {
                     $(this).find("#event_type-3").prop("checked", true);
                 }
-                const meal = $("#" + usage_id + " #meal").text().replace('&', '&amp;');
+                const meal = $("#" + usage_id + " #meal").text();
                 if (timing === "{{ config.MORNING }}") {
                     $(this).find("#morning-meal").show();
                     $(this).find("#evening-meal").hide();
-                    if (meal === "{{ form.MORNING_MEALS[0] }}") {
+                    if (meal === "{{ config.MORNING_MEALS[0] }}") {
                         $(this).find("#morning_meal-1").prop("checked", true);
-                    } else if (meal === "{{ form.MORNING_MEALS[1] }}") {
+                    } else if (meal === "{{ config.MORNING_MEALS[1] }}") {
                         $(this).find("#morning_meal-2").prop("checked", true);
-                    } else if (meal === "{{ form.MORNING_MEALS[2] }}") {
+                    } else if (meal === "{{ config.MORNING_MEALS[2] }}") {
                         $(this).find("#morning_meal-3").prop("checked", true);
                     } else {
                         $(this).find("#morning_meal-4").prop("checked", true);
@@ -228,11 +228,11 @@
                 } else {
                     $(this).find("#evening-meal").show();
                     $(this).find("#morning-meal").hide();
-                    if (meal === "{{ form.EVENING_MEALS[0] }}") {
+                    if (meal === "{{ config.EVENING_MEALS[0] }}") {
                         $(this).find("#evening-meal-1").prop("checked", true);
-                    } else if (meal === "{{ form.EVENING_MEALS[1] }}") {
+                    } else if (meal === "{{ config.EVENING_MEALS[1] }}") {
                         $(this).find("#evening-meal-2").prop("checked", true);
-                    } else if (meal === "{{ form.EVENING_MEALS[2] }}") {
+                    } else if (meal === "{{ config.EVENING_MEALS[2] }}") {
                         $(this).find("#evening-meal-3").prop("checked", true);
                     } else {
                         $(this).find("#evening-meal-4").prop("checked", true);

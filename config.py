@@ -20,14 +20,17 @@ class Config:
     ROLES = (ADMIN, HOTEL)
     DEFAULT_CITY = "Mumbai"
     EMPTY_CHOICE = (str(), str())
-    ANY = "Any"
     CITIES = ("Mumbai", "Pune")
     NO_MEAL = "No Meal"
     BREAKFAST = "Breakfast"
     LUNCH = "Lunch"
     DINNER = "Dinner"
     HI_TEA = "Hi Tea"
+    BREAKFAST_LUNCH = "Breakfast and Lunch"
+    HI_TEA_DINNER = "Hi Tea and Dinner"
     MEALS = (BREAKFAST, LUNCH, HI_TEA, DINNER, NO_MEAL)
+    MORNING_MEALS = (BREAKFAST, LUNCH, BREAKFAST_LUNCH, NO_MEAL)
+    EVENING_MEALS = (HI_TEA, DINNER, HI_TEA_DINNER, NO_MEAL)
     MORNING = "Morning"
     EVENING = "Evening"
     TIMINGS = (MORNING, EVENING)
@@ -82,9 +85,19 @@ class Date:
         return date - dt.timedelta(days=date.isoweekday())
 
     @classmethod
-    def last_monday(cls) -> Optional[dt.date]:
-        date = cls.last_sunday()
-        return date - dt.timedelta(days=6)
+    def previous_lock_in(cls) -> dt.date:
+        date = cls.today()
+        previous_sunday = date - dt.timedelta(days=date.isoweekday())
+        last_date_previous_month = date.replace(day=1) - dt.timedelta(days=1)
+        return previous_sunday if previous_sunday > last_date_previous_month else last_date_previous_month
+
+    @classmethod
+    def next_lock_in(cls) -> dt.date:
+        date = cls.today()
+        next_sunday = date + dt.timedelta(days=(7 - date.isoweekday()))
+        next_month = date.replace(day=28) + dt.timedelta(days=4)
+        last_date_this_month = next_month - dt.timedelta(days=next_month.day)
+        return next_sunday if next_sunday < last_date_this_month else last_date_this_month
 
     @property
     def date(self) -> Optional[dt.date]:

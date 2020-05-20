@@ -77,10 +77,6 @@ Usage.init()
 
 
 class UsageForm(FSForm):
-    BREAKFAST_LUNCH = f"{Config.BREAKFAST} & {Config.LUNCH}"
-    HI_TEA_DINNER = f"{Config.HI_TEA} & {Config.DINNER}"
-    MORNING_MEALS = [Config.BREAKFAST, Config.LUNCH, BREAKFAST_LUNCH, Config.NO_MEAL]
-    EVENING_MEALS = [Config.HI_TEA, Config.DINNER, HI_TEA_DINNER, Config.NO_MEAL]
     CREATE = "create"
     UPDATE = "update"
     DELETE = "delete"
@@ -91,8 +87,8 @@ class UsageForm(FSForm):
     client = StringField("Enter client name")
     event_description = StringField("Enter event description")
     event_type = RadioField("Select event type", choices=[(event, event) for event in Config.EVENTS])
-    morning_meal = RadioField("Select meal", choices=[(meal, meal) for meal in MORNING_MEALS])
-    evening_meal = RadioField("Select meal", choices=[(meal, meal) for meal in EVENING_MEALS])
+    morning_meal = RadioField("Select morning meal", choices=[(meal, meal) for meal in Config.MORNING_MEALS])
+    evening_meal = RadioField("Select evening meal", choices=[(meal, meal) for meal in Config.EVENING_MEALS])
     ballrooms = SelectMultipleField("Select ballrooms", choices=list())
     goto_date = DateField("Select date")
     goto_timing = RadioField("Select timing", choices=[(timing, timing) for timing in Config.TIMINGS])
@@ -194,10 +190,10 @@ class UsageForm(FSForm):
         if self.hotel.set_ballroom_used(self.usage.ballrooms):
             self.hotel.save()
         if self.timing == Config.MORNING:
-            self.usage.meals = [Config.BREAKFAST, Config.LUNCH] if self.morning_meal.data == self.BREAKFAST_LUNCH \
+            self.usage.meals = [Config.BREAKFAST, Config.LUNCH] if self.morning_meal.data == Config.BREAKFAST_LUNCH \
                 else [self.morning_meal.data]
         else:
-            self.usage.meals = [Config.HI_TEA, Config.DINNER] if self.evening_meal.data == self.HI_TEA_DINNER \
+            self.usage.meals = [Config.HI_TEA, Config.DINNER] if self.evening_meal.data == Config.HI_TEA_DINNER \
                 else [self.evening_meal.data]
 
     def update_default_fields(self):

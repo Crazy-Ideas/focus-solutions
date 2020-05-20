@@ -25,7 +25,7 @@
                 <h5 class="card-header">
                     Filter
                     <a type="button" class="btn btn-primary text-white" data-toggle="modal"
-                       data-target="#query-modal" data-query-type="period" data-title="Edit Query Parameters">
+                       data-target="#query-modal" data-query-type="event" data-title="Edit Query Parameters">
                         <span class="oi oi-pencil"></span>
                     </a>
                 </h5>
@@ -45,7 +45,7 @@
                     </li>
                     <li class="list-group-item">
                         Meal
-                        {% for meal in form.meals.data %}
+                        {% for meal in form.meals %}
                             <span class="badge badge-primary">{{ meal }}</span>
                         {% endfor %}
                     </li>
@@ -135,15 +135,33 @@
                             {{ radio_field(form.hotel_select) }}
                             {{ form_group_no_error(form.custom_hotels) }}
                         </div>
-                        <div id="period-select">
-                            {{ form_group_no_error(form.start_date) }}
-                            {{ form_group_no_error(form.end_date) }}
-                            {{ form_group_no_error(form.day) }}
-                        </div>
                         <div id="event-select">
-                            {{ form_group_no_error(form.timing) }}
-                            {{ form_group_no_error(form.meals) }}
-                            {{ form_group_no_error(form.event) }}
+                            <div class="row">
+                                <div class="col">
+                                    {{ form_group_no_error(form.start_date) }}
+                                </div>
+                                <div class="col">
+                                    {{ form_group_no_error(form.end_date) }}
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col">
+                                    {{ radio_field(form.day) }}
+                                </div>
+                                <div class="col">
+                                    {{ radio_field(form.event) }}
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col">
+                                    {{ radio_field(form.timing) }}
+                                </div>
+                                <div class="col">
+                                    {{ radio_field(form.all_meal) }}
+                                    {{ radio_field(form.morning_meal) }}
+                                    {{ radio_field(form.evening_meal) }}
+                                </div>
+                            </div>
                         </div>
                         {{ form.csrf_token() }}
                     </form>
@@ -172,10 +190,10 @@
             if (query_type === "hotel") {
                 $(this).find("#hotel-select").show()
                 $(this).find("#event-select").hide()
-                $(this).find("#period-select").hide()
-            } else if (query_type === "period") {
-                $(this).find("#period-select").show()
+            } else {
                 $(this).find("#event-select").show()
+                $(this).find("#morning_meal").hide()
+                $(this).find("#evening_meal").hide()
                 $(this).find("#hotel-select").hide()
             }
         })

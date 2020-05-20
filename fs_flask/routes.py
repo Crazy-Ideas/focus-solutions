@@ -21,9 +21,7 @@ def main_report() -> Response:
     form = QueryForm()
     if not form.validate_on_submit():
         form.flash_form_errors()
-        form.update_data()
-        return render_template("main_report.html", form=form, title="Report")
-    form.update_query()
+    form.update_data()
     return render_template("main_report.html", form=form, title="Report")
 
 
