@@ -38,10 +38,9 @@ class QueryForm(FSForm):
     hotel_select = RadioField("Hotel Selection", choices=[(choice, choice) for choice in HOTEL_CHOICES],
                               default=PRIMARY_HOTEL)
     custom_hotels = SelectMultipleField("Select hotels", choices=list())
-    start_date = DateField("From Date", default=DEFAULT_DATE)
-    end_date = DateField("To Date", default=DEFAULT_DATE)
-    timing = RadioField("Select timing", choices=[(timing, timing) for timing in TIMING_CHOICES],
-                        default=Config.MORNING)
+    start_date = DateField("From Date", default=DEFAULT_DATE, format="%d/%m/%Y")
+    end_date = DateField("To Date", default=DEFAULT_DATE, format="%d/%m/%Y")
+    timing = RadioField("Select timing", choices=[(timing, timing) for timing in TIMING_CHOICES], default=ALL_TIMING)
     all_meal = RadioField("Select meals", choices=[(meal, meal) for meal in ALL_MEAL_CHOICES], default=ALL_MEAL)
     morning_meal = RadioField("Select morning meals", choices=[(meal, meal) for meal in MORNING_MEAL_CHOICES],
                               default=ALL_MEAL)

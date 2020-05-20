@@ -182,11 +182,11 @@
     <script>
         $(document).ready(function () {
             $("#usage_list").DataTable();
-            $("#timing-1").click();
         });
 
         $("#query-button").on("click", function () {
             $("#query-form").submit();
+
         });
         $("#query-modal").on("show.bs.modal", function (event) {
             const query_type = $(event.relatedTarget).data("query-type");
@@ -196,11 +196,21 @@
                 $(this).find("#hotel-select").show();
                 $(this).find("#event-select").hide();
             } else {
+                const all_timing = $("#timing-1");
+                const morning = $("#timing-2");
+                const evening = $("#timing-3");
+                if (all_timing.prop("checked")) {
+                    all_timing.click();
+                } else if (morning.prop("checked")) {
+                    morning.click();
+                } else if (evening.prop("checked")) {
+                    evening.click();
+                }
                 $(this).find("#event-select").show();
                 $(this).find("#hotel-select").hide();
             }
         });
-        $(".custom-control-input").change(function () {
+        $(".custom-control-input").click(function () {
             const all_meal = $("#all_meal");
             const morning_meal = $("#morning_meal")
             const evening_meal = $("#evening_meal")
@@ -223,21 +233,23 @@
             }
         });
     </script>
-    <!--suppress JSUnresolvedVariable, JSUnresolvedFunction -->
-    <script>
-        google.charts.load("current");
-        google.charts.setOnLoadCallback(() => {
-            const hotel_count_pie = new google.visualization.ChartWrapper({
-                chartType: "PieChart",
-                dataTable: [
-                    ["Hotel Name", "Hotel Count"],
-                    {% for hotel in form.hotel_counts %}
-                        ["{{ hotel[0] }}", {{ hotel[1] }}],
-                    {% endfor %}
-                ],
-                containerId: "hotel-count-pie",
+    {% if form.usage_data|length %}
+        <!--suppress JSUnresolvedVariable, JSUnresolvedFunction -->
+        <script>
+            google.charts.load("current");
+            google.charts.setOnLoadCallback(() => {
+                const hotel_count_pie = new google.visualization.ChartWrapper({
+                    chartType: "PieChart",
+                    dataTable: [
+                        ["Hotel Name", "Hotel Count"],
+                        {% for hotel in form.hotel_counts %}
+                            ["{{ hotel[0] }}", {{ hotel[1] }}],
+                        {% endfor %}
+                    ],
+                    containerId: "hotel-count-pie",
+                });
+                hotel_count_pie.draw();
             });
-            hotel_count_pie.draw();
-        });
-    </script>
+        </script>
+    {% endif %}
 {% endblock %}

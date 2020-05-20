@@ -140,8 +140,8 @@ class HotelForm(FSForm):
     REMOVE_BALLROOM = "remove_ballroom"
     EDIT_PRIMARY_HOTEL = "primary_hotel"
     EDIT_SECONDARY_HOTEL = "secondary_hotel"
-    start_date = DateField("Select contract start date")
-    end_date = DateField("Select contract end date")
+    start_date = DateField("Select contract start date", format="%d/%m/%Y")
+    end_date = DateField("Select contract end date", format="%d/%m/%Y")
     ballroom = StringField("Ball room name")
     primaries = SelectMultipleField("Select Primary Hotels", choices=list())
     secondaries = SelectMultipleField("Select Secondary Hotels", choices=list())

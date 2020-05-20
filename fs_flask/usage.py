@@ -90,7 +90,7 @@ class UsageForm(FSForm):
     morning_meal = RadioField("Select morning meal", choices=[(meal, meal) for meal in Config.MORNING_MEALS])
     evening_meal = RadioField("Select evening meal", choices=[(meal, meal) for meal in Config.EVENING_MEALS])
     ballrooms = SelectMultipleField("Select ballrooms", choices=list())
-    goto_date = DateField("Select date")
+    goto_date = DateField("Select date", format="%d/%m/%Y")
     goto_timing = RadioField("Select timing", choices=[(timing, timing) for timing in Config.TIMINGS])
 
     def __init__(self, hotel_id: str, date: str, timing: str, *args, **kwargs):
