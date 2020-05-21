@@ -133,7 +133,9 @@
                     <form class="form" method="POST" id="query-form">
                         <div id="hotel-select">
                             {{ radio_field(form.hotel_select) }}
-                            {{ form_group_no_error(form.custom_hotels) }}
+                            <div id="custom-hotels">
+                                {{ form_group_no_error(form.custom_hotels) }}
+                            </div>
                         </div>
                         <div id="event-select">
                             <div class="row">
@@ -195,10 +197,20 @@
             if (query_type === "hotel") {
                 $(this).find("#hotel-select").show();
                 $(this).find("#event-select").hide();
+                const primary_hotel = $(this).find("#hotel_select-1")
+                const secondary_hotel = $(this).find("#hotel_select-2")
+                const custom_hotel = $(this).find("#hotel_select-3")
+                if (primary_hotel.prop("checked")) {
+                    primary_hotel.click()
+                } else if (secondary_hotel.prop("checked")) {
+                    secondary_hotel.click()
+                } else if (custom_hotel.prop("checked")) {
+                    custom_hotel.click()
+                }
             } else {
-                const all_timing = $("#timing-1");
-                const morning = $("#timing-2");
-                const evening = $("#timing-3");
+                const all_timing = $(this).find("#timing-1");
+                const morning = $(this).find("#timing-2");
+                const evening = $(this).find("#timing-3");
                 if (all_timing.prop("checked")) {
                     all_timing.click();
                 } else if (morning.prop("checked")) {
@@ -214,6 +226,7 @@
             const all_meal = $("#all_meal");
             const morning_meal = $("#morning_meal")
             const evening_meal = $("#evening_meal")
+            const custom_hotels = $("#custom-hotels")
             switch (this.value) {
                 case "{{ form.ALL_TIMING }}":
                     all_meal.show();
@@ -229,6 +242,15 @@
                     evening_meal.show();
                     all_meal.hide();
                     morning_meal.hide();
+                    break;
+                case "{{ form.PRIMARY_HOTEL }}":
+                    custom_hotels.hide();
+                    break;
+                case "{{ form.SECONDARY_HOTEL }}":
+                    custom_hotels.hide();
+                    break;
+                case "{{ form.CUSTOM_HOTEL }}":
+                    custom_hotels.show();
                     break;
             }
         });
