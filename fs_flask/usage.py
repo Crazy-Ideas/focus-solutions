@@ -29,12 +29,12 @@ class Usage(FirestoreDocument):
         self.no_event: bool = False
 
     def __repr__(self):
-        return f"{self.hotel}:{self.date}:{self.timing}:{self.client}:{self.event_type}"
+        return f"{self.hotel}:{self.formatted_date}:{self.timing}:{self.client}:{self.formatted_ballroom}"
 
     @classmethod
     def get_data_entry_date(cls, hotel: Hotel) -> Tuple[Optional[dt.date], str]:
         start_date, end_date = hotel.contract
-        today = Date.today()
+        today = Date.next_lock_in()
         data_entry_date = Date(hotel.last_date).date
         if end_date < start_date:
             return None, "Invalid Contract"
@@ -51,7 +51,7 @@ class Usage(FirestoreDocument):
             return (data_entry_date, str()) if hotel.last_timing == Config.EVENING \
                 else (data_entry_date, Config.EVENING)
         else:
-            return today, Config.EVENING
+            return start_date, Config.MORNING
 
     @property
     def formatted_date(self) -> str:
@@ -262,7 +262,7 @@ class UsageForm(FSForm):
     def display_next(self) -> str:
         if not self.usages:
             return "disabled"
-        end_date = min(self.hotel.contract[1], Date.today())
+        end_date = min(self.hotel.contract[1], Date.next_lock_in())
         return "disabled" if (self.date == end_date and self.timing == Config.EVENING) or self.date > end_date \
             else str()
 

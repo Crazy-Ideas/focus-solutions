@@ -37,14 +37,14 @@ def create_user(email: str, name: str, role: str, hotel_name: str = None):
 
 def mumbai_hotels():
     sheet = build("sheets", "v4").spreadsheets().values()
-    hotel_table = sheet.get(spreadsheetId=Config.SHEET_ID, range="Hotels!A1:AU34").execute().get("values", list())
+    hotel_table = sheet.get(spreadsheetId=Config.SHEET_ID, range="Hotels!A1:Z39").execute().get("values", list())
     hotel_dict = {str(index): {"name": hotel, "rooms": list(), "competitions": list()}
                   for index, hotel in enumerate(hotel_table[0])}
     for rooms in hotel_table[1:]:
         for index, room in enumerate(rooms):
             if room:
                 hotel_dict[str(index)]["rooms"].append(room)
-    hotel_table = sheet.get(spreadsheetId=Config.SHEET_ID, range="Hotels!A35:AU55").execute().get("values", list())
+    hotel_table = sheet.get(spreadsheetId=Config.SHEET_ID, range="Hotels!A40:Z60").execute().get("values", list())
     for hotels in hotel_table[1:]:
         for index, hotel in enumerate(hotels):
             if hotel:
@@ -82,27 +82,27 @@ def mumbai_usage():
         usage.hotel = row[6]
         usage.ballrooms = [row[7]]
         if not date_pass:
-            errors.append(f"{index + 1}:DATE_ERROR:{usage}")
+            errors.append(f"{index + 2}:DATE_ERROR:{usage}")
             continue
         if usage.timing not in Config.TIMINGS:
-            errors.append(f"{index + 1}:TIMING_ERROR:{usage}")
+            errors.append(f"{index + 2}:TIMING_ERROR:{usage}")
             continue
         if usage.event_type not in Config.EVENTS:
-            errors.append(f"{index + 1}:EVENT_TYPE_ERROR:{usage}")
+            errors.append(f"{index + 2}:EVENT_TYPE_ERROR:{usage}")
             continue
         usage.meals = usage.meals[0].split(",")
         usage.meals = [meal.strip() for meal in usage.meals]
         if any(meal not in Config.MEALS for meal in usage.meals):
-            errors.append(f"{index + 1}:TIMING_ERROR:{usage}")
+            errors.append(f"{index + 2}:TIMING_ERROR:{usage}")
             continue
         if usage.hotel not in hotel_names:
-            errors.append(f"{index + 1}:HOTEL_ERROR:{usage}")
+            errors.append(f"{index + 2}:HOTEL_ERROR:{usage}")
             continue
         usage.ballrooms = usage.ballrooms[0].split(",")
         usage.ballrooms = [room.strip() for room in usage.ballrooms]
         hotel = next(hotel for hotel in hotels if hotel.name == usage.hotel)
         if any(room not in hotel.ballrooms for room in usage.ballrooms):
-            errors.append(f"{index + 1}:BALL_ROOM_ERROR:{usage}")
+            errors.append(f"{index + 2}:BALL_ROOM_ERROR:{usage}")
             continue
         hotel.set_ballroom_used(usage.ballrooms)
         hotel.set_last_entry(usage.date, usage.timing)

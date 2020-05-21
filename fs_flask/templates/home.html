@@ -26,12 +26,17 @@
     </div>
     <br>
     {% if d.hotels %}
-        <table id="usage_list" class="table table-bordered table-hover">
+        <table id="usage_list" class="table table-bordered">
             <thead class="thead-dark">
             <tr>
-                <th class="" scope="col">Hotel</th>
+                <th class="" scope="col" rowspan="2">Hotel</th>
                 {% for column in d.header %}
-                    <th class="text-center {{ column[1] }}">{{ column[0] }}</th>
+                    <th class="text-center {{ column[1] }} {{ column[3] }}">{{ column[2] }}</th>
+                {% endfor %}
+            </tr>
+            <tr>
+                {% for column in d.header %}
+                    <th class="text-center {{ column[1] }} {{ column[3] }}">{{ column[0] }}</th>
                 {% endfor %}
             </tr>
             </thead>

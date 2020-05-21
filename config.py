@@ -65,7 +65,7 @@ class BaseMap:
 
 
 class Date:
-    TODAY = dt.date(2020, 3, 3)
+    TODAY = dt.date(2020, 3, 16)
     INDIA_TIME_ZONE = timezone("Asia/Kolkata")
 
     def __init__(self, date: Union[dt.date, str] = None):
@@ -78,11 +78,6 @@ class Date:
     @classmethod
     def yesterday(cls) -> dt.date:
         return cls.today() - dt.timedelta(days=1)
-
-    @classmethod
-    def last_sunday(cls) -> dt.date:
-        date = cls.today()
-        return date - dt.timedelta(days=date.isoweekday())
 
     @classmethod
     def previous_lock_in(cls) -> dt.date:

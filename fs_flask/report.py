@@ -17,7 +17,7 @@ class QueryForm(FSForm):
     MAX_WEEKDAYS = int(MAX_ALL_DAYS * 7 / 5)
     MAX_WEEKENDS = int(MAX_ALL_DAYS * 7 / 2)
     MAX_SPECIFIC_DAYS = int(MAX_ALL_DAYS * 7 / 1)
-    DEFAULT_DATE = Date.last_sunday()
+    DEFAULT_DATE = Date.previous_lock_in()
     PRIMARY_HOTEL = "Primary Hotels"
     SECONDARY_HOTEL = "Secondary Hotels"
     CUSTOM_HOTEL = "Custom Hotels"
@@ -69,9 +69,9 @@ class QueryForm(FSForm):
     def validate_end_date(self, end_date: DateField):
         if not self.start_date.data or not self.end_date.data:
             self.raise_date_error(str())
-        if end_date.data > Date.last_sunday():
-            self.raise_date_error(f"To Date cannot be greater than last Sunday "
-                                  f"({Date(Date.last_sunday()).format_date})")
+        if end_date.data > Date.previous_lock_in():
+            self.raise_date_error(f"To Date cannot be greater than previous lock in date "
+                                  f"({Date(Date.previous_lock_in()).format_date})")
         if self.start_date.data > end_date.data:
             self.raise_date_error("From Date cannot be greater than To Date")
         days = (end_date.data - self.start_date.data).days + 1
@@ -165,7 +165,7 @@ class Dashboard:
 
     def __init__(self):
         self.hotels: List[Tuple[str, List[List[str]]]] = list()
-        self.header: List[Tuple[int, str]] = self.generate_header()
+        self.header: List[Tuple[int, str, str, str]] = self.generate_header()
         self.hotel: str = current_user.hotel
         self.today: str = Date().format_week
         self.status: Tuple[str, str] = self.STATUS_ERROR
@@ -177,10 +177,10 @@ class Dashboard:
         self.hotels = [(hotel.name, list()) for hotel in hotels]
         for index, hotel in enumerate(hotels):
             last_date = Date(hotel.last_date).date
-            if last_date and last_date < hotel.contract[0]:
+            if last_date and (last_date < hotel.contract[0] or last_date > Date.next_lock_in()):
                 last_date = None
-            for day in range(self.PAST_DAYS, 0, -1):
-                date = Date.today() - dt.timedelta(days=day)
+            for day in range(self.PAST_DAYS, -1, -1):
+                date = Date.next_lock_in() - dt.timedelta(days=day)
                 if not last_date:
                     self.add_status(index, day, self.NOT_DONE if hotel.is_contract_valid(date) else self.NA)
                     continue
@@ -211,6 +211,8 @@ class Dashboard:
         status.append("d-none d-lg-table-cell" if day > 2 else str())
         self.hotels[index][1].append(status)
 
-    def generate_header(self) -> List[Tuple[int, str]]:
-        return [((Date.today() - dt.timedelta(days=day)).day, "d-none d-lg-table-cell" if day > 2 else str())
-                for day in range(self.PAST_DAYS, 0, -1)]
+    def generate_header(self) -> List[Tuple[int, str, str, str]]:
+        return [((Date.next_lock_in() - dt.timedelta(days=day)).day, "d-none d-lg-table-cell" if day > 2 else str(),
+                 (Date.next_lock_in() - dt.timedelta(days=day)).strftime("%a")[:2],
+                 "bg-warning text-dark" if Date.next_lock_in() - dt.timedelta(days=day) == Date.today() else str())
+                for day in range(self.PAST_DAYS, -1, -1)]

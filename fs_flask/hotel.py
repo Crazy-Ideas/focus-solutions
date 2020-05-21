@@ -102,7 +102,9 @@ class Hotel(FirestoreDocument):
         if not date:
             return False
         last_date = Date(self.last_date).date
-        if not self.last_date or date > last_date:
+        if last_date and last_date > Date.today():
+            last_date = None
+        if not last_date or date > last_date:
             self.last_date = Date(date).db_date
             self.last_timing = timing
             return True
@@ -115,13 +117,11 @@ class Hotel(FirestoreDocument):
         if self.last_timing == Config.EVENING:
             self.last_timing = Config.MORNING
         else:
-            self.last_timing = Config.EVENING
             last_date = Date(self.last_date).date
             if not last_date:
-                last_date = Date(self.start_date).date
-                if not last_date:
-                    return
+                return
             last_date -= dt.timedelta(days=1)
+            self.last_timing = Config.EVENING
             self.last_date = Date(last_date).db_date
         return
 
@@ -133,7 +133,6 @@ Hotel.init()
 
 
 class HotelForm(FSForm):
-    DEFAULT_DATE = Date.today()
     EDIT_HOTEL = "edit_hotel"
     EDIT_BALLROOM = "edit_ballroom"
     NEW_BALLROOM = "new_ballroom"
