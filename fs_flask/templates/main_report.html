@@ -1,72 +1,68 @@
 {% extends "base.html" %}
 
 {% block app_content %}
-    <div class="row justify-content-center">
-        <div class="col-md-4">
-            <div class="card text-center">
-                <h5 class="card-header">
-                    Hotels
-                    <a type="button" class="btn btn-primary text-white" data-toggle="modal"
-                       data-target="#query-modal" data-query-type="hotel" data-title="Select Hotels">
-                        <span class="oi oi-pencil"></span>
-                    </a>
-                </h5>
-                <ul class="list-group list-group-flush">
-                    <li class="list-group-item">
-                        {{ form.hotel_select.data }}<br>
+    <div class="row">
+        <div class="col">
+            <table class="table table-bordered">
+                <tbody>
+                <tr>
+                    <td class="text-center">
+                        <a type="button" class="btn btn-primary text-white" data-toggle="modal"
+                           data-target="#query-modal" data-query-type="hotel" data-title="Select Hotels">
+                            <span class="oi oi-pencil"></span>
+                        </a>
+                    </td>
+                    <td class="text-center" colspan="6">
+                        {{ form.hotel_select.data }}
+                        <br>
                         {% for hotel in form.selected_hotels %}
                             <span class="badge badge-primary">{{ hotel }}</span>
                         {% endfor %}
-                    </li>
-                </ul>
-            </div>
-            <br>
-            <div class="card text-center">
-                <h5 class="card-header">
-                    Filter
-                    <a type="button" class="btn btn-primary text-white" data-toggle="modal"
-                       data-target="#query-modal" data-query-type="event" data-title="Edit Query Parameters">
-                        <span class="oi oi-pencil"></span>
-                    </a>
-                </h5>
-                <ul class="list-group list-group-flush">
-                    <li class="list-group-item">
-                        From Date <span class="badge badge-primary">{{ form.format_start_date }}</span>
-                        <br>
-                        To Date <span class="badge badge-primary">{{ form.format_end_date }}</span>
-                    </li>
-                    <li class="list-group-item">
-                        Days
-                        <span class="badge badge-primary">{{ form.day.data }}</span>
-                    </li>
-                    <li class="list-group-item">
-                        Timing
-                        <span class="badge badge-primary">{{ form.timing.data }}</span>
-                    </li>
-                    <li class="list-group-item">
-                        Meal
+                    </td>
+                </tr>
+                <tr>
+                    <td class="text-center">
+                        <a type="button" class="btn btn-primary text-white" data-toggle="modal"
+                           data-target="#query-modal" data-query-type="event" data-title="Edit Query Parameters">
+                            <span class="oi oi-pencil"></span>
+                        </a>
+                    </td>
+                    <td class="text-center">
+                        From Date<br><span class="badge badge-primary">{{ form.format_start_date }}</span>
+                    </td>
+                    <td class="text-center">
+                        To Date<br><span class="badge badge-primary">{{ form.format_end_date }}</span>
+                    </td>
+                    <td class="text-center d-none d-md-table-cell">
+                        Days<br><span class="badge badge-primary">{{ form.day.data }}</span>
+                    </td>
+                    <td class="text-center d-none d-md-table-cell">
+                        Timing<br><span class="badge badge-primary">{{ form.timing.data }}</span>
+                    </td>
+                    <td class="text-center d-none d-md-table-cell">
+                        Meal<br>
                         {% for meal in form.meals %}
                             <span class="badge badge-primary">{{ meal }}</span>
                         {% endfor %}
-                    </li>
-                    <li class="list-group-item">
-                        Event
-                        <span class="badge badge-primary">{{ form.event.data }}</span>
-                    </li>
-                </ul>
-            </div>
+                    </td>
+                    <td class="text-center d-none d-md-table-cell">
+                        Event<br><span class="badge badge-primary">{{ form.event.data }}</span>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
         </div>
-        <div class="col-md-8 text-center">
-            {% if form.usage_data|length %}
-                <div class="row">
-                    <div class="col-md" id="hotel-count-pie" style="height: 400px;"></div>
-                </div>
-                <div class="row">
-                <div class="col-md">
+    </div>
+    <br>
+    {% if form.usage_data|length %}
+        {# Hotel Count - Pie Chart #}
+        <div class="row">
+            <div class="col-md-9 text-center" id="hotel-count-pie">
+            </div>
+            <div class="col-md-3">
                 <table class="table table-bordered table-hover ">
                     <thead class="thead-dark">
                     <tr>
-                        <th class="text-center" scope="col">Sr. No.</th>
                         <th class="" scope="col">Hotels</th>
                         <th class="text-center" scope="col">{{ form.usage_data|length }}</th>
                     </tr>
@@ -75,51 +71,82 @@
                     {% for hotel_count in form.hotel_counts %}
                         <tr {% if hotel_count[0] == current_user.hotel %}
                             class="table-warning font-weight-bold" {% endif %}>
-                            <td class="text-center">{{ loop.index }}</td>
                             <td class="">{{ hotel_count[0] }}</td>
                             <td class="text-center">{{ hotel_count[1] }}</td>
                         </tr>
                     {% endfor %}
                     </tbody>
                 </table>
-            {% else %}
-                <strong>No Hotels. Update query criteria.</strong>
-            {% endif %}
-            </div>
             </div>
         </div>
-    </div>
-    {% if form.usage_data|length %}
         <br>
-        <table id="usage_list" class="table table-bordered table-hover ">
-            <thead class="thead-dark">
-            <tr>
-                <th class="text-center" scope="col">Hotel</th>
-                <th class="text-center" scope="col">Date</th>
-                <th class="text-center d-none d-md-table-cell" scope="col">Timing</th>
-                <th class="text-center" scope="col">Client</th>
-                <th class="text-center d-none d-md-table-cell" scope="col">Meal</th>
-                <th class="text-center d-none d-md-table-cell" scope="col">Type</th>
-                <th class="text-center d-none d-md-table-cell" scope="col">Ballroom</th>
-                <th class="text-center d-none d-md-table-cell" scope="col">Event</th>
-            </tr>
-            </thead>
-            <tbody>
-            {% for usage in form.usage_data %}
-                <tr>
-                    <td class="text-center">{{ usage.hotel }}</td>
-                    <td class="text-center">{{ usage.formatted_date }}</td>
-                    <td class="text-center d-none d-md-table-cell">{{ usage.timing }}</td>
-                    <td class="text-center">{{ usage.client }}</td>
-                    <td class="text-center d-none d-md-table-cell">{{ usage.formatted_meal }}</td>
-                    <td class="text-center d-none d-md-table-cell">{{ usage.event_type }}</td>
-                    <td class="text-center d-none d-md-table-cell">{{ usage.formatted_ballroom }}</td>
-                    <td class="text-center d-none d-md-table-cell">{{ usage.event_description }}</td>
-                </tr>
-            {% endfor %}
-            </tbody>
-        </table>
+        <div class="row">
+            <div class="col-md-9 text-center" id="hotel-trend-line">
+            </div>
+            <div class="col-md-3">
+                <table id="trend-table" class="table table-bordered table-hover ">
+                    <thead class="thead-dark">
+                    <tr>
+                        <th class="text-center" scope="col">Date</th>
+                        <th class="text-center" scope="col">My</th>
+                        <th class="text-center" scope="col">Other</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for hotel_trend in form.hotel_trends %}
+                        <tr>
+                            <td class="text-center">{{ hotel_trend[0] }}</td>
+                            <td class="text-center">{{ hotel_trend[1] }}</td>
+                            <td class="text-center">{{ hotel_trend[2] }}</td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {# Event List #}
+        <br>
+        <div class="row">
+            <div class="col">
+                <br>
+                <table id="usage_list" class="table table-bordered table-hover ">
+                    <thead class="thead-dark">
+                    <tr>
+                        <th class="text-center" scope="col">Hotel</th>
+                        <th class="text-center" scope="col">Date</th>
+                        <th class="text-center d-none d-md-table-cell" scope="col">Timing</th>
+                        <th class="text-center" scope="col">Client</th>
+                        <th class="text-center d-none d-md-table-cell" scope="col">Meal</th>
+                        <th class="text-center d-none d-md-table-cell" scope="col">Type</th>
+                        <th class="text-center d-none d-md-table-cell" scope="col">Ballroom</th>
+                        <th class="text-center d-none d-md-table-cell" scope="col">Event</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for usage in form.usage_data %}
+                        <tr>
+                            <td class="text-center">{{ usage.hotel }}</td>
+                            <td class="text-center">{{ usage.formatted_date }}</td>
+                            <td class="text-center d-none d-md-table-cell">{{ usage.timing }}</td>
+                            <td class="text-center">{{ usage.client }}</td>
+                            <td class="text-center d-none d-md-table-cell">{{ usage.formatted_meal }}</td>
+                            <td class="text-center d-none d-md-table-cell">{{ usage.event_type }}</td>
+                            <td class="text-center d-none d-md-table-cell">{{ usage.formatted_ballroom }}</td>
+                            <td class="text-center d-none d-md-table-cell">{{ usage.event_description }}</td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    {% else %}
+        <div class="row">
+            <div class="col text-center">
+                <strong>No Hotels. Update query criteria.</strong>
+            </div>
+        </div>
     {% endif %}
+
     <div class="modal fade" id="query-modal" tabindex="-1" role="dialog">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
@@ -184,6 +211,7 @@
     <script>
         $(document).ready(function () {
             $("#usage_list").DataTable();
+            $("#trend-table").DataTable({ordering: false, searching: false});
         });
 
         $("#query-button").on("click", function () {
@@ -269,8 +297,24 @@
                         {% endfor %}
                     ],
                     containerId: "hotel-count-pie",
+                    options: {"title": "Hotel Count", "chartArea": {"left": 0, "width": "100%"}}
+                });
+                const hotel_count_trend = new google.visualization.ChartWrapper({
+                    chartType: "LineChart",
+                    dataTable: [
+                        ["Date", "My Events", "Other Hotels Avg"],
+                        {% for hotel_trend in form.hotel_trends %}
+                            ["{{ hotel_trend[0] }}", {{ hotel_trend[1] }}, {{ hotel_trend[2] }}],
+                        {% endfor %}
+                    ],
+                    containerId: "hotel-trend-line",
+                    options: {
+                        "legend": {"position": "bottom"}, "title": "Hotel Trends", "pointSize": 5,
+                        "chartArea": {"left": 0, "width": "100%"}
+                    }
                 });
                 hotel_count_pie.draw();
+                hotel_count_trend.draw();
             });
         </script>
     {% endif %}

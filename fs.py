@@ -9,7 +9,7 @@ from googleapiclient.discovery import build
 # noinspection PyPackageRequirements
 from googleapiclient.http import MediaIoBaseDownload
 
-from config import Config, local_path
+from config import Config, local_path, Date
 from fs_flask.hotel import Hotel
 from fs_flask.usage import Usage
 from fs_flask.user import User
@@ -120,6 +120,38 @@ def mumbai_usage():
     print(f"{len(usages)} occupancy records created in {end:0.2f} seconds")
     Hotel.save_all(hotels)
     print(f"{len(hotels)} hotel occupancy updated")
+
+
+def mumbai_no_event():
+    start_date = "2020-01-01"
+    end_date = "2020-03-31"
+    city = "Mumbai"
+    query = Usage.objects.filter_by(city=city).filter("date", ">=", start_date)
+    usage_data = query.filter("date", "<=", end_date).get()
+    usage_data.sort(key=lambda usage: (usage.hotel, usage.date))
+    hotels = Hotel.objects.get()
+    no_events = list()
+    start_date = Date(start_date).date
+    days = (Date(end_date).date - start_date).days + 1
+    periods = [(day, timing) for day in range(days) for timing in Config.TIMINGS]
+    for day, timing in periods:
+        date = start_date + dt.timedelta(days=day)
+        date = Date(date).db_date
+        date_usages = [usage for usage in usage_data if usage.date == date and usage.timing == timing]
+        for hotel in hotels:
+            if any(usage.hotel == hotel.name for usage in date_usages):
+                continue
+            usage = Usage()
+            usage.hotel = hotel.name
+            usage.city = city
+            usage.set_date(Date(date).date)
+            usage.timing = timing
+            usage.no_event = True
+            no_events.append(usage.doc_to_dict())
+    for usage in no_events:
+        print(usage)
+    Usage.create_from_list_of_dict(no_events)
+    print(f"{len(no_events)} no events created")
 
 
 def check_room(hotel: Hotel, ballroom: str):

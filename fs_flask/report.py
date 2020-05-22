@@ -1,4 +1,5 @@
 import datetime as dt
+import itertools
 from operator import itemgetter
 from typing import List, Tuple
 
@@ -61,6 +62,7 @@ class QueryForm(FSForm):
         self.secondaries = hotel.secondary_hotels if hotel else list()
         self.usage_data: List[Usage] = list()
         self.hotel_counts: List[Tuple[Hotel, int]] = list()
+        self.hotel_trends: List[Tuple[str, int, float]] = list()
 
     def raise_date_error(self, message):
         self.start_date.data = self.end_date.data = self.DEFAULT_DATE
@@ -118,6 +120,22 @@ class QueryForm(FSForm):
         filter_meals = self.get_filter_meals()
         if filter_meals:
             self.usage_data = [usage for usage in self.usage_data if any(meal in usage.meals for meal in filter_meals)]
+        self.determine_hotel_counts()
+        self.determine_hotel_trends()
+
+    def determine_hotel_trends(self):
+        self.usage_data.sort(key=lambda usage: usage.date)
+        total_hotel_count = len(self.selected_hotels) + 1
+        for date, usages in itertools.groupby(self.usage_data, lambda usage: usage.date):
+            date = Date(date).format_date[:6]
+            usages = list(usages)
+            my_count = sum(1 for usage in usages if usage.hotel == current_user.hotel)
+            other_count = sum(1 for usage in usages if usage.hotel != current_user.hotel)
+            other_average = round(other_count / total_hotel_count, 1)
+            self.hotel_trends.append((date, my_count, other_average))
+        return
+
+    def determine_hotel_counts(self):
         hotels = {usage.hotel for usage in self.usage_data}
         self.hotel_counts = [(hotel, sum(1 for usage in self.usage_data if usage.hotel == hotel)) for hotel in hotels]
         self.hotel_counts.sort(key=itemgetter(1), reverse=True)
@@ -204,6 +222,10 @@ class Dashboard:
             days = (end_date - last_date).days
             self.status = (f"{days} days entry remaining", "list-group-item-danger")
         self.hotels.sort(key=itemgetter(0))
+        hotel = next((hotel for hotel in self.hotels if hotel[0] == current_user.hotel))
+        if hotel:
+            self.hotels.remove(hotel)
+            self.hotels.insert(0, hotel)
         return
 
     def add_status(self, index: int, day: int, status: List[str]):
