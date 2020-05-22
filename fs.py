@@ -22,7 +22,7 @@ def create_user(email: str, name: str, role: str, hotel_name: str = None):
     if role == Config.ADMIN and not hotel_name:
         print("Hotel name required for ADMIN")
         return
-    hotel_name = name if Config.HOTEL else hotel_name
+    hotel_name = name if role == Config.HOTEL else hotel_name
     hotel: Hotel = Hotel.objects.filter_by(name=hotel_name).first()
     if not hotel:
         print("Hotel not found in the database")
