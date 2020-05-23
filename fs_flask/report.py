@@ -19,9 +19,9 @@ class QueryForm(FSForm):
     MAX_WEEKENDS = int(MAX_ALL_DAYS * 7 / 2)
     MAX_SPECIFIC_DAYS = int(MAX_ALL_DAYS * 7 / 1)
     DEFAULT_DATE = Date.previous_lock_in()
-    PRIMARY_HOTEL = "Primary Hotels"
-    SECONDARY_HOTEL = "Secondary Hotels"
-    CUSTOM_HOTEL = "Custom Hotels"
+    PRIMARY_HOTEL = "Primary Comp Set"
+    SECONDARY_HOTEL = "Secondary Comp Set"
+    CUSTOM_HOTEL = "Custom Comp Set"
     HOTEL_CHOICES = (PRIMARY_HOTEL, SECONDARY_HOTEL, CUSTOM_HOTEL)
     ALL_TIMING = "All Timings"
     TIMING_CHOICES = tuple([ALL_TIMING] + list(Config.TIMINGS))
@@ -36,7 +36,7 @@ class QueryForm(FSForm):
     ALL_EVENT = "All Events"
     EVENT_CHOICES = tuple([ALL_EVENT] + list(Config.EVENTS))
     # Form elements
-    hotel_select = RadioField("Hotel Selection", choices=[(choice, choice) for choice in HOTEL_CHOICES],
+    hotel_select = RadioField("Comp Set Type", choices=[(choice, choice) for choice in HOTEL_CHOICES],
                               default=PRIMARY_HOTEL)
     custom_hotels = SelectMultipleField("Select hotels", choices=list())
     start_date = DateField("From Date", default=DEFAULT_DATE, format="%d/%m/%Y")

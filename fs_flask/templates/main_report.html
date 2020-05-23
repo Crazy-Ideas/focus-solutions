@@ -8,7 +8,7 @@
                 <tr>
                     <td class="text-center">
                         <a type="button" class="btn btn-primary text-white" data-toggle="modal"
-                           data-target="#query-modal" data-query-type="hotel" data-title="Select Hotels">
+                           data-target="#query-modal" data-query-type="hotel" data-title="Select Comp Set">
                             <span class="oi oi-pencil"></span>
                         </a>
                     </td>
@@ -88,8 +88,8 @@
                     <thead class="thead-dark">
                     <tr>
                         <th class="text-center" scope="col">Date</th>
-                        <th class="text-center" scope="col">My</th>
-                        <th class="text-center" scope="col">Other</th>
+                        <th class="text-center" scope="col">My Prop</th>
+                        <th class="text-center" scope="col">Comp Set</th>
                     </tr>
                     </thead>
                     <tbody>
@@ -302,7 +302,7 @@
                 const hotel_count_trend = new google.visualization.ChartWrapper({
                     chartType: "LineChart",
                     dataTable: [
-                        ["Date", "My Events", "Other Hotels Avg"],
+                        ["Date", "My Prop", "Comp Set"],
                         {% for hotel_trend in form.hotel_trends %}
                             ["{{ hotel_trend[0] }}", {{ hotel_trend[1] }}, {{ hotel_trend[2] }}],
                         {% endfor %}
