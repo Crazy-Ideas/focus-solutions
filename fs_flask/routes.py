@@ -1,4 +1,4 @@
-from flask import render_template, url_for, redirect, Response, flash
+from flask import render_template, url_for, redirect, Response, flash, send_file
 from flask_login import login_required, current_user
 
 from config import Config, Date
@@ -22,6 +22,8 @@ def main_report() -> Response:
     if not form.validate_on_submit():
         form.flash_form_errors()
     form.update_data()
+    if form.file_path:
+        return send_file(form.file_path, as_attachment=True, attachment_filename="Report.xlsx")
     return render_template("main_report.html", form=form, title="Report")
 
 

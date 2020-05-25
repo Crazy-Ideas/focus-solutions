@@ -8,7 +8,7 @@
                 <tr>
                     <td class="text-center">
                         <a type="button" class="btn btn-primary text-white" data-toggle="modal"
-                           data-target="#query-modal" data-query-type="hotel" data-title="Select Comp Set">
+                           data-title="Select Comp Set" data-target="#query-modal" data-type="{{ form.HOTEL_QUERY }}">
                             <span class="oi oi-pencil"></span>
                         </a>
                     </td>
@@ -23,7 +23,8 @@
                 <tr>
                     <td class="text-center">
                         <a type="button" class="btn btn-primary text-white" data-toggle="modal"
-                           data-target="#query-modal" data-query-type="event" data-title="Edit Query Parameters">
+                           data-target="#query-modal" data-type="{{ form.FILTER_QUERY }}"
+                           data-title="Edit Query Parameters">
                             <span class="oi oi-pencil"></span>
                         </a>
                     </td>
@@ -139,6 +140,16 @@
                 </table>
             </div>
         </div>
+        <br>
+        <div class="row">
+            <div class="col text-center">
+                <a type="button" class="btn btn-primary text-white" data-toggle="modal"
+                   data-target="#query-modal" data-type="{{ form.DOWNLOAD }}" data-title="Download Report">
+                    <span class="oi oi-cloud-download"></span> Download Report as Excel File
+                </a>
+            </div>
+        </div>
+        <br>
     {% else %}
         <div class="row">
             <div class="col text-center">
@@ -192,11 +203,19 @@
                                 </div>
                             </div>
                         </div>
+                        <div id="download-select">
+                            <p>Are you sure you want to download this report as an Excel file?</p>
+                            <p>It might take a few minutes depending on the size of the data.</p>
+                            <p>You will see the file download start after few minutes.</p>
+                            <p>Please do NOT refresh the page till that time.</p>
+                            <p>Once the download completes you can close this dialog box.</p>
+                        </div>
+                        {{ form.form_type }}
                         {{ form.csrf_token() }}
                     </form>
                 </div>
                 <div class="modal-footer justify-content-center d-flex">
-                    <button type="button" class="btn btn-primary" id="query-button">Query</button>
+                    <button type="button" class="btn btn-primary" id="query-button">Placeholder</button>
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
                 </div>
             </div>
@@ -219,12 +238,15 @@
 
         });
         $("#query-modal").on("show.bs.modal", function (event) {
-            const query_type = $(event.relatedTarget).data("query-type");
+            const form_type = $(event.relatedTarget).data("type");
             const title = $(event.relatedTarget).data("title");
             $(this).find(".modal-title").text(title);
-            if (query_type === "hotel") {
+            $(this).find("#form_type").val(form_type);
+            if (form_type === "{{ form.HOTEL_QUERY }}") {
                 $(this).find("#hotel-select").show();
                 $(this).find("#event-select").hide();
+                $(this).find("#download-select").hide();
+                $(this).find("#query-button").html("Query");
                 const primary_hotel = $(this).find("#hotel_select-1")
                 const secondary_hotel = $(this).find("#hotel_select-2")
                 const custom_hotel = $(this).find("#hotel_select-3")
@@ -235,7 +257,7 @@
                 } else if (custom_hotel.prop("checked")) {
                     custom_hotel.click()
                 }
-            } else {
+            } else if (form_type === "{{ form.FILTER_QUERY }}") {
                 const all_timing = $(this).find("#timing-1");
                 const morning = $(this).find("#timing-2");
                 const evening = $(this).find("#timing-3");
@@ -248,6 +270,13 @@
                 }
                 $(this).find("#event-select").show();
                 $(this).find("#hotel-select").hide();
+                $(this).find("#download-select").hide();
+                $(this).find("#query-button").html("Query");
+            } else if (form_type === "{{ form.DOWNLOAD }}") {
+                $(this).find("#download-select").show();
+                $(this).find("#event-select").hide();
+                $(this).find("#hotel-select").hide();
+                $(this).find("#query-button").html("Download");
             }
         });
         $(".custom-control-input").click(function () {

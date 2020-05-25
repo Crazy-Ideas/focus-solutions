@@ -4,11 +4,12 @@ from operator import itemgetter
 from typing import List, Tuple
 
 from flask_login import current_user
-from wtforms import SelectMultipleField, DateField, SubmitField, ValidationError, RadioField
+from wtforms import SelectMultipleField, DateField, SubmitField, ValidationError, RadioField, HiddenField
 
 from config import Config, Date
 from fs_flask import FSForm
 from fs_flask.hotel import Hotel
+from fs_flask.sheet import Sheet, GridRange, GridCoordinate
 from fs_flask.usage import Usage
 
 
@@ -35,6 +36,10 @@ class QueryForm(FSForm):
     DAY_CHOICES = (ALL_DAY, WEEKDAY, WEEKEND)
     ALL_EVENT = "All Events"
     EVENT_CHOICES = tuple([ALL_EVENT] + list(Config.EVENTS))
+    # Form type
+    DOWNLOAD = "download"
+    HOTEL_QUERY = "hotel_query"
+    FILTER_QUERY = "filter_query"
     # Form elements
     hotel_select = RadioField("Comp Set Type", choices=[(choice, choice) for choice in HOTEL_CHOICES],
                               default=PRIMARY_HOTEL)
@@ -49,6 +54,7 @@ class QueryForm(FSForm):
                               default=ALL_MEAL)
     day = RadioField("Select the day(s) of the week", choices=[(day, day) for day in DAY_CHOICES], default=ALL_DAY)
     event = RadioField("Select event type", choices=[(event, event) for event in EVENT_CHOICES], default=ALL_EVENT)
+    form_type = HiddenField()
     submit = SubmitField("Query")
 
     def __init__(self, *args, **kwargs) -> None:
@@ -63,6 +69,7 @@ class QueryForm(FSForm):
         self.usage_data: List[Usage] = list()
         self.hotel_counts: List[Tuple[Hotel, int]] = list()
         self.hotel_trends: List[Tuple[str, int, float]] = list()
+        self.file_path: str = str()
 
     def raise_date_error(self, message):
         self.start_date.data = self.end_date.data = self.DEFAULT_DATE
@@ -122,6 +129,46 @@ class QueryForm(FSForm):
             self.usage_data = [usage for usage in self.usage_data if any(meal in usage.meals for meal in filter_meals)]
         self.determine_hotel_counts()
         self.determine_hotel_trends()
+        if self.form_type.data == self.DOWNLOAD and len(self.usage_data) > 0:
+            self.download()
+
+    def download(self):
+        sheet = Sheet.create()
+        data_rows = len(self.usage_data) + 4
+        sheet.prepare(data_rows=data_rows)
+        header = ["Date", "Timing", "Client", "Event Description", "Meal", "Event Type", "Hotel Name", "Ballroom"]
+        data = [[u.hotel, u.formatted_date, u.timing, u.client, u.formatted_meal, u.event_type, u.formatted_ballroom,
+                 u.formatted_meal] for u in self.usage_data]
+        data.insert(0, header)
+        range_name = f"Data!A1:H{data_rows}"
+        sheet.update_range(range_name, data)
+        row1 = self.selected_hotels
+        row1.extend([str()] * (9 - len(row1)))
+        row1.insert(0, self.hotel_select.data)
+        row2 = ["From Date", "To Date", "Days", "Timing", "Meal", "Event"] + [str()] * 4
+        row3 = [Date(self.start_date.data).format_date, Date(self.end_date.data).format_date, self.day.data,
+                self.timing.data, " and ".join(self.meals), self.event.data] + [str()] * 4
+        sheet.update_range(f"Report!A1:J3", [row1, row2, row3])
+        hotel_counts: List[list] = [list(hotel_count) for hotel_count in self.hotel_counts]
+        hotel_counts.insert(0, ["Hotel", f"Total Count={len(self.usage_data)}"])
+        row_end = len(self.hotel_counts) + 5
+        sheet.update_range(f"Report!H5:I{row_end}", hotel_counts)
+        headers = [GridRange.from_range(f"Report!H6:H{row_end}").to_dict()]
+        values = [GridRange.from_range(f"Report!I6:I{row_end}").to_dict()]
+        anchor = GridCoordinate.from_cell(f"Report!A5").to_dict()
+        pie = sheet.pie_spec(headers, values, anchor)
+        hotel_trends: List[list] = [list(hotel_trend) for hotel_trend in self.hotel_trends]
+        hotel_trends.insert(0, ["Date", "My Prop", "Comp Set Avg"])
+        row_end = len(self.hotel_trends) + 25
+        sheet.update_range(f"Report!H25:J{row_end}", hotel_trends)
+        headers = [GridRange.from_range(f"Report!H25:H{row_end}").to_dict()]
+        values = [GridRange.from_range(f"Report!I25:I{row_end}").to_dict(),
+                  GridRange.from_range(f"Report!J25:J{row_end}").to_dict()]
+        anchor = GridCoordinate.from_cell(f"Report!A25").to_dict()
+        trend = sheet.trend_spec(headers, values, anchor)
+        sheet.update_chart(pie, trend)
+        self.file_path = sheet.download()
+        sheet.delete()
 
     def determine_hotel_trends(self):
         self.usage_data.sort(key=lambda usage: usage.date)

@@ -1,15 +1,11 @@
 import datetime as dt
-import io
 import time
 from concurrent.futures import as_completed, ThreadPoolExecutor
-from typing import List
 
 # noinspection PyPackageRequirements
 from googleapiclient.discovery import build
-# noinspection PyPackageRequirements
-from googleapiclient.http import MediaIoBaseDownload
 
-from config import Config, local_path, Date
+from config import Config, Date
 from fs_flask.hotel import Hotel
 from fs_flask.usage import Usage
 from fs_flask.user import User
@@ -58,8 +54,8 @@ def mumbai_hotels():
         hotel["start_date"] = "2019-01-01"
         hotel["end_date"] = "2020-03-31"
         print(hotel)
-    Hotel.objects.delete()
-    Hotel.create_from_list_of_dict(hotels)
+    # Hotel.objects.delete()
+    # Hotel.create_from_list_of_dict(hotels)
     print(f"{len(hotels)} hotels created")
 
 
@@ -114,8 +110,8 @@ def mumbai_usage():
     for usage in usages:
         print(usage)
     start = time.perf_counter()
-    Usage.objects.delete()
-    Usage.create_from_list_of_dict(usages)
+    # Usage.objects.delete()
+    # Usage.create_from_list_of_dict(usages)
     end = time.perf_counter() - start
     print(f"{len(usages)} occupancy records created in {end:0.2f} seconds")
     Hotel.save_all(hotels)
@@ -150,7 +146,7 @@ def mumbai_no_event():
             no_events.append(usage.doc_to_dict())
     for usage in no_events:
         print(usage)
-    Usage.create_from_list_of_dict(no_events)
+    # Usage.create_from_list_of_dict(no_events)
     print(f"{len(no_events)} no events created")
 
 
@@ -176,90 +172,3 @@ def update_ballroom_maps(workers: int = 200):
     if hotels:
         Hotel.save_all(hotels)
     print(f"{len(hotels)} updated")
-
-
-def download_excel_file():
-    sheet = Sheet.create()
-    sheet.update_chart()
-    sheet.download()
-    sheet.delete()
-
-
-class Sheet:
-    SHEETS = build("sheets", "v4")
-    DRIVE = build("drive", "v3")
-
-    def __init__(self, sheet_id: str = None):
-        self.sheet_id: str = sheet_id if sheet_id else str()
-
-    @classmethod
-    def create(cls) -> "Sheet":
-        spreadsheet = cls.SHEETS.spreadsheets().create(body={"properties": {"title": "Hotel Count Report"}},
-                                                       fields="spreadsheetId").execute()
-        sheet_id = spreadsheet.get("spreadsheetId")
-        print(f"Sheet with ID {sheet_id} created")
-        return cls(sheet_id)
-
-    @classmethod
-    def create_with_permission(cls) -> "Sheet":
-        sheet = cls.create()
-
-        def callback(_, __, exception):
-            if exception:
-                print(exception)
-                return
-            print(f"Permission granted for sheet ID {sheet.sheet_id}")
-
-        batch = cls.DRIVE.new_batch_http_request(callback=callback)
-        permission = {"type": "user", "role": "writer", "emailAddress": "nayan@crazyideas.co.in"}
-        batch.add(cls.DRIVE.permissions().create(fileId=sheet.sheet_id, body=permission, fields="id"))
-        batch.execute()
-        return sheet
-
-    def update_range(self, range_name: str, values: List[List[str]]):
-        self.SHEETS.spreadsheets().values().update(spreadsheetId=self.sheet_id, valueInputOption="USER_ENTERED",
-                                                   body={"values": values}, range=range_name).execute()
-
-    def delete(self):
-        if not self.sheet_id:
-            print("Nothing to delete")
-        self.DRIVE.files().delete(fileId=self.sheet_id).execute()
-        print(f"Sheet with ID {self.sheet_id} deleted")
-
-    def download(self):
-        if not self.sheet_id:
-            print("Nothing to download")
-        request = self.DRIVE.files().export_media(fileId=self.sheet_id, mimeType=Config.EXCEL_MIME)
-        file_handle = io.FileIO(local_path(f"{self.sheet_id}.xlsx"), "w")
-        downloader = MediaIoBaseDownload(file_handle, request)
-        done = False
-        while done is False:
-            _, done = downloader.next_chunk()
-        print("Download complete")
-
-    def update_chart(self):
-        sample_data = [["Hotels", "Counts"], ["Courtyard By Marriott", 35], ["Taj Lands End", 58]]
-        self.update_range("Sheet1!I1:J3", sample_data)
-        legends = [{"sheetId": 0, "startRowIndex": 1, "endRowIndex": 3, "startColumnIndex": 8, "endColumnIndex": 9}]
-        data = [{"sheetId": 0, "startRowIndex": 1, "endRowIndex": 3, "startColumnIndex": 9, "endColumnIndex": 10}]
-        chart = {
-            "spec": {
-                "title": "Hotel Count Report",
-                "pieChart": {
-                    "legendPosition": "LEFT_LEGEND",
-                    "threeDimensional": False,
-                    "domain": {"sourceRange": {"sources": legends}},
-                    "series": {"sourceRange": {"sources": data}},
-                }
-            },
-            "position": {
-                "overlayPosition": {
-                    "anchorCell": {"sheetId": 0, "rowIndex": 0, "columnIndex": 0},
-                    "offsetXPixels": 50,
-                    "offsetYPixels": 50
-                }
-            }
-        }
-        body = {"requests": [{"addChart": {"chart": chart}}]}
-        self.SHEETS.spreadsheets().batchUpdate(spreadsheetId=self.sheet_id, body=body).execute()
-        print("Chart updated")
