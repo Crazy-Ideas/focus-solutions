@@ -127,6 +127,8 @@ class QueryForm(FSForm):
         filter_meals = self.get_filter_meals()
         if filter_meals:
             self.usage_data = [usage for usage in self.usage_data if any(meal in usage.meals for meal in filter_meals)]
+        self.usage_data.sort(key=lambda usage: usage.timing, reverse=True)
+        self.usage_data.sort(key=lambda usage: usage.date)
         self.determine_hotel_counts()
         self.determine_hotel_trends()
         if self.form_type.data == self.DOWNLOAD and len(self.usage_data) > 0:
@@ -136,9 +138,9 @@ class QueryForm(FSForm):
         sheet = Sheet.create()
         data_rows = len(self.usage_data) + 4
         sheet.prepare(data_rows=data_rows)
-        header = ["Date", "Timing", "Client", "Event Description", "Meal", "Event Type", "Hotel Name", "Ballroom"]
+        header = ["Hotel Name", "Date", "Timing", "Client", "Meal", "Event Type", "Ballroom", "Event Description"]
         data = [[u.hotel, u.formatted_date, u.timing, u.client, u.formatted_meal, u.event_type, u.formatted_ballroom,
-                 u.formatted_meal] for u in self.usage_data]
+                 u.event_description] for u in self.usage_data]
         data.insert(0, header)
         range_name = f"Data!A1:H{data_rows}"
         sheet.update_range(range_name, data)
