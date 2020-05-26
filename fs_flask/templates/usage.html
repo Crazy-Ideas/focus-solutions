@@ -41,6 +41,11 @@
                        title="{{ form.title_next }}">
                         <span class="oi oi-arrow-thick-right"></span>
                     </a>
+                    <a type="button" class="btn btn-success text-white {{ form.display_upload }}" data-toggle="modal"
+                       data-target="#usage-modal" data-type="{{ form.UPLOAD }}" title="Upload bulk events via csv file"
+                       data-title="Bulk Upload">
+                        <span class="oi oi-cloud-upload"></span>
+                    </a>
                 </li>
             </ul>
         </div>
@@ -112,7 +117,7 @@
                     </button>
                 </div>
                 <div class="modal-body justify-content-center">
-                    <form class="form" method="POST" id="usage-form">
+                    <form class="form" method="POST" id="usage-form" enctype="multipart/form-data">
                         {{ form.csrf_token() }}
                         {{ form.form_type() }}
                         {{ form.usage_id() }}
@@ -141,6 +146,9 @@
                         <div id="comment">
                             Placeholder comment
                         </div>
+                        <div id="upload-file">
+                            <p>{{ form_group_no_error(form.file_name) }}</p>
+                        </div>
                     </form>
                 </div>
                 <div class="modal-footer justify-content-center d-flex">
@@ -150,14 +158,74 @@
             </div>
         </div>
     </div>
+
+    <div class="modal fade" id="upload-modal" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Upload Status</h5>
+                    <button type="button" class="close" data-dismiss="modal">
+                        <span>&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body justify-content-center text-center">
+                    {% if form.upload_error_message or form.upload_errors %}
+                        <p>Following errors occurred in uploading</p>
+                        {% if form.upload_error_message %}
+                            <p class="font-weight-bold">{{ form.upload_error_message }}</p>
+                        {% endif %}
+                        {% if form.upload_errors %}
+                            <table class="table table-bordered table-responsive">
+                                <thead class="thead-dark">
+                                <tr>
+                                    <th class="text-center" scope="col">Date</th>
+                                    <th class="text-center" scope="col">Timing</th>
+                                    <th class="text-center" scope="col">Client</th>
+                                    <th class="text-center" scope="col">Meal</th>
+                                    <th class="text-center" scope="col">Event Type</th>
+                                    <th class="text-center" scope="col">Ballroom</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {% for row in form.upload_errors %}
+                                    <tr>
+                                        <td class="text-center {{ row.Date.error }}">{{ row.Date.data }}</td>
+                                        <td class="text-center {{ row.Timing.error }}">{{ row.Timing.data }}</td>
+                                        <td class="text-center {{ row.Client.error }}">{{ row.Client.data }}</td>
+                                        <td class="text-center {{ row.Meal.error }}">{{ row.Meal.data }}</td>
+                                        <td class="text-center {{ row.Event_Type.error }}">{{ row.Event_Type.data }}</td>
+                                        <td class="text-center {{ row.Ballroom.error }}">{{ row.Ballroom.data }}</td>
+                                    </tr>
+                                {% endfor %}
+                                </tbody>
+                            </table>
+                        {% endif %}
+                    {% else %}
+                        All data successfully uploaded.
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
 {% endblock %}
 
 {% block scripts %}
     {{ super() }}
     <script>
+        {% if form.form_type.data == form.UPLOAD and not form.file_name.errors %}
+            $(document).ready(function () {
+                $("#upload-modal").modal("show");
+            });
+        {% endif %}
         $("#save-button").on("click", function () {
             document.forms["usage-form"].submit();
         });
+        $(".custom-file-input").on("change", function () {
+            let fileName = $(this).val().split("\\").pop();
+            $(this).siblings(".custom-file-label").addClass("selected").html(fileName);
+        });
+
         $("#usage-modal").on("show.bs.modal", function (event) {
             const form_type = $(event.relatedTarget).data("type");
             const title = $(event.relatedTarget).data("title");
@@ -249,6 +317,13 @@
                 $(this).find("#edit-usage").hide();
                 $(this).find("#goto-date").show()
                 $(this).find("#comment").hide();
+            } else if (form_type === "{{ form.UPLOAD }}") {
+                $(this).find("#save-button").removeClass().addClass("btn btn-primary").html("Upload");
+                $(this).find("#edit-usage").hide();
+                $(this).find("#goto-date").hide();
+                $(this).find("#comment").show();
+                $(this).find("#comment").text("Select the file that was created based on the Upload Template");
+                $(this).find("#upload-file").show();
             }
         });
     </script>

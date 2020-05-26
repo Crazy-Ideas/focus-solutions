@@ -91,5 +91,6 @@ def usage_manage(hotel_id: str, date: str, timing: str):
         form.flash_form_errors()
         return render_template("usage.html", form=form, title="Data Entry")
     form.update()
-    return render_template("usage.html", form=form, title="Data Entry") if not form.redirect \
-        else redirect(form.link_goto)
+    if form.redirect:
+        return redirect(form.link_goto)
+    return render_template("usage.html", form=form, title="Data Entry")

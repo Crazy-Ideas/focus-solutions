@@ -15,6 +15,7 @@ class Config:
     DOWNLOAD_PATH = os.path.join(APP_ROOT, 'downloads')
     EXCEL_MIME = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     SHEET_ID = "1OnvVprC_RSlsKxgAgve-dliPGJydj--qkmvnRUfyGYM"
+    EXTENSIONS = tuple("csv".split())
     ADMIN = "Admin"
     HOTEL = "Hotel"
     ROLES = (ADMIN, HOTEL)
@@ -93,6 +94,14 @@ class Date:
         next_month = date.replace(day=28) + dt.timedelta(days=4)
         last_date_this_month = next_month - dt.timedelta(days=next_month.day)
         return next_sunday if next_sunday < last_date_this_month else last_date_this_month
+
+    @classmethod
+    def from_dd_mmm_yyyy(cls, dd_mmm_yyyy):
+        try:
+            date = dt.datetime.strptime(dd_mmm_yyyy, "%d-%b-%Y")
+        except (ValueError, TypeError):
+            date = str()
+        return cls(date)
 
     @property
     def date(self) -> Optional[dt.date]:

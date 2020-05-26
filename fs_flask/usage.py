@@ -1,12 +1,18 @@
+import csv
 import datetime as dt
+import itertools
 from typing import Optional, List, Tuple
 
 from firestore_ci import FirestoreDocument
 from flask import url_for, request
+from flask_login import current_user
+from flask_wtf.file import FileAllowed
+from werkzeug.datastructures import FileStorage
+from werkzeug.utils import secure_filename
 from wtforms import SelectMultipleField, ValidationError, HiddenField, \
-    StringField, RadioField, DateField
+    StringField, RadioField, DateField, FileField
 
-from config import Config, Date
+from config import Config, Date, local_path
 from fs_flask import FSForm
 from fs_flask.hotel import Hotel
 
@@ -44,14 +50,13 @@ class Usage(FirestoreDocument):
             return start_date, Config.MORNING
         if today > end_date and data_entry_date > end_date:
             return end_date, str()
-        if data_entry_date < today:
-            return (data_entry_date + dt.timedelta(days=1), Config.MORNING) if hotel.last_timing == Config.EVENING \
-                else (data_entry_date, Config.EVENING)
-        elif data_entry_date == today:
-            return (data_entry_date, str()) if hotel.last_timing == Config.EVENING \
-                else (data_entry_date, Config.EVENING)
-        else:
-            return start_date, Config.MORNING
+        if hotel.last_timing == Config.EVENING and (data_entry_date == end_date or data_entry_date == today):
+            return data_entry_date, str()
+        if hotel.last_timing == Config.MORNING and data_entry_date <= today:
+            return data_entry_date, Config.EVENING
+        if hotel.last_timing == Config.EVENING and data_entry_date < today:
+            return data_entry_date + dt.timedelta(days=1), Config.MORNING
+        return start_date, Config.MORNING
 
     @property
     def formatted_date(self) -> str:
@@ -82,6 +87,7 @@ class UsageForm(FSForm):
     DELETE = "delete"
     NO_EVENT = "no event"
     GOTO_DATE = "goto date"
+    UPLOAD = "upload"
     form_type = HiddenField()
     usage_id = HiddenField()
     client = StringField("Enter client name")
@@ -92,11 +98,15 @@ class UsageForm(FSForm):
     ballrooms = SelectMultipleField("Select ballrooms", choices=list())
     goto_date = DateField("Select date", format="%d/%m/%Y")
     goto_timing = RadioField("Select timing", choices=[(timing, timing) for timing in Config.TIMINGS])
+    file_name = FileField("Choose a csv file to upload", validators=[FileAllowed(Config.EXTENSIONS)])
 
     def __init__(self, hotel_id: str, date: str, timing: str, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.error_message: str = str()
         self.redirect: bool = False
+        self.all_done: bool = False
+        self.upload_errors: list = list()
+        self.upload_error_message: str = str()
         self.hotel: Hotel = Hotel.get_by_id(hotel_id)
         if not self.hotel:
             self._error_redirect("Error in retrieving hotel details")
@@ -128,6 +138,8 @@ class UsageForm(FSForm):
     def validate_form_type(self, form_type: HiddenField):
         if form_type.data == self.NO_EVENT and self.usages:
             raise ValidationError("Cannot create a no event when there are already events present")
+        if form_type.data == self.UPLOAD and self.all_done:
+            raise ValidationError(f"Cannot upload when all the data entry is complete")
 
     def validate_usage_id(self, usage_id: StringField):
         if self.form_type.data != self.UPDATE and self.form_type.data != self.DELETE:
@@ -172,6 +184,8 @@ class UsageForm(FSForm):
         if date < start_date:
             raise ValidationError(f"Date is before the contract start date ({Date(start_date).format_date})")
         data_entry_date, data_entry_timing = Usage.get_data_entry_date(self.hotel)
+        if not data_entry_timing:
+            self.all_done = True
         if not data_entry_date:
             raise ValidationError(data_entry_timing)
         if date > data_entry_date:
@@ -180,7 +194,15 @@ class UsageForm(FSForm):
             raise ValidationError(f"Cannot goto Evening till the data entry of Morning is completed")
 
     def validate_goto_date(self, goto_date: DateField):
+        if self.form_type.data != self.GOTO_DATE:
+            return
         self._validate_date(goto_date.data, self.goto_timing.data)
+
+    def validate_file_name(self, file_name: FileField):
+        if self.form_type.data != self.UPLOAD:
+            return
+        if not secure_filename(file_name.data.filename):
+            raise ValidationError("No file selected for upload")
 
     def update_from_form(self):
         self.usage.client = self.client.data
@@ -208,9 +230,133 @@ class UsageForm(FSForm):
     def sort_usages(self):
         self.usages.sort(key=lambda usage: usage.client)
 
+    def add_errors(self, row: dict, field: str):
+        self.upload_errors.append({field_name: {"data": data, "error": "table-danger" if field_name == field else str()}
+                                   for field_name, data in row.items()})
+
+    def upload(self):
+        class HDR:
+            DATE = "Date"
+            TIMING = "Timing"
+            NO_EVENT = "No_Event"
+            CLIENT = "Client"
+            MEAL = "Meal"
+            TYPE = "Event_Type"
+            BALLROOM = "Ballroom"
+            EVENT = "Event Description"
+
+        file: FileStorage = self.file_name.data
+        file_path = local_path(f"{current_user.id}.csv")
+        file.save(file_path)
+        with open(file_path) as csv_file:
+            csv_reader = csv.DictReader(csv_file)
+            columns = set(csv_reader.fieldnames)
+            csv_reader = [row for row in csv_reader]
+        if columns != {HDR.DATE, HDR.TIMING, HDR.NO_EVENT, HDR.CLIENT, HDR.MEAL, HDR.TYPE, HDR.BALLROOM, HDR.EVENT}:
+            self.upload_error_message = "Invalid column names in the csv file"
+            return
+        usages = list()
+        for row in csv_reader:
+            usage = Usage()
+            usage.hotel = self.hotel.name
+            usage.city = self.hotel.city
+            date = Date.from_dd_mmm_yyyy(row[HDR.DATE]).date
+            if not date:
+                self.add_errors(row, HDR.DATE)
+                continue
+            usage.set_date(date)
+            if row[HDR.TIMING] not in Config.TIMINGS:
+                self.add_errors(row, HDR.TIMING)
+                continue
+            usage.timing = row[HDR.TIMING]
+            if row[HDR.NO_EVENT] == HDR.NO_EVENT:
+                usage.no_event = True
+                usages.append(usage)
+                continue
+            if not row[HDR.CLIENT]:
+                self.add_errors(row, HDR.CLIENT)
+                continue
+            usage.client = row[HDR.CLIENT]
+            if usage.timing == Config.MORNING:
+                if row[HDR.MEAL] not in Config.MORNING_MEALS:
+                    self.add_errors(row, HDR.MEAL)
+                    continue
+                usage.meals = [Config.BREAKFAST, Config.LUNCH] if row[HDR.MEAL] == Config.BREAKFAST_LUNCH \
+                    else [row[HDR.MEAL]]
+            else:
+                if row[HDR.MEAL] not in Config.EVENING_MEALS:
+                    self.add_errors(row, HDR.MEAL)
+                    continue
+                usage.meals = [Config.HI_TEA, Config.DINNER] if row[HDR.MEAL] == Config.HI_TEA_DINNER \
+                    else [row[HDR.MEAL]]
+            if row[HDR.TYPE] not in Config.EVENTS:
+                self.add_errors(row, HDR.TYPE)
+                continue
+            usage.event_type = row[HDR.TYPE]
+            ballrooms = [room.strip() for room in row[HDR.BALLROOM].split(",")]
+            if any(room not in self.hotel.ballrooms for room in ballrooms):
+                self.add_errors(row, HDR.BALLROOM)
+                continue
+            usage.ballrooms = ballrooms
+            self.hotel.set_ballroom_used(ballrooms)
+            usage.event_description = row[HDR.EVENT]
+            usages.append(usage)
+        if self.upload_errors:
+            return
+        if not usages:
+            self.upload_error_message = "There are no events in the csv file"
+            return
+        usages.sort(key=lambda usage_item: usage_item.timing, reverse=True)
+        usages.sort(key=lambda usage_item: usage_item.date)
+        if (Date(usages[0].date).date, usages[0].timing) != Usage.get_data_entry_date(self.hotel):
+            self.upload_error_message = "Invalid start period. Date and Timing do NOT match the next data entry date."
+            return
+        if Date(usages[-1].date).date > Date.next_lock_in():
+            self.upload_error_message = "Invalid end period. Date cannot be greater than the next lock in period."
+            return
+        if Date(usages[-1].date).date > self.hotel.contract[1]:
+            self.upload_error_message = "Invalid end period. Date cannot be greater than the contract end date."
+            return
+        previous_date = None
+        for date, date_usages in itertools.groupby(usages, key=lambda usage_item: usage_item.date):
+            date = Date(date).date
+            date_usages = list(date_usages)
+            if not any(usage.timing == Config.MORNING for usage in date_usages) or \
+                    not any(usage.timing == Config.EVENING for usage in date_usages):
+                self.upload_error_message = f"Date {Date(date).format_date} does not have both {Config.MORNING} " \
+                                            f"and {Config.EVENING} events"
+                return
+            for timing, timing_usages in itertools.groupby(date_usages, key=lambda usage_item: usage_item.timing):
+                timing_usages = list(timing_usages)
+                seen = set()
+                for usage in timing_usages:
+                    if usage.client in seen:
+                        self.upload_error_message = f"Duplicate client name {usage.client} for the period " \
+                                                    f"{Date(date).format_date} - {timing}"
+                        return
+                    seen.add(usage.client)
+            if previous_date and (date - previous_date).days != 1:
+                self.upload_error_message = f"There are missing events between {Date(previous_date).format_date} " \
+                                            f"and {Date(date).format_date}"
+                return
+            previous_date = date
+        self.hotel.set_last_entry(usages[-1].date, usages[-1].timing)
+        usages = [usage.doc_to_dict() for usage in usages]
+        usages = Usage.create_from_list_of_dict(usages)
+        self.hotel.save()
+        if not self.usages:
+            usages = [u for u in usages if Date(self.date).db_date == u.date and self.timing == u.timing]
+            if usages:
+                self.usages = usages
+                self.sort_usages()
+        return
+
     def update(self):
         if self.form_type.data == self.GOTO_DATE:
             self.redirect = True
+            return
+        elif self.form_type.data == self.UPLOAD:
+            self.upload()
             return
         elif self.form_type.data == self.CREATE:
             self.update_default_fields()
@@ -288,3 +434,7 @@ class UsageForm(FSForm):
     def link_goto(self) -> str:
         return url_for("usage_manage", hotel_id=self.hotel.id, date=Date(self.goto_date.data).db_date,
                        timing=self.goto_timing.data)
+
+    @property
+    def display_upload(self) -> str:
+        return "disabled" if self.all_done else str()

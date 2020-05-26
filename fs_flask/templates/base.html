@@ -96,14 +96,17 @@
 {%- endmacro %}
 
 {%- macro form_group_no_error(field) %}
-    <div class="form-group required">
-        <label for="{{ field.id }}" class="form-control-label">{{ field.label }}</label>
-        {#        {% if field.type == "DateField" %}#}
-        {#            {{ field(class_="form-control", type="date") }}#}
-        {#        {% else %}#}
-        {{ field(class_="form-control") }}
-        {#        {% endif %}#}
-    </div>
+    {% if field.type == "FileField" %}
+        <div class="custom-file">
+            {{ field(class_="custom-file-input") }}
+            <label for="{{ field.id }}" class="custom-file-label">{{ field.label }}</label>
+        </div>
+    {% else %}
+        <div class="form-group required">
+            <label for="{{ field.id }}" class="form-control-label">{{ field.label }}</label>
+            {{ field(class_="form-control") }}
+        </div>
+    {% endif %}
 {%- endmacro %}
 
 {%- macro check_box(field) %}
