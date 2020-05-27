@@ -19,6 +19,9 @@ def home() -> Response:
 @login_required
 def main_report() -> Response:
     form = QueryForm()
+    if form.error_message:
+        flash(form.error_message)
+        return redirect(url_for("home"))
     if not form.validate_on_submit():
         form.flash_form_errors()
     form.update_data()

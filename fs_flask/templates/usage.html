@@ -94,16 +94,16 @@
                         <td id="ballroom" class="text-center d-none d-md-table-cell">{{ usage.formatted_ballroom }}</td>
                         <td id="event-description" class="d-none d-md-table-cell">{{ usage.event_description }}</td>
                         <td class="text-center">
-                            <a type="button" class="btn btn-warning" data-toggle="modal" data-target="#usage-modal"
-                               data-type="{{ form.UPDATE }}"
+                            <a type="button" class="btn btn-warning {{ form.display_edit_delete }}" data-toggle="modal"
+                               data-target="#usage-modal" data-type="{{ form.UPDATE }}"
                                data-title="{{ form.format_week }} - Edit {{ form.timing }} Event"
                                data-id="{{ usage.id }}" data-timing="{{ form.timing }}">
                                 <span class="oi oi-pencil"></span>
                             </a>
                         </td>
                         <td class="text-center text-white">
-                            <a type="button" class="btn btn-danger" data-toggle="modal" data-target="#usage-modal"
-                               data-type="{{ form.DELETE }}"
+                            <a type="button" class="btn btn-danger {{ form.display_edit_delete }}" data-toggle="modal"
+                               data-target="#usage-modal" data-type="{{ form.DELETE }}"
                                data-title="{{ form.format_week }} - Delete {{ form.timing }} Event"
                                data-id="{{ usage.id }}" data-client="{{ usage.client }}">
                                 <span class="oi oi-trash"></span>

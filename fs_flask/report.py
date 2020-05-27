@@ -59,11 +59,23 @@ class QueryForm(FSForm):
 
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
+        self.error_message: str = str()
         hotels = Hotel.objects.filter_by(city=current_user.city).get()
         hotels.sort(key=lambda hotel: hotel.name)
         self.custom_hotels.choices.extend([(hotel.name, hotel.name) for hotel in hotels
                                            if hotel.name != current_user.hotel])
         hotel = next((hotel for hotel in hotels if hotel.name == current_user.hotel), None)
+        if not hotel:
+            self.error_message = "Error in retrieving the hotel information"
+            return
+        if current_user.role == Config.HOTEL:
+            date, _ = Usage.get_data_entry_date(hotel)
+            if not date:
+                self.error_message = "Error in retrieving last update date"
+                return
+            if date <= Date.previous_lock_in():
+                self.error_message = "There are pending data entry for previous lock in period"
+                return
         self.primaries = hotel.primary_hotels if hotel else list()
         self.secondaries = hotel.secondary_hotels if hotel else list()
         self.usage_data: List[Usage] = list()

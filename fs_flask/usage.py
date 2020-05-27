@@ -437,3 +437,7 @@ class UsageForm(FSForm):
         if Usage.get_data_entry_date(self.hotel) != (self.date, self.timing) or self.usages:
             return True
         return False
+
+    @property
+    def display_edit_delete(self) -> str:
+        return "disabled" if current_user.role == Config.HOTEL and self.date < Date.previous_lock_in() else str()
