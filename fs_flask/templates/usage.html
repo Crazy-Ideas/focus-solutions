@@ -1,51 +1,65 @@
 {% extends "base.html" %}
 
 {% block app_content %}
-    <div class="row justify-content-center">
-        <div class="col-lg-4">
+    <div class="row">
+        <div class="col-lg">
+            <ul class="list-group text-center">
+                <li class="list-group-item list-group-item">
+                    <a type="button" class="btn btn-success text-white" data-toggle="modal" data-target="#usage-modal"
+                       data-type="{{ form.CREATE }}" data-title="{{ form.format_week }} - New {{ form.timing }} Event"
+                       data-timing="{{ form.timing }}" title="Add an Event">
+                        <span class="oi oi-plus"></span> Add Event
+                    </a>
+                    <a type="button" class="btn btn-danger text-white {{ form.display_no_event }}" data-toggle="modal"
+                       data-target="#usage-modal" data-type="{{ form.NO_EVENT }}" title="Add a No Event"
+                       data-title="{{ form.format_week }} - No {{ form.timing }} Event">
+                        <span class="oi oi-ban"></span> No Event
+                    </a>
+                    <a type="button" class="btn btn-success text-white {{ form.display_upload }}" data-toggle="modal"
+                       data-target="#usage-modal" data-type="{{ form.UPLOAD }}" title="Upload bulk events via csv file"
+                       data-title="Bulk Upload">
+                        <span class="oi oi-cloud-upload"></span> Upload
+                    </a>
+                    <a type="button" class="btn btn-danger text-white {{ form.display_bug }}" data-toggle="modal"
+                       data-target="#upload-modal" title="View errors in upload">
+                        <span class="oi oi-bug"></span> Errors
+                    </a>
+                </li>
+            </ul>
+        </div>
+        <div class="col-lg">
+            <ul class="list-group text-center">
+                <li class="list-group-item list-group-item">
+                    <a class="btn btn-primary {{ form.display_previous }}" href="{{ form.link_previous }}"
+                       title="{{ form.title_previous }}">
+                        <span class="oi oi-arrow-thick-left"></span> Previous Period
+                    </a>
+                    <a type="button" class="btn btn-primary text-white" data-toggle="modal"
+                       title="Select Date to view"
+                       data-target="#usage-modal" data-type="{{ form.GOTO_DATE }}" data-title="Goto Date">
+                        <span class="oi oi-calendar"></span> Goto
+                    </a>
+                    <a class="btn btn-primary {{ form.display_next }}" href="{{ form.link_next }}"
+                       title="{{ form.title_next }}">
+                        <span class="oi oi-arrow-thick-right"></span> Next Period
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </div>
+    <br>
+    <div class="row">
+        <div class="col-lg">
             <ul class="list-group text-center">
                 <li class="list-group-item list-group-item-secondary">
                     <strong>{{ form.hotel.name }}</strong>
                 </li>
             </ul>
         </div>
-        <div class="col-lg-4">
+        <div class="col-lg">
             <ul class="list-group text-center">
                 <li class="list-group-item list-group-item-secondary">
                     <strong>{{ form.format_week }}</strong> - <strong>{{ form.timing }}</strong>
-                </li>
-            </ul>
-        </div>
-        <div class="col-lg-4">
-            <ul class="list-group text-center">
-                <li class="list-group-item list-group-item">
-                    <a type="button" class="btn btn-success text-white" data-toggle="modal" data-target="#usage-modal"
-                       data-type="{{ form.CREATE }}" data-title="{{ form.format_week }} - New {{ form.timing }} Event"
-                       data-timing="{{ form.timing }}" title="Add an event">
-                        <span class="oi oi-plus"></span>
-                    </a>
-                    <a type="button" class="btn btn-danger text-white {{ form.display_no_event }}" data-toggle="modal"
-                       data-target="#usage-modal" data-type="{{ form.NO_EVENT }}" title="No event in this period"
-                       data-title="{{ form.format_week }} - No {{ form.timing }} Event">
-                        <span class="oi oi-ban"></span>
-                    </a>
-                    <a class="btn btn-primary {{ form.display_previous }}" href="{{ form.link_previous }}"
-                       title="{{ form.title_previous }}">
-                        <span class="oi oi-arrow-thick-left"></span>
-                    </a>
-                    <a type="button" class="btn btn-primary text-white" data-toggle="modal" title="Select Date to view"
-                       data-target="#usage-modal" data-type="{{ form.GOTO_DATE }}" data-title="Goto Date">
-                        <span class="oi oi-calendar"></span>
-                    </a>
-                    <a class="btn btn-primary {{ form.display_next }}" href="{{ form.link_next }}"
-                       title="{{ form.title_next }}">
-                        <span class="oi oi-arrow-thick-right"></span>
-                    </a>
-                    <a type="button" class="btn btn-success text-white {{ form.display_upload }}" data-toggle="modal"
-                       data-target="#usage-modal" data-type="{{ form.UPLOAD }}" title="Upload bulk events via csv file"
-                       data-title="Bulk Upload">
-                        <span class="oi oi-cloud-upload"></span>
-                    </a>
                 </li>
             </ul>
         </div>
@@ -163,46 +177,36 @@
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">Upload Status</h5>
+                    <h5 class="modal-title">Upload Errors</h5>
                     <button type="button" class="close" data-dismiss="modal">
                         <span>&times;</span>
                     </button>
                 </div>
                 <div class="modal-body justify-content-center text-center">
-                    {% if form.upload_error_message or form.upload_errors %}
-                        <p>Following errors occurred in uploading</p>
-                        {% if form.upload_error_message %}
-                            <p class="font-weight-bold">{{ form.upload_error_message }}</p>
-                        {% endif %}
-                        {% if form.upload_errors %}
-                            <table class="table table-bordered table-responsive">
-                                <thead class="thead-dark">
-                                <tr>
-                                    <th class="text-center" scope="col">Date</th>
-                                    <th class="text-center" scope="col">Timing</th>
-                                    <th class="text-center" scope="col">Client</th>
-                                    <th class="text-center" scope="col">Meal</th>
-                                    <th class="text-center" scope="col">Event Type</th>
-                                    <th class="text-center" scope="col">Ballroom</th>
-                                </tr>
-                                </thead>
-                                <tbody>
-                                {% for row in form.upload_errors %}
-                                    <tr>
-                                        <td class="text-center {{ row.Date.error }}">{{ row.Date.data }}</td>
-                                        <td class="text-center {{ row.Timing.error }}">{{ row.Timing.data }}</td>
-                                        <td class="text-center {{ row.Client.error }}">{{ row.Client.data }}</td>
-                                        <td class="text-center {{ row.Meal.error }}">{{ row.Meal.data }}</td>
-                                        <td class="text-center {{ row.Event_Type.error }}">{{ row.Event_Type.data }}</td>
-                                        <td class="text-center {{ row.Ballroom.error }}">{{ row.Ballroom.data }}</td>
-                                    </tr>
-                                {% endfor %}
-                                </tbody>
-                            </table>
-                        {% endif %}
-                    {% else %}
-                        All data successfully uploaded.
-                    {% endif %}
+                    <table class="table table-sm table-bordered table-responsive">
+                        <thead class="thead-dark">
+                        <tr>
+                            <th class="text-center" scope="col">Date</th>
+                            <th class="text-center" scope="col">Timing</th>
+                            <th class="text-center" scope="col">Client</th>
+                            <th class="text-center" scope="col">Meal</th>
+                            <th class="text-center" scope="col">Type</th>
+                            <th class="text-center" scope="col">Ballroom</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% for row in form.upload_errors %}
+                            <tr>
+                                <td class="text-center {{ row.Date.error }}">{{ row.Date.data }}</td>
+                                <td class="text-center {{ row.Timing.error }}">{{ row.Timing.data }}</td>
+                                <td class="text-center {{ row.Client.error }}">{{ row.Client.data }}</td>
+                                <td class="text-center {{ row.Meal.error }}">{{ row.Meal.data }}</td>
+                                <td class="text-center {{ row.Event_Type.error }}">{{ row.Event_Type.data }}</td>
+                                <td class="text-center {{ row.Ballroom.error }}">{{ row.Ballroom.data }}</td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
@@ -213,7 +217,7 @@
 {% block scripts %}
     {{ super() }}
     <script>
-        {% if form.form_type.data == form.UPLOAD and not form.file_name.errors %}
+        {% if form.form_type.data == form.UPLOAD and form.upload_errors %}
             $(document).ready(function () {
                 $("#upload-modal").modal("show");
             });
@@ -241,6 +245,7 @@
                 $(this).find("#edit-usage").show();
                 $(this).find("#goto-date").hide()
                 $(this).find("#comment").hide();
+                $(this).find("#upload-file").hide();
                 $(this).find("#client").val("");
                 $(this).find("#event_description").val("");
                 $(this).find("#ballrooms").val(null).trigger("change");
@@ -259,6 +264,7 @@
                 $(this).find("#goto-date").hide()
                 $(this).find("#comment").show();
                 $(this).find("#comment").text("Are you sure you want to delete the event for " + client + "?");
+                $(this).find("#upload-file").hide();
                 $(this).find("#usage_id").val(usage_id);
             } else if (form_type === "{{ form.UPDATE }}") {
                 const usage_id = $(event.relatedTarget).data("id");
@@ -267,6 +273,7 @@
                 $(this).find("#edit-usage").show();
                 $(this).find("#goto-date").hide()
                 $(this).find("#comment").hide();
+                $(this).find("#upload-file").hide();
                 $(this).find("#usage_id").val(usage_id);
                 $(this).find("#client").val($("#" + usage_id + " #client").text());
                 $(this).find("#event_description").val($("#" + usage_id + " #event-description").text());
@@ -312,11 +319,13 @@
                 $(this).find("#goto-date").hide()
                 $(this).find("#comment").show();
                 $(this).find("#comment").text("Are you sure there are no events on this day?");
+                $(this).find("#upload-file").hide();
             } else if (form_type === "{{ form.GOTO_DATE }}") {
                 $(this).find("#save-button").removeClass().addClass("btn btn-primary").html("Goto");
                 $(this).find("#edit-usage").hide();
                 $(this).find("#goto-date").show()
                 $(this).find("#comment").hide();
+                $(this).find("#upload-file").hide();
             } else if (form_type === "{{ form.UPLOAD }}") {
                 $(this).find("#save-button").removeClass().addClass("btn btn-primary").html("Upload");
                 $(this).find("#edit-usage").hide();

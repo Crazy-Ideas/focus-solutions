@@ -1,22 +1,26 @@
 import io
+import os
 import re
 from typing import List, Dict
 
+from google.cloud.storage import Client, Blob
 # noinspection PyPackageRequirements
 from googleapiclient.discovery import build
 # noinspection PyPackageRequirements
 from googleapiclient.http import MediaIoBaseDownload
 
-from config import Config, local_path, BaseMap
+from config import Config, BaseMap
 
 
 class Sheet:
     SHEETS = build("sheets", "v4")
     DRIVE = build("drive", "v3")
     SHEET_ID = {'Report': 0, 'Data': 1}
+    BUCKET = Client().bucket("focus-solutions-files")
 
-    def __init__(self, sheet_id: str = None):
+    def __init__(self, sheet_id: str = None, extension: str = None):
         self.sheet_id: str = sheet_id if sheet_id else str()
+        self.extension: str = extension if extension else str()
 
     @classmethod
     def create(cls) -> "Sheet":
@@ -41,6 +45,11 @@ class Sheet:
         batch.add(cls.DRIVE.permissions().create(fileId=sheet.sheet_id, body=permission, fields="id"))
         batch.execute()
         return sheet
+
+    @property
+    def local_path(self):
+        file_name = f"{self.sheet_id}.{self.extension}"
+        return os.path.join(Config.DOWNLOAD_PATH, file_name)
 
     def prepare(self, data_rows: int = 1000):
         body = {"requests": [
@@ -67,15 +76,37 @@ class Sheet:
     def download(self) -> str:
         if not self.sheet_id:
             print("Nothing to download")
-        request = self.DRIVE.files().export_media(fileId=self.sheet_id, mimeType=Config.EXCEL_MIME)
-        file_name = local_path(f"{self.sheet_id}.xlsx")
-        file_handle = io.FileIO(file_name, "w")
+            return str()
+        if self.extension not in Config.MIME_TYPES:
+            print("Invalid extension")
+            return str()
+        request = self.DRIVE.files().export_media(fileId=self.sheet_id, mimeType=Config.MIME_TYPES[self.extension])
+        file_path = self.local_path
+        file_handle = io.FileIO(file_path, "w")
         downloader = MediaIoBaseDownload(file_handle, request)
         done = False
         while done is False:
             _, done = downloader.next_chunk()
-        print(f"File {file_name} downloaded")
-        return file_name
+        print(f"File {file_path} downloaded")
+        return file_path
+
+    def download_from_cloud(self) -> str:
+        if not self.sheet_id:
+            print("Nothing to download")
+            return str()
+        if self.extension not in Config.MIME_TYPES:
+            print("Invalid extension")
+            return str()
+        file_path = self.local_path
+        if os.path.exists(file_path):
+            return file_path
+        blob: Blob = self.BUCKET.blob(self.sheet_id)
+        if not blob.exists():
+            print(f"File {self.sheet_id}.{self.extension} not found on cloud storage")
+            return str()
+        blob.download_to_filename(file_path)
+        self.download()
+        return file_path
 
     @staticmethod
     def pie_spec(headers: List[Dict[str, int]], values: List[Dict[str, int]], anchor: Dict[str, int]) -> dict:

@@ -136,6 +136,7 @@ class QueryForm(FSForm):
 
     def download(self):
         sheet = Sheet.create()
+        sheet.extension = "xlsx"
         data_rows = len(self.usage_data) + 4
         sheet.prepare(data_rows=data_rows)
         header = ["Hotel Name", "Date", "Timing", "Client", "Meal", "Event Type", "Ballroom", "Event Description"]

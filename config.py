@@ -13,7 +13,7 @@ class Config:
     PROJECT_ROOT = os.getcwd()
     APP_ROOT = os.path.join(PROJECT_ROOT, 'fs_flask')
     DOWNLOAD_PATH = os.path.join(APP_ROOT, 'downloads')
-    EXCEL_MIME = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    MIME_TYPES = {"xlsx": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"}
     SHEET_ID = "1OnvVprC_RSlsKxgAgve-dliPGJydj--qkmvnRUfyGYM"
     EXTENSIONS = tuple("csv".split())
     ADMIN = "Admin"
@@ -39,10 +39,6 @@ class Config:
     SOCIAL = "Social Event"
     OTHER = "Other"
     EVENTS = (MICE, SOCIAL, OTHER)
-
-
-def local_path(file_name: str):
-    return os.path.join(Config.DOWNLOAD_PATH, file_name)
 
 
 class BaseMap:
