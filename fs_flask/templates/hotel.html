@@ -32,6 +32,13 @@
                         <br>
                         End Date: <strong>{{ hotel.formatted_contract[1] }}</strong>
                     </li>
+                    <li class="list-group-item">
+                        <form class="form" method="POST">
+                            {{ form.form_type(value=form.DOWNLOAD_TEMPLATE) }}
+                            {{ form.csrf_token() }}
+                            {{ form.submit(class_="btn btn-primary") }}
+                        </form>
+                    </li>
                 </ul>
             </div>
         </div>
@@ -119,6 +126,7 @@
                 <div class="modal-body justify-content-center">
                     <form class="form" method="POST" id="hotel-form">
                         {{ form.form_type() }}
+                        {{ form.csrf_token() }}
                         {{ form.old_ballroom() }}
                         <div id="edit-hotel">
                             {{ form_group_no_error(form.start_date) }}
@@ -136,7 +144,6 @@
                         <div id="comment">
                             Placeholder comment
                         </div>
-                        {{ form.csrf_token() }}
                     </form>
                 </div>
                 <div class="modal-footer justify-content-center d-flex">

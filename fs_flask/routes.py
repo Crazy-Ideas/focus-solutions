@@ -63,6 +63,8 @@ def hotel_manage(hotel_id: str) -> Response:
         form.flash_form_errors()
         return render_template("hotel.html", title=hotel.name, form=form, hotel=hotel)
     form.update()
+    if form.template_path:
+        return send_file(form.template_path, as_attachment=True, attachment_filename="Upload Template.xlsx")
     return render_template("hotel.html", title=hotel.name, form=form, hotel=hotel)
 
 

@@ -9,6 +9,7 @@ from wtforms import StringField, SelectMultipleField, HiddenField, SubmitField, 
 
 from config import Config, BaseMap, Date
 from fs_flask import FSForm
+from fs_flask.file import File
 
 
 class BallroomMap(BaseMap):
@@ -133,12 +134,15 @@ Hotel.init()
 
 
 class HotelForm(FSForm):
+    # Form Types
     EDIT_HOTEL = "edit_hotel"
     EDIT_BALLROOM = "edit_ballroom"
     NEW_BALLROOM = "new_ballroom"
     REMOVE_BALLROOM = "remove_ballroom"
     EDIT_PRIMARY_HOTEL = "primary_hotel"
     EDIT_SECONDARY_HOTEL = "secondary_hotel"
+    DOWNLOAD_TEMPLATE = "download_template"
+    # Form Fields
     start_date = DateField("Select contract start date", format="%d/%m/%Y")
     end_date = DateField("Select contract end date", format="%d/%m/%Y")
     ballroom = StringField("Ball room name")
@@ -146,10 +150,11 @@ class HotelForm(FSForm):
     secondaries = SelectMultipleField("Select Secondary Hotels", choices=list())
     old_ballroom = HiddenField()
     form_type = HiddenField()
-    submit = SubmitField()
+    submit = SubmitField("Download Template")
 
     def __init__(self, hotel: Hotel, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.template_path: str = str()
         self.hotel = hotel
         hotels = Hotel.objects.filter_by(city=current_user.city).get()
         hotels.sort(key=lambda hotel_item: hotel_item.name)
@@ -164,6 +169,13 @@ class HotelForm(FSForm):
     def raise_date_error(self, message):
         self.start_date.data, self.end_date.data = self.hotel.contract
         raise ValidationError(message)
+
+    def validate_form_type(self, form_type: HiddenField):
+        if form_type.data != self.DOWNLOAD_TEMPLATE:
+            return
+        self.template_path = File("Upload Template", "xlsx").download_from_cloud()
+        if not self.template_path:
+            raise ValidationError("Error in downloading the template")
 
     def validate_end_date(self, end_date: DateField):
         if self.form_type.data != self.EDIT_HOTEL:

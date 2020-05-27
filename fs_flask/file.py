@@ -97,9 +97,10 @@ class File:
         file_path = self.local_path
         if os.path.exists(file_path):
             return file_path
-        blob: Blob = self.BUCKET.blob(self.name)
+        file_name = f"{self.name}.{self.extension}"
+        blob: Blob = self.BUCKET.blob(file_name)
         if not blob.exists():
-            print(f"File {self.name}.{self.extension} not found on cloud storage")
+            print(f"File {file_name} not found on cloud storage")
             return str()
         blob.download_to_filename(file_path)
         return file_path
