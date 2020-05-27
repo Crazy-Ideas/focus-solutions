@@ -14,8 +14,8 @@ from wtforms import SelectMultipleField, ValidationError, HiddenField, \
 
 from config import Config, Date
 from fs_flask import FSForm
+from fs_flask.file import File
 from fs_flask.hotel import Hotel
-from fs_flask.sheet import Sheet
 
 
 class Usage(FirestoreDocument):
@@ -213,7 +213,7 @@ class UsageForm(FSForm):
         file: FileStorage = file_name.data
         if not secure_filename(file.filename):
             raise ValidationError("No file selected for upload")
-        file_path = Sheet(current_user.id, "csv").local_path
+        file_path = File(current_user.id, "csv").local_path
         file.save(file_path)
         with open(file_path) as csv_file:
             csv_reader = csv.DictReader(csv_file)

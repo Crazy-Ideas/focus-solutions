@@ -12,43 +12,43 @@ from googleapiclient.http import MediaIoBaseDownload
 from config import Config, BaseMap
 
 
-class Sheet:
+class File:
     SHEETS = build("sheets", "v4")
     DRIVE = build("drive", "v3")
     SHEET_ID = {'Report': 0, 'Data': 1}
     BUCKET = Client().bucket("focus-solutions-files")
 
-    def __init__(self, sheet_id: str = None, extension: str = None):
-        self.sheet_id: str = sheet_id if sheet_id else str()
-        self.extension: str = extension if extension else str()
+    def __init__(self, sheet_id: str, extension: str):
+        self.name: str = sheet_id
+        self.extension: str = extension
 
     @classmethod
-    def create(cls) -> "Sheet":
+    def create_sheet(cls) -> "File":
         body = {"properties": {"title": "Reports"}}
         spreadsheet = cls.SHEETS.spreadsheets().create(body=body, fields="spreadsheetId").execute()
         sheet_id = spreadsheet.get("spreadsheetId")
         print(f"Sheet with ID {sheet_id} created")
-        return cls(sheet_id)
+        return cls(sheet_id, "xlsx")
 
     @classmethod
-    def create_with_permission(cls) -> "Sheet":
-        sheet = cls.create()
+    def create_with_permission(cls) -> "File":
+        sheet = cls.create_sheet()
 
         def callback(_, __, exception):
             if exception:
                 print(exception)
                 return
-            print(f"Permission granted for sheet ID {sheet.sheet_id}")
+            print(f"Permission granted for sheet ID {sheet.name}")
 
         batch = cls.DRIVE.new_batch_http_request(callback=callback)
         permission = {"type": "user", "role": "writer", "emailAddress": "nayan@crazyideas.co.in"}
-        batch.add(cls.DRIVE.permissions().create(fileId=sheet.sheet_id, body=permission, fields="id"))
+        batch.add(cls.DRIVE.permissions().create(fileId=sheet.name, body=permission, fields="id"))
         batch.execute()
         return sheet
 
     @property
     def local_path(self):
-        file_name = f"{self.sheet_id}.{self.extension}"
+        file_name = f"{self.name}.{self.extension}"
         return os.path.join(Config.DOWNLOAD_PATH, file_name)
 
     def prepare(self, data_rows: int = 1000):
@@ -61,26 +61,26 @@ class Sheet:
                 "properties": {"title": "Data", "gridProperties": {"rowCount": data_rows, "columnCount": 26}}
             }}
         ]}
-        self.SHEETS.spreadsheets().batchUpdate(spreadsheetId=self.sheet_id, body=body).execute()
+        self.SHEETS.spreadsheets().batchUpdate(spreadsheetId=self.name, body=body).execute()
 
     def update_range(self, range_name: str, values: List[List[str]]):
-        self.SHEETS.spreadsheets().values().update(spreadsheetId=self.sheet_id, valueInputOption="USER_ENTERED",
+        self.SHEETS.spreadsheets().values().update(spreadsheetId=self.name, valueInputOption="USER_ENTERED",
                                                    body={"values": values}, range=range_name).execute()
 
     def delete(self):
-        if not self.sheet_id:
+        if not self.name:
             print("Nothing to delete")
-        self.DRIVE.files().delete(fileId=self.sheet_id).execute()
-        print(f"Sheet with ID {self.sheet_id} deleted")
+        self.DRIVE.files().delete(fileId=self.name).execute()
+        print(f"Sheet with ID {self.name} deleted")
 
-    def download(self) -> str:
-        if not self.sheet_id:
+    def download_from_drive(self) -> str:
+        if not self.name:
             print("Nothing to download")
             return str()
         if self.extension not in Config.MIME_TYPES:
             print("Invalid extension")
             return str()
-        request = self.DRIVE.files().export_media(fileId=self.sheet_id, mimeType=Config.MIME_TYPES[self.extension])
+        request = self.DRIVE.files().export_media(fileId=self.name, mimeType=Config.MIME_TYPES[self.extension])
         file_path = self.local_path
         file_handle = io.FileIO(file_path, "w")
         downloader = MediaIoBaseDownload(file_handle, request)
@@ -91,21 +91,17 @@ class Sheet:
         return file_path
 
     def download_from_cloud(self) -> str:
-        if not self.sheet_id:
+        if not self.name or not self.extension:
             print("Nothing to download")
-            return str()
-        if self.extension not in Config.MIME_TYPES:
-            print("Invalid extension")
             return str()
         file_path = self.local_path
         if os.path.exists(file_path):
             return file_path
-        blob: Blob = self.BUCKET.blob(self.sheet_id)
+        blob: Blob = self.BUCKET.blob(self.name)
         if not blob.exists():
-            print(f"File {self.sheet_id}.{self.extension} not found on cloud storage")
+            print(f"File {self.name}.{self.extension} not found on cloud storage")
             return str()
         blob.download_to_filename(file_path)
-        self.download()
         return file_path
 
     @staticmethod
@@ -142,7 +138,7 @@ class Sheet:
 
     def update_chart(self, pie: dict, trend: dict):
         body = {"requests": [{"addChart": {"chart": pie}}, {"addChart": {"chart": trend}}]}
-        self.SHEETS.spreadsheets().batchUpdate(spreadsheetId=self.sheet_id, body=body).execute()
+        self.SHEETS.spreadsheets().batchUpdate(spreadsheetId=self.name, body=body).execute()
         print("Chart updated")
 
 
@@ -162,9 +158,9 @@ class GridRange(BaseMap):
                                                                        range_name)[0]
         except IndexError:
             return grid
-        if sheet not in Sheet.SHEET_ID:
+        if sheet not in File.SHEET_ID:
             return grid
-        grid.sheetId = Sheet.SHEET_ID[sheet]
+        grid.sheetId = File.SHEET_ID[sheet]
         grid.startRowIndex = int(start_row) - 1
         grid.endRowIndex = int(end_row)
         grid.startColumnIndex = ord(start_col) - ord("A")
@@ -185,9 +181,9 @@ class GridCoordinate(BaseMap):
             sheet, column, row = re.findall(r"([^!]+)!([A-Z])([\d]+)", cell_address)[0]
         except IndexError:
             return grid
-        if sheet not in Sheet.SHEET_ID:
+        if sheet not in File.SHEET_ID:
             return grid
-        grid.sheetId = Sheet.SHEET_ID[sheet]
+        grid.sheetId = File.SHEET_ID[sheet]
         grid.rowIndex = int(row) - 1
         grid.columnIndex = ord(column) - ord("A")
         return grid

@@ -8,8 +8,8 @@ from wtforms import SelectMultipleField, DateField, SubmitField, ValidationError
 
 from config import Config, Date
 from fs_flask import FSForm
+from fs_flask.file import File, GridRange, GridCoordinate
 from fs_flask.hotel import Hotel
-from fs_flask.sheet import Sheet, GridRange, GridCoordinate
 from fs_flask.usage import Usage
 
 
@@ -135,8 +135,7 @@ class QueryForm(FSForm):
             self.download()
 
     def download(self):
-        sheet = Sheet.create()
-        sheet.extension = "xlsx"
+        sheet = File.create_sheet()
         data_rows = len(self.usage_data) + 4
         sheet.prepare(data_rows=data_rows)
         header = ["Hotel Name", "Date", "Timing", "Client", "Meal", "Event Type", "Ballroom", "Event Description"]
@@ -170,7 +169,7 @@ class QueryForm(FSForm):
         anchor = GridCoordinate.from_cell(f"Report!A25").to_dict()
         trend = sheet.trend_spec(headers, values, anchor)
         sheet.update_chart(pie, trend)
-        self.file_path = sheet.download()
+        self.file_path = sheet.download_from_drive()
         sheet.delete()
 
     def determine_hotel_trends(self):
