@@ -85,12 +85,63 @@
                             </div>
                         </div>
                     </li>
-                    <li class="list-group-item">
-                        <form class="form" method="POST">
-                            {{ form.form_type(value=form.DOWNLOAD_TEMPLATE) }}
+                </ul>
+            </div>
+            <br>
+            <div class="card text-center">
+                <h5 class="card-header">
+                    Contract
+                    {% if hotel.contract_file %}
+                        <a type="button" class="btn btn-danger text-white" data-toggle="modal"
+                           data-target="#hotel-modal"
+                           data-type="{{ form.DELETE_CONTRACT }}" data-title="Delete Contract File">
+                            <span class="oi oi-trash"></span>
+                        </a>
+                    {% else %}
+                        <a class="btn btn-success text-white" title="Attach a contract file" id="upload-contract-file">
+                            <span class="oi oi-cloud-upload"></span>
+                        </a>
+                        <form class="form" method="POST" enctype="multipart/form-data" id="upload-form">
+                            {{ form.form_type(value=form.UPLOAD_CONTRACT) }}
                             {{ form.csrf_token() }}
-                            {{ form.submit(class_="btn btn-primary") }}
+                            {{ form.contract_filename(class_="d-none") }}
                         </form>
+                    {% endif %}
+                </h5>
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item">
+                        {% if hotel.contract_file %}
+                            <div class="row">
+                                <div class="col">
+                                    <a class="btn btn-primary btn-block text-white" target="_blank"
+                                       href="{{ url_for('download', filename=hotel.contract_filename, extension=hotel.FILE_EXTENSION) }}">
+                                        <span class="oi oi-document"></span> View
+                                    </a>
+                                </div>
+                                <div class="col">
+                                    <a class="btn btn-primary btn-block text-white"
+                                       href="{{ url_for('download', filename=hotel.contract_filename, extension=hotel.FILE_EXTENSION, attachment=True, new_filename=hotel.contract_new_filename) }}">
+                                        <span class="oi oi-cloud-download"></span> Download
+                                    </a>
+                                </div>
+                            </div>
+                        {% else %}
+                            No contract file attached
+                        {% endif %}
+                    </li>
+                </ul>
+            </div>
+            <br>
+            <div class="card text-center">
+                <h5 class="card-header">
+                    Template
+                </h5>
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item">
+                        <a class="btn btn-primary" title="Template for uploading events"
+                           href="{{ url_for('download', filename='Upload Template', extension='xlsx', attachment=True) }}">
+                            <span class="oi oi-cloud-download"></span> Download Excel File
+                        </a>
                     </li>
                 </ul>
             </div>
@@ -137,9 +188,8 @@
             <div class="card text-center">
                 <h5 class="card-header">
                     Primary Comp Set
-                    <a type="button" class="btn btn-warning" data-toggle="modal"
-                       data-target="#hotel-modal" data-type="{{ form.EDIT_PRIMARY_HOTEL }}"
-                       data-title="Select Primary Hotels">
+                    <a type="button" class="btn btn-warning" data-toggle="modal" data-target="#hotel-modal"
+                       data-type="{{ form.EDIT_PRIMARY_HOTEL }}" data-title="Select Primary Hotels">
                         <span class="oi oi-pencil"></span>
                     </a>
                 </h5>
@@ -153,9 +203,8 @@
             <div class="card text-center">
                 <h5 class="card-header">
                     Secondary Comp Set
-                    <a type="button" class="btn btn-warning" data-toggle="modal"
-                       data-target="#hotel-modal" data-type="{{ form.EDIT_SECONDARY_HOTEL }}"
-                       data-title="Select Secondary Hotels">
+                    <a type="button" class="btn btn-warning" data-toggle="modal" data-target="#hotel-modal"
+                       data-type="{{ form.EDIT_SECONDARY_HOTEL }}" data-title="Select Secondary Hotels">
                         <span class="oi oi-pencil"></span>
                     </a>
                 </h5>
@@ -251,7 +300,14 @@
     {{ super() }}
     <script>
         $("#save-button").on("click", function () {
-            document.forms["hotel-form"].submit()
+            $("#hotel-form").submit()
+        });
+        $("#upload-contract-file").on("click", function () {
+            $("#contract_filename").click()
+        });
+        $("#contract_filename").on("change", function () {
+            console.log("file name changed");
+            $("#upload-form").submit();
         });
         $("#hotel-modal").on("show.bs.modal", function (event) {
             let form_type = $(event.relatedTarget).data("type");
@@ -300,6 +356,13 @@
                 $(this).find("#edit-hotel").hide();
                 $(this).find("#old_ballroom").val(old_ballroom);
                 $(this).find("#comment").text("Are you sure you want to remove " + old_ballroom + "?");
+                $(this).find("#save-button").removeClass().addClass("btn btn-danger").html("Delete");
+            } else if (form_type === "{{ form.DELETE_CONTRACT }}") {
+                $(this).find("#edit-ballroom").hide();
+                $(this).find("#select-primary-hotel").hide();
+                $(this).find("#select-secondary-hotel").hide();
+                $(this).find("#edit-hotel").hide();
+                $(this).find("#comment").text("Are you sure you want to delete the contract file from the cloud?");
                 $(this).find("#save-button").removeClass().addClass("btn btn-danger").html("Delete");
             }
         });

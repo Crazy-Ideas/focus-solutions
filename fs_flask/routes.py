@@ -1,8 +1,9 @@
-from flask import render_template, url_for, redirect, Response, flash, send_file
+from flask import render_template, url_for, redirect, Response, flash, send_file, request
 from flask_login import login_required, current_user
 
 from config import Config, Date
 from fs_flask import fs_app
+from fs_flask.file import File
 from fs_flask.hotel import Hotel, HotelForm, AdminForm
 from fs_flask.report import QueryForm, Dashboard
 from fs_flask.usage import Usage, UsageForm
@@ -66,8 +67,6 @@ def hotel_manage(hotel_id: str) -> Response:
         form.flash_form_errors()
         return render_template("hotel.html", title=hotel.name, form=form, hotel=hotel)
     form.update()
-    if form.template_path:
-        return send_file(form.template_path, as_attachment=True, attachment_filename="Upload Template.xlsx")
     return render_template("hotel.html", title=hotel.name, form=form, hotel=hotel)
 
 
@@ -87,7 +86,7 @@ def data_entry() -> Response:
 
 @fs_app.route("/hotels/<hotel_id>/dates/<date>/timings/<timing>", methods=["GET", "POST"])
 @login_required
-def usage_manage(hotel_id: str, date: str, timing: str):
+def usage_manage(hotel_id: str, date: str, timing: str) -> Response:
     form = UsageForm(hotel_id, date, timing)
     if form.error_message:
         flash(form.error_message)
@@ -99,3 +98,19 @@ def usage_manage(hotel_id: str, date: str, timing: str):
     if form.redirect:
         return redirect(form.link_goto)
     return render_template("usage.html", form=form, title="Data Entry")
+
+
+@fs_app.route("/download")
+@login_required
+def download() -> Response:
+    filename = request.args.get("filename", default=str())
+    extension = request.args.get("extension", default=str())
+    attachment = request.args.get("attachment", type=bool, default=False)
+    new_filename = request.args.get("new_filename", default=str())
+    new_filename = new_filename or f"{filename}.{extension}"
+    file = File(filename, extension)
+    file_path = file.download_from_cloud()
+    if not file_path:
+        flash("Error in downloading")
+        return redirect(request.referrer) if request.referrer else redirect(url_for('home'))
+    return send_file(file_path, as_attachment=attachment, attachment_filename=new_filename)

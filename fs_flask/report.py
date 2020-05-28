@@ -182,7 +182,7 @@ class QueryForm(FSForm):
         trend = sheet.trend_spec(headers, values, anchor)
         sheet.update_chart(pie, trend)
         self.file_path = sheet.download_from_drive()
-        sheet.delete()
+        sheet.delete_sheet()
 
     def determine_hotel_trends(self):
         self.usage_data.sort(key=lambda usage: usage.date)

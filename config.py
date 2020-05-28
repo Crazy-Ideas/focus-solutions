@@ -15,7 +15,6 @@ class Config:
     DOWNLOAD_PATH = os.path.join(APP_ROOT, 'downloads')
     MIME_TYPES = {"xlsx": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"}
     SHEET_ID = "1OnvVprC_RSlsKxgAgve-dliPGJydj--qkmvnRUfyGYM"
-    EXTENSIONS = tuple("csv".split())
     ADMIN = "Admin"
     HOTEL = "Hotel"
     ROLES = (ADMIN, HOTEL)

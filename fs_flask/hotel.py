@@ -5,8 +5,11 @@ from typing import List, Optional, Tuple, Union
 from firestore_ci import FirestoreDocument
 from flask import request
 from flask_login import current_user
+from flask_wtf.file import FileAllowed
+from werkzeug.datastructures import FileStorage
+from werkzeug.utils import secure_filename
 from wtforms import StringField, SelectMultipleField, HiddenField, SubmitField, ValidationError, SelectField, \
-    DateField, IntegerField
+    DateField, IntegerField, FileField
 from wtforms.validators import NumberRange, Regexp
 from wtforms.validators import Optional as InputOptional
 
@@ -22,6 +25,8 @@ class BallroomMap(BaseMap):
 
 
 class Hotel(FirestoreDocument):
+    FILE_EXTENSION = "pdf"
+
     def __init__(self, name: str = None, ballrooms: List[str] = None, primary_hotels: List[str] = None,
                  secondary_hotels: List[str] = None, city: str = None):
         super().__init__()
@@ -43,6 +48,7 @@ class Hotel(FirestoreDocument):
         self.set_contract(Date.today(), Date.today())
         self.last_date: str = str()
         self.last_timing: str = str()
+        self.contract_file: str = str()
 
     def __repr__(self):
         return f"{self.city}:{self.name}:Ballrooms={len(self.ballrooms)}:Primary={len(self.primary_hotels)}"
@@ -76,6 +82,18 @@ class Hotel(FirestoreDocument):
         address = [self.address, self.city, self.pin_code, Config.CITIES.get(self.city, str())]
         address = [element for element in address if element]
         return " ".join(address)
+
+    @property
+    def contract_filename(self) -> str:
+        return f"contract_{self.id}"
+
+    @property
+    def contract_full_filename(self) -> str:
+        return f"{self.contract_filename}.{Hotel.FILE_EXTENSION}"
+
+    @property
+    def contract_new_filename(self) -> str:
+        return f"{self.name} Contract.{Hotel.FILE_EXTENSION}"
 
     def display_ballroom(self, ballroom: str) -> str:
         room = self.get_ballroom(ballroom)
@@ -156,7 +174,8 @@ class HotelForm(FSForm):
     REMOVE_BALLROOM = "remove_ballroom"
     EDIT_PRIMARY_HOTEL = "primary_hotel"
     EDIT_SECONDARY_HOTEL = "secondary_hotel"
-    DOWNLOAD_TEMPLATE = "download_template"
+    UPLOAD_CONTRACT = "upload_contract"
+    DELETE_CONTRACT = "delete_contract"
     # Form Fields
     start_date = DateField("Contract start date", format="%d/%m/%Y")
     end_date = DateField("Contract end date", format="%d/%m/%Y")
@@ -171,16 +190,16 @@ class HotelForm(FSForm):
         InputOptional(), Regexp(r"^[A-Z]{5}\d{4}[A-Z]$", message="Invalid PAN format")])
     gst = StringField("GST # (15 characters, first 2 numbers, next 10 PAN, last 3 alpha numeric)", validators=[
         InputOptional(), Regexp(r"^\d{2}[A-Z]{5}\d{4}[A-Z][A-Z\d]{3}$", message="Invalid GST format")])
+    contract_filename = FileField(validators=[FileAllowed([Hotel.FILE_EXTENSION])])
     ballroom = StringField("Ball room name")
     primaries = SelectMultipleField("Select Primary Hotels", choices=list())
     secondaries = SelectMultipleField("Select Secondary Hotels", choices=list())
     old_ballroom = HiddenField()
     form_type = HiddenField()
-    submit = SubmitField("Download Template")
 
     def __init__(self, hotel: Hotel, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.template_path: str = str()
+        self.contract_file_path: str = str()
         self.hotel = hotel
         hotels = Hotel.objects.filter_by(city=current_user.city).get()
         hotels.sort(key=lambda hotel_item: hotel_item.name)
@@ -204,11 +223,13 @@ class HotelForm(FSForm):
         raise ValidationError(message)
 
     def validate_form_type(self, form_type: HiddenField):
-        if form_type.data != self.DOWNLOAD_TEMPLATE:
+        if form_type.data != self.DELETE_CONTRACT:
             return
-        self.template_path = File("Upload Template", "xlsx").download_from_cloud()
-        if not self.template_path:
-            raise ValidationError("Error in downloading the template")
+        if not self.hotel.contract_file:
+            raise ValidationError("Contract file does not exists")
+        file = File(self.hotel.contract_filename, Hotel.FILE_EXTENSION)
+        if not file.delete_from_cloud():
+            raise ValidationError("Error in deleting contract")
 
     def validate_end_date(self, end_date: DateField):
         if self.form_type.data != self.EDIT_HOTEL:
@@ -238,6 +259,20 @@ class HotelForm(FSForm):
             if self.hotel.get_ballroom(old_ballroom.data).used:
                 raise ValidationError("Cannot remove a ballroom with an event")
 
+    def validate_contract_filename(self, contract_filename: FileField):
+        if self.form_type.data != self.UPLOAD_CONTRACT:
+            return
+        if self.hotel.contract_file:
+            raise ValidationError("A contract file already exists")
+        file_storage: FileStorage = contract_filename.data
+        if not secure_filename(file_storage.filename):
+            raise ValidationError("No file selected for upload")
+        file = File(self.hotel.contract_filename, Hotel.FILE_EXTENSION)
+        file_path = file.local_path
+        file_storage.save(file_path)
+        if not file.upload_to_cloud():
+            raise ValidationError("Error in upload")
+
     def update(self):
         if self.form_type.data == self.EDIT_HOTEL:
             self.hotel.set_contract(self.start_date.data, self.end_date.data)
@@ -259,6 +294,10 @@ class HotelForm(FSForm):
             self.hotel.add_ballroom(self.ballroom.data)
         elif self.form_type.data == self.REMOVE_BALLROOM:
             self.hotel.remove_ballroom(self.old_ballroom.data)
+        elif self.form_type.data == self.UPLOAD_CONTRACT:
+            self.hotel.contract_file = self.hotel.contract_full_filename
+        elif self.form_type.data == self.DELETE_CONTRACT:
+            self.hotel.contract_file = str()
         self.hotel.save()
 
 

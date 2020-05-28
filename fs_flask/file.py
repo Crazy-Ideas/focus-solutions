@@ -48,8 +48,11 @@ class File:
 
     @property
     def local_path(self):
-        file_name = f"{self.name}.{self.extension}"
-        return os.path.join(Config.DOWNLOAD_PATH, file_name)
+        return os.path.join(Config.DOWNLOAD_PATH, self.filename)
+
+    @property
+    def filename(self) -> str:
+        return f"{self.name}.{self.extension}"
 
     def prepare(self, data_rows: int = 1000):
         body = {"requests": [
@@ -67,7 +70,7 @@ class File:
         self.SHEETS.spreadsheets().values().update(spreadsheetId=self.name, valueInputOption="USER_ENTERED",
                                                    body={"values": values}, range=range_name).execute()
 
-    def delete(self):
+    def delete_sheet(self):
         if not self.name:
             print("Nothing to delete")
         self.DRIVE.files().delete(fileId=self.name).execute()
@@ -97,12 +100,36 @@ class File:
         file_path = self.local_path
         if os.path.exists(file_path):
             return file_path
-        file_name = f"{self.name}.{self.extension}"
-        blob: Blob = self.BUCKET.blob(file_name)
+        blob: Blob = self.BUCKET.blob(self.filename)
         if not blob.exists():
-            print(f"File {file_name} not found on cloud storage")
+            print(f"File {self.filename} not found on cloud storage")
             return str()
         blob.download_to_filename(file_path)
+        return file_path
+
+    def upload_to_cloud(self) -> str:
+        if not self.name or not self.extension:
+            print("Nothing to upload")
+            return str()
+        file_path = self.local_path
+        if not os.path.exists(file_path):
+            return str()
+        blob: Blob = self.BUCKET.blob(self.filename)
+        if blob.exists():
+            print(f"File {self.filename} present on cloud storage and was overwritten")
+        blob.upload_from_filename(file_path)
+        return file_path
+
+    def delete_from_cloud(self) -> str:
+        if not self.name or not self.extension:
+            print("Nothing to delete")
+            return str()
+        file_path = self.local_path
+        if os.path.exists(file_path):
+            os.remove(file_path)
+        blob: Blob = self.BUCKET.blob(self.filename)
+        if blob.exists():
+            blob.delete()
         return file_path
 
     @staticmethod

@@ -110,7 +110,7 @@ class UsageForm(FSForm):
     ballrooms = SelectMultipleField("Select ballrooms", choices=list())
     goto_date = DateField("Select date", format="%d/%m/%Y")
     goto_timing = RadioField("Select timing", choices=[(timing, timing) for timing in Config.TIMINGS])
-    file_name = FileField("Choose a csv file to upload", validators=[FileAllowed(Config.EXTENSIONS)])
+    filename = FileField("Choose a csv file to upload", validators=[FileAllowed(["csv"])])
 
     def __init__(self, hotel_id: str, date: str, timing: str, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -207,10 +207,10 @@ class UsageForm(FSForm):
             return
         self._validate_date(goto_date.data, self.goto_timing.data)
 
-    def validate_file_name(self, file_name: FileField):
+    def validate_filename(self, filename: FileField):
         if self.form_type.data != self.UPLOAD:
             return
-        file: FileStorage = file_name.data
+        file: FileStorage = filename.data
         if not secure_filename(file.filename):
             raise ValidationError("No file selected for upload")
         file_path = File(current_user.id, "csv").local_path
