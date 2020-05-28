@@ -5,7 +5,10 @@ from typing import List, Optional, Tuple, Union
 from firestore_ci import FirestoreDocument
 from flask import request
 from flask_login import current_user
-from wtforms import StringField, SelectMultipleField, HiddenField, SubmitField, ValidationError, SelectField, DateField
+from wtforms import StringField, SelectMultipleField, HiddenField, SubmitField, ValidationError, SelectField, \
+    DateField, IntegerField
+from wtforms.validators import NumberRange, Regexp
+from wtforms.validators import Optional as InputOptional
 
 from config import Config, BaseMap, Date
 from fs_flask import FSForm
@@ -28,9 +31,15 @@ class Hotel(FirestoreDocument):
         self.city: str = city if city else str()
         self.primary_hotels: List[str] = primary_hotels[:9] if primary_hotels else list()
         self.secondary_hotels: List[str] = secondary_hotels[:9] if secondary_hotels else list()
-        self.email: str = str()
         self.start_date: str = str()
         self.end_date: str = str()
+        self.full_name: str = str()
+        self.company: str = str()
+        self.address: str = str()
+        self.pin_code: str = str()
+        self.pan: str = str()
+        self.gst: str = str()
+        self.room_count: int = int()
         self.set_contract(Date.today(), Date.today())
         self.last_date: str = str()
         self.last_timing: str = str()
@@ -61,6 +70,12 @@ class Hotel(FirestoreDocument):
     @property
     def display_delete(self) -> str:
         return "disabled" if self.used or self.name == current_user.hotel else str()
+
+    @property
+    def full_address(self) -> str:
+        address = [self.address, self.city, self.pin_code, Config.CITIES.get(self.city, str())]
+        address = [element for element in address if element]
+        return " ".join(address)
 
     def display_ballroom(self, ballroom: str) -> str:
         room = self.get_ballroom(ballroom)
@@ -143,8 +158,19 @@ class HotelForm(FSForm):
     EDIT_SECONDARY_HOTEL = "secondary_hotel"
     DOWNLOAD_TEMPLATE = "download_template"
     # Form Fields
-    start_date = DateField("Select contract start date", format="%d/%m/%Y")
-    end_date = DateField("Select contract end date", format="%d/%m/%Y")
+    start_date = DateField("Contract start date", format="%d/%m/%Y")
+    end_date = DateField("Contract end date", format="%d/%m/%Y")
+    full_name = StringField("Hotel Full Name")
+    company = StringField("Company Name")
+    address = StringField("Address (Exclude City, State, Pincode here)")
+    pin_code = StringField("PIN Code (6 digit number)", validators=[
+        InputOptional(), Regexp(r"^\d{6}$", message="PIN Code must be 6 digit number")])
+    room_count = IntegerField("Number of rooms", default=0, validators=[
+        NumberRange(min=0, max=10000, message="Number of rooms must be between 0 and 10000")])
+    pan = StringField("PAN # (10 characters, first 5 alpha, next 4 numbers, last alpha)", validators=[
+        InputOptional(), Regexp(r"^[A-Z]{5}\d{4}[A-Z]$", message="Invalid PAN format")])
+    gst = StringField("GST # (15 characters, first 2 numbers, next 10 PAN, last 3 alpha numeric)", validators=[
+        InputOptional(), Regexp(r"^\d{2}[A-Z]{5}\d{4}[A-Z][A-Z\d]{3}$", message="Invalid GST format")])
     ballroom = StringField("Ball room name")
     primaries = SelectMultipleField("Select Primary Hotels", choices=list())
     secondaries = SelectMultipleField("Select Secondary Hotels", choices=list())
@@ -165,6 +191,13 @@ class HotelForm(FSForm):
             self.primaries.data = hotel.primary_hotels
             self.secondaries.data = hotel.secondary_hotels
             self.start_date.data, self.end_date.data = hotel.contract
+            self.full_name.data = hotel.full_name
+            self.company.data = hotel.company
+            self.address.data = hotel.address
+            self.pin_code.data = hotel.pin_code
+            self.pan.data = hotel.pan
+            self.gst.data = hotel.gst
+            self.room_count.data = hotel.room_count
 
     def raise_date_error(self, message):
         self.start_date.data, self.end_date.data = self.hotel.contract
@@ -208,6 +241,13 @@ class HotelForm(FSForm):
     def update(self):
         if self.form_type.data == self.EDIT_HOTEL:
             self.hotel.set_contract(self.start_date.data, self.end_date.data)
+            self.hotel.full_name = self.full_name.data
+            self.hotel.company = self.company.data
+            self.hotel.address = self.address.data
+            self.hotel.pin_code = self.pin_code.data
+            self.hotel.pan = self.pan.data
+            self.hotel.gst = self.gst.data
+            self.hotel.room_count = self.room_count.data
         elif self.form_type.data == self.EDIT_PRIMARY_HOTEL:
             self.hotel.primary_hotels = self.primaries.data[:9]
         elif self.form_type.data == self.EDIT_SECONDARY_HOTEL:

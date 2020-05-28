@@ -14,23 +14,76 @@
                 </h5>
                 <ul class="list-group list-group-flush">
                     <li class="list-group-item">
-                        Email<br>
-                        {% if hotel.email %}
-                            <strong>{{ hotel.email }}</strong>
-                        {% else %}
-                            No email
+                        Name<br>
+                        <div class="font-weight-bold" id="edit-full-name">
+                            {{ hotel.full_name }}
+                        </div>
+                        {% if not hotel.full_name %}
+                            No Full Name
                         {% endif %}
                     </li>
                     <li class="list-group-item">
-                        City<br>
-                        <strong>{{ hotel.city }}</strong>
+                        Company Name<br>
+                        <div class="font-weight-bold" id="edit-company">
+                            {{ hotel.company }}
+                        </div>
+                        {% if not hotel.company %}
+                            No Company Name
+                        {% endif %}
                     </li>
                     <li class="list-group-item">
-                        Contract
-                        <br>
-                        Start Date: <strong>{{ hotel.formatted_contract[0] }}</strong>
-                        <br>
-                        End Date: <strong>{{ hotel.formatted_contract[1] }}</strong>
+                        Contract<br>
+                        <div class="row">
+                            <div class="col">
+                                Start Date<br>
+                                <div class="font-weight-bold" id="edit-start-date">
+                                    {{ hotel.formatted_contract[0] }}
+                                </div>
+                            </div>
+                            <div class="col">
+                                End Date<br>
+                                <div class="font-weight-bold" id="edit-end-date">
+                                    {{ hotel.formatted_contract[1] }}
+                                </div>
+                            </div>
+                        </div>
+                    </li>
+                    <li class="list-group-item">
+                        Address<br>
+                        <strong>{{ hotel.full_address }}</strong>
+                        <div class="d-none" id="edit-address">{{ hotel.address }}</div>
+                        <div class="d-none" id="edit-pin-code">{{ hotel.pin_code }}</div>
+                    </li>
+                    <li class="list-group-item">
+                        Number of Rooms:
+                        <span class="font-weight-bold" id="edit-room-count">
+                            {{ hotel.room_count }}
+                        </span>
+                    </li>
+                    <li class="list-group-item">
+                        Registration Details<br>
+                        <div class="row">
+                            <div class="col">
+                                {% if hotel.pan %}
+                                    PAN Number<br>
+                                {% else %}
+                                    No PAN Number
+                                {% endif %}
+                                <div class="font-weight-bold" id="edit-start-date">
+                                    {{ hotel.pan }}
+                                </div>
+                            </div>
+                            <div class="col">
+                                {% if hotel.gst %}
+                                    GST Number<br>
+                                {% else %}
+                                    No GST Number
+                                {% endif %}
+                                <div class="font-weight-bold" id="edit-start-date">
+                                    {{ hotel.gst }}
+                                </div>
+                            </div>
+                        </div>
                     </li>
                     <li class="list-group-item">
                         <form class="form" method="POST">
@@ -129,8 +182,47 @@
                         {{ form.csrf_token() }}
                         {{ form.old_ballroom() }}
                         <div id="edit-hotel">
-                            {{ form_group_no_error(form.start_date) }}
-                            {{ form_group_no_error(form.end_date) }}
+                            <div class="row">
+                                <div class="col">
+                                    {{ form_group_no_error(form.full_name) }}
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col">
+                                    {{ form_group_no_error(form.company) }}
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col">
+                                    {{ form_group_no_error(form.start_date) }}
+                                </div>
+                                <div class="col">
+                                    {{ form_group_no_error(form.end_date) }}
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col">
+                                    {{ form_group_no_error(form.address) }}
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col">
+                                    {{ form_group_no_error(form.pin_code) }}
+                                </div>
+                                <div class="col">
+                                    {{ form_group_no_error(form.room_count) }}
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col">
+                                    {{ form_group_no_error(form.pan) }}
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col">
+                                    {{ form_group_no_error(form.gst) }}
+                                </div>
+                            </div>
                         </div>
                         <div id="edit-ballroom">
                             {{ form_group_no_error(form.ballroom) }}
