@@ -5,14 +5,14 @@ from typing import Union, Optional
 
 from pytz import timezone
 
-os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = 'google-cloud.json'
+os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "google-cloud.json"
 
 
 class Config:
-    SECRET_KEY = os.environ.get('SECRET_KEY') or b64encode(os.urandom(24)).decode()
+    SECRET_KEY = os.environ.get("SECRET_KEY") or b64encode(os.urandom(24)).decode()
     PROJECT_ROOT = os.getcwd()
-    APP_ROOT = os.path.join(PROJECT_ROOT, 'fs_flask')
-    DOWNLOAD_PATH = os.path.join(APP_ROOT, 'downloads')
+    APP_ROOT = os.path.join(PROJECT_ROOT, "fs_flask")
+    DOWNLOAD_PATH = os.path.join(os.path.abspath(os.sep), "tmp")
     MIME_TYPES = {"xlsx": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"}
     SHEET_ID = "1OnvVprC_RSlsKxgAgve-dliPGJydj--qkmvnRUfyGYM"
     ADMIN = "Admin"
