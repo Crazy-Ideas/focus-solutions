@@ -207,22 +207,31 @@ class HotelForm(FSForm):
         self.primaries.choices.remove((hotel.name, hotel.name))
         self.secondaries.choices = self.primaries.choices
         if request.method == "GET":
-            self.primaries.data = hotel.primary_hotels
-            self.secondaries.data = hotel.secondary_hotels
-            self.start_date.data, self.end_date.data = hotel.contract
-            self.full_name.data = hotel.full_name
-            self.company.data = hotel.company
-            self.address.data = hotel.address
-            self.pin_code.data = hotel.pin_code
-            self.pan.data = hotel.pan
-            self.gst.data = hotel.gst
-            self.room_count.data = hotel.room_count
+            self.update_hotel_data()
+            self.primaries.data = self.hotel.primary_hotels
+            self.secondaries.data = self.hotel.secondary_hotels
+
+    def update_hotel_data(self):
+        self.start_date.data, self.end_date.data = self.hotel.contract
+        self.full_name.data = self.hotel.full_name
+        self.company.data = self.hotel.company
+        self.address.data = self.hotel.address
+        self.pin_code.data = self.hotel.pin_code
+        self.pan.data = self.hotel.pan
+        self.gst.data = self.hotel.gst
+        self.room_count.data = self.hotel.room_count
 
     def raise_date_error(self, message):
         self.start_date.data, self.end_date.data = self.hotel.contract
         raise ValidationError(message)
 
     def validate_form_type(self, form_type: HiddenField):
+        if form_type.data != self.EDIT_HOTEL:
+            self.update_hotel_data()
+        if form_type.data != self.EDIT_PRIMARY_HOTEL:
+            self.primaries.data = self.hotel.primary_hotels
+        if form_type.data != self.EDIT_SECONDARY_HOTEL:
+            self.secondaries.data = self.hotel.secondary_hotels
         if form_type.data != self.DELETE_CONTRACT:
             return
         if not self.hotel.contract_file:
