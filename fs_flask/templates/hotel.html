@@ -8,7 +8,7 @@
                     {{ hotel.name }}
                     <a type="button" class="btn btn-warning" data-toggle="modal"
                        data-target="#hotel-modal" data-type="{{ form.EDIT_HOTEL }}"
-                       data-title="Edit Hotel Details">
+                       data-title="Edit Hotel Details" title="Edit Hotel Details">
                         <span class="oi oi-pencil"></span>
                     </a>
                 </h5>
@@ -93,12 +93,12 @@
                     Contract
                     {% if hotel.contract_file %}
                         <a type="button" class="btn btn-danger text-white" data-toggle="modal"
-                           data-target="#hotel-modal"
+                           data-target="#hotel-modal" title="Delete Contract File"
                            data-type="{{ form.DELETE_CONTRACT }}" data-title="Delete Contract File">
                             <span class="oi oi-trash"></span>
                         </a>
                     {% else %}
-                        <a class="btn btn-success text-white" title="Attach a contract file" id="upload-contract-file">
+                        <a class="btn btn-success text-white" title="Attach a pdf file" id="upload-contract-file">
                             <span class="oi oi-cloud-upload"></span>
                         </a>
                         <form class="form" method="POST" enctype="multipart/form-data" id="upload-form">
@@ -114,12 +114,13 @@
                             <div class="row">
                                 <div class="col">
                                     <a class="btn btn-primary btn-block text-white" target="_blank"
+                                       title="View in a new tab"
                                        href="{{ url_for('download', filename=hotel.contract_filename, extension=hotel.FILE_EXTENSION) }}">
                                         <span class="oi oi-document"></span> View
                                     </a>
                                 </div>
                                 <div class="col">
-                                    <a class="btn btn-primary btn-block text-white"
+                                    <a class="btn btn-primary btn-block text-white" title="Download the pdf file"
                                        href="{{ url_for('download', filename=hotel.contract_filename, extension=hotel.FILE_EXTENSION, attachment=True, new_filename=hotel.contract_new_filename) }}">
                                         <span class="oi oi-cloud-download"></span> Download
                                     </a>
@@ -138,9 +139,9 @@
                 </h5>
                 <ul class="list-group list-group-flush">
                     <li class="list-group-item">
-                        <a class="btn btn-primary" title="Template for uploading events"
+                        <a class="btn btn-primary" title=" Download Excel File"
                            href="{{ url_for('download', filename='Upload Template', extension='xlsx', attachment=True) }}">
-                            <span class="oi oi-cloud-download"></span> Download Excel File
+                            <span class="oi oi-cloud-download"></span> Template for uploading events
                         </a>
                     </li>
                 </ul>
@@ -151,7 +152,7 @@
                 <h5 class="card-header text-center">
                     Ballrooms
                     <a type="button" class="btn btn-success text-white" data-toggle="modal"
-                       data-target="#hotel-modal" data-type="{{ form.NEW_BALLROOM }}"
+                       data-target="#hotel-modal" data-type="{{ form.NEW_BALLROOM }}" title="Add a new ballroom"
                        data-title="New Ballroom">
                         <span class="oi oi-plus"></span>
                     </a>
@@ -166,14 +167,14 @@
                                 <div class="col text-right">
                                     <a type="button" class="btn btn-warning {{ hotel.display_ballroom(ballroom) }}"
                                        data-toggle="modal" data-target="#hotel-modal"
-                                       data-type="{{ form.EDIT_BALLROOM }}"
+                                       data-type="{{ form.EDIT_BALLROOM }}" title="Edit ballroom name"
                                        data-title="Edit Ballroom {{ ballroom }}" data-ballroom="{{ ballroom }}">
                                         <span class="oi oi-pencil"></span>
                                     </a>
                                     <a type="button"
                                        class="btn btn-danger text-white {{ hotel.display_ballroom(ballroom) }}"
                                        data-toggle="modal" data-target="#hotel-modal"
-                                       data-type="{{ form.REMOVE_BALLROOM }}"
+                                       data-type="{{ form.REMOVE_BALLROOM }}" title="Delete the ballroom"
                                        data-title="Remove Ballroom" data-ballroom="{{ ballroom }}">
                                         <span class="oi oi-trash"></span>
                                     </a>
@@ -189,7 +190,8 @@
                 <h5 class="card-header">
                     Primary Comp Set
                     <a type="button" class="btn btn-warning" data-toggle="modal" data-target="#hotel-modal"
-                       data-type="{{ form.EDIT_PRIMARY_HOTEL }}" data-title="Select Primary Hotels">
+                       data-type="{{ form.EDIT_PRIMARY_HOTEL }}" data-title="Select Primary Hotels"
+                       title="Change Primary Comp Set">
                         <span class="oi oi-pencil"></span>
                     </a>
                 </h5>
@@ -204,7 +206,8 @@
                 <h5 class="card-header">
                     Secondary Comp Set
                     <a type="button" class="btn btn-warning" data-toggle="modal" data-target="#hotel-modal"
-                       data-type="{{ form.EDIT_SECONDARY_HOTEL }}" data-title="Select Secondary Hotels">
+                       data-type="{{ form.EDIT_SECONDARY_HOTEL }}" data-title="Select Secondary Hotels"
+                       title="Change Secondary Comp Set">
                         <span class="oi oi-pencil"></span>
                     </a>
                 </h5>

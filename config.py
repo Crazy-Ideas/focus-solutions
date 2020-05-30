@@ -61,7 +61,7 @@ class BaseMap:
 
 
 class Date:
-    TODAY = dt.date(2019, 1, 28)
+    TODAY = dt.date(2019, 2, 28)
     INDIA_TIME_ZONE = timezone("Asia/Kolkata")
 
     def __init__(self, date: Union[dt.date, str] = None):
