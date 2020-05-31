@@ -267,7 +267,7 @@ class UsageForm(FSForm):
             usage.event_description = row[HDR.EVENT]
             self.upload_data.append(usage)
         if self.upload_errors:
-            raise ValidationError("Error in Upload. View the upload errors by clicking on error icon.")
+            raise ValidationError("Field specific errors. Fields with red highlight have errors.")
         if not self.upload_data:
             raise ValidationError("There are no events in the csv file")
         self.upload_data.sort(key=lambda usage_item: usage_item.timing, reverse=True)
@@ -428,7 +428,7 @@ class UsageForm(FSForm):
 
     @property
     def display_bug(self) -> str:
-        return "disabled" if not self.upload_errors else str()
+        return "disabled" if not self.filename.errors else str()
 
     @property
     def disable_upload(self) -> bool:

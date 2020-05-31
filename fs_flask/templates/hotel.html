@@ -55,9 +55,15 @@
                         <div class="d-none" id="edit-pin-code">{{ hotel.pin_code }}</div>
                     </li>
                     <li class="list-group-item">
-                        Number of Rooms:
-                        <span class="font-weight-bold" id="edit-room-count">
-                            {{ hotel.room_count }}
+                        Banquet area:
+                        <span class="font-weight-bold" id="edit-banquet-area">
+                            {{ hotel.banquet_area }} square feet
+                        </span>
+                    </li>
+                    <li class="list-group-item">
+                        Star Category:
+                        <span class="font-weight-bold" id="edit-star-category">
+                            {{ hotel.star_category }}
                         </span>
                     </li>
                     <li class="list-group-item">
@@ -249,15 +255,18 @@
                                     {{ form_group_no_error(form.pin_code) }}
                                 </div>
                                 <div class="col">
-                                    {{ form_group_no_error(form.room_count) }}
+                                    {{ form_group_no_error(form.banquet_area) }}
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col">
+                                    {{ form_group_no_error(form.star) }}
                                 </div>
                             </div>
                             <div class="row">
                                 <div class="col">
                                     {{ form_group_no_error(form.pan) }}
                                 </div>
-                            </div>
-                            <div class="row">
                                 <div class="col">
                                     {{ form_group_no_error(form.gst) }}
                                 </div>

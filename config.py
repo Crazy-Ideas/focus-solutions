@@ -38,6 +38,8 @@ class Config:
     SOCIAL = "Social Event"
     OTHER = "Other"
     EVENTS = (MICE, SOCIAL, OTHER)
+    STAR_CATEGORY = ("5 Star Deluxe", "5 Star", "4 Star", "3 Star", "2 Star", "1 Star", "Heritage Grand",
+                     "Heritage Classic", "Heritage Basic")
 
 
 class BaseMap:

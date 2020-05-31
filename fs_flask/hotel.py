@@ -42,9 +42,10 @@ class Hotel(FirestoreDocument):
         self.company: str = str()
         self.address: str = str()
         self.pin_code: str = str()
+        self.banquet_area: int = int()
+        self.star_category: str = str()
         self.pan: str = str()
         self.gst: str = str()
-        self.room_count: int = int()
         self.set_contract(Date.today(), Date.today())
         self.last_date: str = str()
         self.last_timing: str = str()
@@ -166,7 +167,11 @@ class Hotel(FirestoreDocument):
 Hotel.init()
 
 
+# noinspection DuplicatedCode
 class HotelForm(FSForm):
+    # Error Message
+    PAN_ERROR = "Invalid PAN format. PAN # must be 10 characters, first 5 alpha, next 4 numbers, last alpha."
+    GST_ERROR = "Invalid GST format. GST # must be 15 characters, first 2 numbers, next 10 PAN, last 3 alpha numeric."
     # Form Types
     EDIT_HOTEL = "edit_hotel"
     EDIT_BALLROOM = "edit_ballroom"
@@ -184,12 +189,13 @@ class HotelForm(FSForm):
     address = StringField("Address (Exclude City, State, Pincode here)")
     pin_code = StringField("PIN Code (6 digit number)", validators=[
         InputOptional(), Regexp(r"^\d{6}$", message="PIN Code must be 6 digit number")])
-    room_count = IntegerField("Number of rooms", default=0, validators=[
-        NumberRange(min=0, max=10000, message="Number of rooms must be between 0 and 10000")])
-    pan = StringField("PAN # (10 characters, first 5 alpha, next 4 numbers, last alpha)", validators=[
-        InputOptional(), Regexp(r"^[A-Z]{5}\d{4}[A-Z]$", message="Invalid PAN format")])
-    gst = StringField("GST # (15 characters, first 2 numbers, next 10 PAN, last 3 alpha numeric)", validators=[
-        InputOptional(), Regexp(r"^\d{2}[A-Z]{5}\d{4}[A-Z][A-Z\d]{3}$", message="Invalid GST format")])
+    banquet_area = IntegerField("Banquet area", default=0, validators=[
+        NumberRange(min=0, max=1000000, message="Banquet area must be between 0 and 1000000")])
+    star = SelectField("Select Star Category", choices=[(star, star) for star in Config.STAR_CATEGORY],
+                       default=Config.STAR_CATEGORY[0])
+    pan = StringField("PAN #", validators=[InputOptional(), Regexp(r"^[A-Z]{5}\d{4}[A-Z]$", message=PAN_ERROR)])
+    gst = StringField("GST #", validators=[InputOptional(),
+                                           Regexp(r"^\d{2}[A-Z]{5}\d{4}[A-Z][A-Z\d]{3}$", message=GST_ERROR)])
     contract_filename = FileField(validators=[FileAllowed([Hotel.FILE_EXTENSION])])
     ballroom = StringField("Ball room name")
     primaries = SelectMultipleField("Select Primary Hotels", choices=list())
@@ -219,7 +225,8 @@ class HotelForm(FSForm):
         self.pin_code.data = self.hotel.pin_code
         self.pan.data = self.hotel.pan
         self.gst.data = self.hotel.gst
-        self.room_count.data = self.hotel.room_count
+        self.banquet_area.data = self.hotel.banquet_area
+        self.star.data = self.hotel.star_category if self.hotel.star_category else Config.STAR_CATEGORY[0]
 
     def raise_date_error(self, message):
         self.start_date.data, self.end_date.data = self.hotel.contract
@@ -289,9 +296,10 @@ class HotelForm(FSForm):
             self.hotel.company = self.company.data
             self.hotel.address = self.address.data
             self.hotel.pin_code = self.pin_code.data
+            self.hotel.banquet_area = self.banquet_area.data
+            self.hotel.star_category = self.star.data
             self.hotel.pan = self.pan.data
             self.hotel.gst = self.gst.data
-            self.hotel.room_count = self.room_count.data
         elif self.form_type.data == self.EDIT_PRIMARY_HOTEL:
             self.hotel.primary_hotels = self.primaries.data[:9]
         elif self.form_type.data == self.EDIT_SECONDARY_HOTEL:
