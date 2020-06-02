@@ -1,5 +1,5 @@
 from flask import render_template, url_for, redirect, Response, flash, send_file, request
-from flask_login import login_required, current_user
+from flask_login import current_user
 
 from config import Config, Date
 from fs_flask import fs_app
@@ -7,17 +7,18 @@ from fs_flask.file import File
 from fs_flask.hotel import Hotel, HotelForm, AdminForm
 from fs_flask.report import QueryForm, Dashboard
 from fs_flask.usage import Usage, UsageForm
+from fs_flask.user import cookie_login_required
 
 
 @fs_app.route("/")
 @fs_app.route("/home")
-@login_required
+@cookie_login_required
 def home() -> Response:
     return render_template("home.html", d=Dashboard())
 
 
 @fs_app.route("/reports/main", methods=["GET", "POST"])
-@login_required
+@cookie_login_required
 def main_report() -> Response:
     form = QueryForm()
     if form.error_message:
@@ -32,7 +33,7 @@ def main_report() -> Response:
 
 
 @fs_app.route("/hotels/profile")
-@login_required
+@cookie_login_required
 def hotel_profile() -> Response:
     hotel = Hotel.objects.filter_by(city=current_user.city, name=current_user.hotel).first()
     if not hotel:
@@ -42,7 +43,7 @@ def hotel_profile() -> Response:
 
 
 @fs_app.route("/hotels/admin", methods=["GET", "POST"])
-@login_required
+@cookie_login_required
 def admin_manage() -> Response:
     if current_user.role != Config.ADMIN:
         flash("Insufficient privilege")
@@ -56,7 +57,7 @@ def admin_manage() -> Response:
 
 
 @fs_app.route("/hotels/<hotel_id>", methods=["GET", "POST"])
-@login_required
+@cookie_login_required
 def hotel_manage(hotel_id: str) -> Response:
     hotel = Hotel.get_by_id(hotel_id)
     if not hotel or (current_user.role == Config.HOTEL and current_user.hotel != hotel.name):
@@ -71,7 +72,7 @@ def hotel_manage(hotel_id: str) -> Response:
 
 
 @fs_app.route("/data_entry")
-@login_required
+@cookie_login_required
 def data_entry() -> Response:
     hotel = Hotel.objects.filter_by(city=current_user.city, name=current_user.hotel).first()
     date, timing = Usage.get_data_entry_date(hotel)
@@ -85,7 +86,7 @@ def data_entry() -> Response:
 
 
 @fs_app.route("/hotels/<hotel_id>/dates/<date>/timings/<timing>", methods=["GET", "POST"])
-@login_required
+@cookie_login_required
 def usage_manage(hotel_id: str, date: str, timing: str) -> Response:
     form = UsageForm(hotel_id, date, timing)
     if form.error_message:
@@ -101,7 +102,7 @@ def usage_manage(hotel_id: str, date: str, timing: str) -> Response:
 
 
 @fs_app.route("/download")
-@login_required
+@cookie_login_required
 def download() -> Response:
     filename = request.args.get("filename", default=str())
     extension = request.args.get("extension", default=str())
