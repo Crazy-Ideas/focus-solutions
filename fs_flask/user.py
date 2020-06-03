@@ -126,13 +126,13 @@ def login() -> str:
     if not user or not user.check_password(form.password.data):
         flash(f"Invalid email or password.")
         return redirect(url_for("login"))
-    user.get_token()
+    token = user.get_token()
     login_user(user=user)
     next_page = request.args.get("next")
     if not next_page or url_parse(next_page).netloc != str():
         next_page = url_for("home")
     response: Response = make_response(redirect(next_page))
-    response.set_cookie("token", user.token, max_age=Config.TOKEN_EXPIRY, secure=Config.FS_SECURITY, httponly=True,
+    response.set_cookie("token", token, max_age=Config.TOKEN_EXPIRY, secure=Config.CI_SECURITY, httponly=True,
                         samesite="Strict")
     return response
 

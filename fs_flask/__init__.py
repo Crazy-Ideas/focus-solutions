@@ -8,7 +8,7 @@ fs_app: Flask = Flask(__name__)
 fs_app.config.from_object(Config)
 login = LoginManager(fs_app)
 login.login_view = "login"
-login.session_protection = "strong" if Config.FS_SECURITY else "basic"
+login.session_protection = "strong" if Config.CI_SECURITY else "basic"
 
 
 class FSForm(FlaskForm):

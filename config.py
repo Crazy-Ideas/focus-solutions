@@ -10,8 +10,8 @@ os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "google-cloud.json"
 
 class Config:
     SECRET_KEY = os.environ.get("SECRET_KEY") or b64encode(os.urandom(24)).decode()
-    FS_SECURITY = True
-    SESSION_COOKIE_SECURE = FS_SECURITY
+    CI_SECURITY = False
+    SESSION_COOKIE_SECURE = CI_SECURITY
     PROJECT_ROOT = os.getcwd()
     APP_ROOT = os.path.join(PROJECT_ROOT, "fs_flask")
     DOWNLOAD_PATH = os.path.join(os.path.abspath(os.sep), "tmp")

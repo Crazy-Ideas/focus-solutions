@@ -50,9 +50,10 @@
                     <td class="text-center d-none d-md-table-cell">{{ hotel.ballrooms|length }}</td>
                     <td class="text-center d-none d-md-table-cell">{{ hotel.competitions|length }}</td>
                     <td class="text-center">
-                        <a type="button" class="btn btn-warning" title="Set Default Hotel" data-toggle="modal"
-                           data-target="#admin-modal" data-id="{{ hotel.id }}" data-hotel="{{ hotel.name }}"
-                           data-type="{{ form.EDIT_DEFAULT_HOTEL }}" data-title="Default Hotel">
+                        <a type="button" class="btn btn-warning {{ hotel.display_default_button }}"
+                           title="Set Default Hotel" data-toggle="modal" data-target="#admin-modal"
+                           data-type="{{ form.EDIT_DEFAULT_HOTEL }}" data-title="Default Hotel"
+                           data-hotel="{{ hotel.name }}" data-id="{{ hotel.id }}">
                             <span class="oi oi-star"></span>
                         </a>
                         <a class="btn btn-primary" href="{{ url_for('hotel_manage', hotel_id=hotel.id) }}"

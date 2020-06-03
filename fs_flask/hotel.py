@@ -75,6 +75,10 @@ class Hotel(FirestoreDocument):
         return "table-warning font-weight-bold" if current_user.hotel == self.name else str()
 
     @property
+    def display_default_button(self) -> str:
+        return "disabled" if current_user.hotel == self.name else str()
+
+    @property
     def display_delete(self) -> str:
         return "disabled" if self.used or self.name == current_user.hotel else str()
 
