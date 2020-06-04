@@ -43,7 +43,7 @@
         </button>
         <div class="collapse navbar-collapse" id="navbarMenu">
             <div class="navbar-nav mr-auto">
-                {% if current_user.is_authenticated %}
+                {%- if current_user.is_authenticated %}
                     <a class="nav-item nav-link {% if request.url_rule.endpoint == 'home' %}active{% endif %}"
                        href="{{ url_for('home') }}" title="Dashboard">
                         <span class="oi oi-dashboard"></span> Dashboard
@@ -56,102 +56,87 @@
                        href="{{ url_for('main_report') }}" title="Main Report">
                         <span class="oi oi-spreadsheet"></span> Reports
                     </a>
-                {% endif %}
+                {%- endif %}
             </div>
             <div class="navbar-nav ml-auto">
-                {% if current_user.is_anonymous %}
+                {%- if current_user.is_anonymous %}
                     <a class="nav-item nav-link active" href="{{ url_for('login') }}" title="Login">
                         <span class="oi oi-account-login"></span> Login
                     </a>
-                {% else %}
+                {%- else %}
                     <a class="nav-item nav-link {% if request.url_rule.endpoint == 'hotel_manage' %}active{% endif %}"
                        href="{{ url_for('hotel_profile') }}" title="{{ current_user.hotel }}">
                         <span class="oi oi-home"></span> {{ current_user.hotel }}
                     </a>
-                    {% if current_user.role == config.ADMIN %}
+                    {%- if current_user.role == config.ADMIN %}
                         <a class="nav-item nav-link {% if request.url_rule.endpoint == 'admin_manage' %}active{% endif %}"
                            href="{{ url_for('admin_manage') }}" title="Admin Settings">
                             <span class="oi oi-cog"></span> Admin
                         </a>
-                    {% endif %}
+                    {%- endif %}
                     <a class="nav-item nav-link" href="{{ url_for('logout') }}" title="Logout">
                         <span class="oi oi-account-logout"></span> Logout
                     </a>
-                {% endif %}
+                {%- endif %}
             </div>
         </div>
     </nav>
 </div>
-
-{%- macro form_group(field) %}
-    <div class="form-group required">
-        <label for="{{ field.id }}" class="form-control-label">{{ field.label }}</label>
-        {%- if field.errors %}
-            {{ field(class_="form-control is-invalid") }}
-        {%- else %}
-            {{ field(class_="form-control") }}
-        {%- endif %}
-        {%- if field.errors %}
-            <div class="invalid-feedback">
-                {{ field.errors[0] }}
-            </div>
-        {%- endif %}
-    </div>
-{%- endmacro %}
-
-{%- macro form_group_no_error(field) %}
-    {% if field.type == "FileField" %}
+<!-- Macro to render all types of form fields -->
+{%- macro render_field(field) %}
+    {%- if field.type == "FileField" %}
         <div class="custom-file">
             {{ field(class_="custom-file-input") }}
             <label for="{{ field.id }}" class="custom-file-label">{{ field.label }}</label>
         </div>
-    {% else %}
+    {%- elif field.type == "RadioField" %}
+        <div id="{{ field.id }}">
+            {{ field.label }}
+            {% for value, label in field.choices %}
+                <div class="custom-control custom-radio">
+                    <input class="custom-control-input" type="radio" id="{{ field.id + '-' + loop.index|string }}"
+                           name="{{ field.name }}" value="{{ value }}" {% if field.data == value %} checked {% endif %}>
+                    <label class="custom-control-label"
+                           for="{{ field.id + '-' + loop.index|string }}">{{ label }}</label>
+                </div>
+            {% endfor %}
+            <br>
+        </div>
+    {%- elif field.type == "BooleanField" %}
+        <div class="custom-control custom-checkbox">
+            {{ field(class_="custom-control-input") }}
+            <label for="{{ field.id }}" class="custom-control-label">{{ field.label }}</label>
+        </div>
+    {%- elif field.type in ("HiddenField", "CSRFTokenField") %}
+        {{ field() }}
+    {%- elif field.type == "SubmitField" %}
+        <br>
+        {{ field(class_="btn btn-primary") }}
+    {%- else %}
         <div class="form-group required">
             <label for="{{ field.id }}" class="form-control-label">{{ field.label }}</label>
             {{ field(class_="form-control") }}
         </div>
-    {% endif %}
+    {%- endif %}
 {%- endmacro %}
 
-{%- macro check_box(field) %}
-    <div class="custom-control custom-checkbox">
-        {{ field(class_="custom-control-input") }}
-        <label for="{{ field.id }}" class="custom-control-label">{{ field.label }}</label>
-    </div>
-{%- endmacro %}
-
-{%- macro radio_field(field) %}
-    <div id="{{ field.id }}">
-        {{ field.label }}
-        {% for value, label in field.choices %}
-            <div class="custom-control custom-radio">
-                <input class="custom-control-input" type="radio" id="{{ field.id + '-' + loop.index|string }}"
-                       name="{{ field.name }}" value="{{ value }}" {% if field.data == value %} checked {% endif %}>
-                <label class="custom-control-label" for="{{ field.id + '-' + loop.index|string }}">{{ label }}</label>
-            </div>
-        {% endfor %}
-        <br>
-    </div>
-{%- endmacro %}
-
-{% block content %}
+{%- block content %}
     <div class="container-xl">
-        {% with messages = get_flashed_messages() %}
-            {% if messages %}
+        {%- with messages = get_flashed_messages() %}
+            {%- if messages %}
                 <br>
-                {% for message in messages %}
+                {%- for message in messages %}
                     <div class="alert alert-info" role="alert">
                         {{ message }}
                     </div>
-                {% endfor %}
-            {% endif %}
-        {% endwith %}
+                {%- endfor %}
+            {%- endif %}
+        {%- endwith %}
         <br>
-        {% block app_content %}
-        {% endblock %}
+        {%- block app_content %}
+        {%- endblock %}
     </div>
-{% endblock %}
-
+{%- endblock %}
 
 {% block scripts %}
     <!-- Bootstrap Google -->
@@ -179,7 +164,7 @@
     </script>
     {%- set _select_fields = [] %}
     {%- for field in form %}
-        {%- if field.type in ("SelectField", "SelectMultipleField", "DateField") %}
+        {%- if field.type in ("SelectField", "SelectMultipleField", "DateField", "FileField") %}
             {%- set _ = _select_fields.append((field.id, field.type)) -%}
         {%- endif %}
     {%- endfor %}
@@ -203,15 +188,17 @@
                             weekStartDay: 1,
                             showOtherMonths: true,
                         });
+                    {% elif field_type == "FileField" %}
+                        $(".custom-file-input").on("change", function () {
+                            let fileName = $(this).val().split("\\").pop();
+                            $(this).siblings(".custom-file-label").addClass("selected").html(fileName);
+                        });
                     {% endif %}
                 {%- endfor %}
             });
         </script>
     {%- endif %}
-
 {%- endblock scripts %}
-
 
 </body>
 </html>
-

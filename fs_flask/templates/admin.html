@@ -91,18 +91,18 @@
                 </div>
                 <div class="modal-body justify-content-center">
                     <form class="form" method="POST" id="admin-form">
-                        {{ form.form_type() }}
-                        {{ form.hotel_id() }}
+                        {{ render_field(form.form_type) }}
+                        {{ render_field(form.hotel_id) }}
                         <div id="city-select">
-                            {{ form_group_no_error(form.default_city) }}
+                            {{ render_field(form.default_city) }}
                         </div>
                         <div id="new-hotel">
-                            {{ form_group_no_error(form.new_hotel) }}
+                            {{ render_field(form.new_hotel) }}
                         </div>
                         <div id="comment">
                             Placeholder comment
                         </div>
-                        {{ form.csrf_token() }}
+                        {{ render_field(form.csrf_token) }}
                     </form>
                 </div>
                 <div class="modal-footer justify-content-center d-flex">

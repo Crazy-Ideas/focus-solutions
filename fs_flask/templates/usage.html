@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block app_content %}
+{% block app_content -%}
     <div class="row">
         <div class="col-lg-4">
             <ul class="list-group text-center">
@@ -75,7 +75,7 @@
         </div>
     </div>
     <br>
-    {% if form.usages %}
+    {% if form.usages -%}
         <table id="usage_list" class="table table-bordered table-hover ">
             <thead class="thead-dark">
             <tr>
@@ -93,7 +93,7 @@
             </tr>
             </thead>
             <tbody>
-            {% for usage in form.usages %}
+            {% for usage in form.usages -%}
                 <tr id="{{ usage.id }}">
                     {% if usage.no_event %}
                         <td colspan="7" class="text-center table-danger"> No event</td>
@@ -119,12 +119,12 @@
                                 <span class="oi oi-trash"></span>
                             </a>
                         </td>
-                    {% endif %}
+                    {% endif -%}
                 </tr>
-            {% endfor %}
+            {% endfor -%}
             </tbody>
         </table>
-    {% else %}
+    {% else -%}
         <div class="row">
             <div class="col text-center">
                 <strong>No events recorded</strong>
@@ -142,36 +142,36 @@
                 </div>
                 <div class="modal-body justify-content-center">
                     <form class="form" method="POST" id="usage-form" enctype="multipart/form-data">
-                        {{ form.csrf_token() }}
-                        {{ form.form_type() }}
-                        {{ form.usage_id() }}
+                        {{ render_field(form.csrf_token) }}
+                        {{ render_field(form.form_type) }}
+                        {{ render_field(form.usage_id) }}
                         <div id="edit-usage">
-                            {{ form_group_no_error(form.client) }}
+                            {{ render_field(form.client) }}
                             <div class="row">
                                 <div class="col">
                                     <div id="morning-meal">
-                                        {{ radio_field(form.morning_meal) }}
+                                        {{ render_field(form.morning_meal) }}
                                     </div>
                                     <div id="evening-meal">
-                                        {{ radio_field(form.evening_meal) }}
+                                        {{ render_field(form.evening_meal) }}
                                     </div>
                                 </div>
                                 <div class="col">
-                                    {{ radio_field(form.event_type) }}
+                                    {{ render_field(form.event_type) }}
                                 </div>
                             </div>
-                            {{ form_group_no_error(form.ballrooms) }}
-                            {{ form_group_no_error(form.event_description) }}
+                            {{ render_field(form.ballrooms) }}
+                            {{ render_field(form.event_description) }}
                         </div>
                         <div id="goto-date">
-                            {{ form_group_no_error(form.goto_date) }}
-                            {{ radio_field(form.goto_timing) }}
+                            {{ render_field(form.goto_date) }}
+                            {{ render_field(form.goto_timing) }}
                         </div>
                         <div id="comment">
                             Placeholder comment
                         </div>
                         <div id="upload-file">
-                            <p>{{ form_group_no_error(form.filename) }}</p>
+                            <p>{{ render_field(form.filename) }}</p>
                         </div>
                     </form>
                 </div>
@@ -225,8 +225,7 @@
             </div>
         </div>
     </div>
-
-{% endblock %}
+{% endblock -%}
 
 {% block scripts %}
     {{ super() }}
@@ -238,10 +237,6 @@
         {% endif %}
         $("#save-button").on("click", function () {
             document.forms["usage-form"].submit();
-        });
-        $(".custom-file-input").on("change", function () {
-            let fileName = $(this).val().split("\\").pop();
-            $(this).siblings(".custom-file-label").addClass("selected").html(fileName);
         });
 
         $("#usage-modal").on("show.bs.modal", function (event) {

@@ -8,7 +8,7 @@ from flask_login import current_user
 from flask_wtf.file import FileAllowed
 from werkzeug.datastructures import FileStorage
 from werkzeug.utils import secure_filename
-from wtforms import StringField, SelectMultipleField, HiddenField, SubmitField, ValidationError, SelectField, \
+from wtforms import StringField, SelectMultipleField, HiddenField, ValidationError, SelectField, \
     DateField, IntegerField, FileField
 from wtforms.validators import NumberRange, Regexp
 from wtforms.validators import Optional as InputOptional
@@ -335,7 +335,6 @@ class AdminForm(FSForm):
     new_hotel = StringField("Enter hotel name (It must be unique)")
     hotel_id = HiddenField()
     form_type = HiddenField()
-    submit = SubmitField("Delete")
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

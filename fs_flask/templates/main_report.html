@@ -170,37 +170,39 @@
                 </div>
                 <div class="modal-body justify-content-center">
                     <form class="form" method="POST" id="query-form">
+                        {{ render_field(form.csrf_token) }}
+                        {{ render_field(form.form_type) }}
                         <div id="hotel-select">
-                            {{ radio_field(form.hotel_select) }}
+                            {{ render_field(form.hotel_select) }}
                             <div id="custom-hotels">
-                                {{ form_group_no_error(form.custom_hotels) }}
+                                {{ render_field(form.custom_hotels) }}
                             </div>
                         </div>
                         <div id="event-select">
                             <div class="row">
                                 <div class="col">
-                                    {{ form_group_no_error(form.start_date) }}
+                                    {{ render_field(form.start_date) }}
                                 </div>
                                 <div class="col">
-                                    {{ form_group_no_error(form.end_date) }}
-                                </div>
-                            </div>
-                            <div class="row">
-                                <div class="col">
-                                    {{ radio_field(form.day) }}
-                                </div>
-                                <div class="col">
-                                    {{ radio_field(form.event) }}
+                                    {{ render_field(form.end_date) }}
                                 </div>
                             </div>
                             <div class="row">
                                 <div class="col">
-                                    {{ radio_field(form.timing) }}
+                                    {{ render_field(form.day) }}
                                 </div>
                                 <div class="col">
-                                    {{ radio_field(form.all_meal) }}
-                                    {{ radio_field(form.morning_meal) }}
-                                    {{ radio_field(form.evening_meal) }}
+                                    {{ render_field(form.event) }}
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col">
+                                    {{ render_field(form.timing) }}
+                                </div>
+                                <div class="col">
+                                    {{ render_field(form.all_meal) }}
+                                    {{ render_field(form.morning_meal) }}
+                                    {{ render_field(form.evening_meal) }}
                                 </div>
                             </div>
                         </div>
@@ -210,8 +212,6 @@
                             <p>Please do NOT refresh the page till that time.</p>
                             <p>Once the download completes you can close this dialog box.</p>
                         </div>
-                        {{ form.form_type }}
-                        {{ form.csrf_token() }}
                     </form>
                 </div>
                 <div class="modal-footer justify-content-center d-flex">

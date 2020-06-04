@@ -1,53 +1,14 @@
 {% extends "base.html" %}
 
-{% macro file_group(field) %}
-    <div class="custom-file">
-        {%- if field.errors %}
-            {{ field(class_="custom-file-input is-invalid") }}
-        {%- else %}
-            {{ field(class_="custom-file-input") }}
-        {%- endif %}
-        <label for="{{ field.id }}" class="custom-file-label">{{ field.label }}</label>
-        {%- if field.errors %}
-            <div class="invalid-feedback">
-                {{ field.errors[0] }}
-            </div>
-        {%- endif %}
-    </div>
-    <br>
-{% endmacro %}
-
-
-{% macro quick_form(form) -%}
-    {%- set _enctype = [] %}
-    {%- for field in form %}
-        {%- if field.type == "FileField" %}
-            {%- set _ = _enctype.append("multipart/form-data") -%}
-        {%- endif %}
-    {%- endfor %}
-    <form class="form" method="POST" {%- if _enctype[0] %}enctype="{{ _enctype[0] }}"{% endif -%}>
+{%- macro quick_form(form) -%}
+    <form class="form" method="POST">
         {%- for field in form %}
-            {%- if field.type in ("HiddenField", "CSRFTokenField") %}
-                {{ field() }}
-            {%- elif field.type == "SubmitField" %}
-                <br>
-                {{ field(class_="btn btn-success") }}
-            {%- elif field.type =="BooleanField" %}
-                <div class="form-check">
-                    <label class="form-check-label">
-                        {{ field(class_="form-check-input") }} {{ field.label.text }}
-                    </label>
-                </div>
-            {%- elif field.type == "FileField" %}
-                {{ file_group(field) }}
-            {%- else %}
-                {{ form_group(field) }}
-            {%- endif %}
+            {{ render_field(field) }}
         {%- endfor %}
     </form>
-{% endmacro %}
+{%- endmacro %}
 
-{% block app_content %}
+{%- block app_content %}
     <div class="row">
         <div class="col-md-8">
             {% if name %}
@@ -73,14 +34,5 @@
             {{ quick_form(form) }}
         </div>
     </div>
-{% endblock %}
+{%- endblock %}
 
-{% block scripts %}
-    {{ super() }}
-    <script>
-        $(".custom-file-input").on("change", function () {
-            let fileName = $(this).val().split("\\").pop();
-            $(this).siblings(".custom-file-label").addClass("selected").html(fileName);
-        });
-    </script>
-{% endblock %}

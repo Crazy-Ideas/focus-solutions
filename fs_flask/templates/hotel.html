@@ -223,63 +223,63 @@
                 </div>
                 <div class="modal-body justify-content-center">
                     <form class="form" method="POST" id="hotel-form">
-                        {{ form.form_type() }}
-                        {{ form.csrf_token() }}
-                        {{ form.old_ballroom() }}
+                        {{ render_field(form.form_type) }}
+                        {{ render_field(form.csrf_token) }}
+                        {{ render_field(form.old_ballroom) }}
                         <div id="edit-hotel">
                             <div class="row">
                                 <div class="col">
-                                    {{ form_group_no_error(form.full_name) }}
+                                    {{ render_field(form.full_name) }}
                                 </div>
                             </div>
                             <div class="row">
                                 <div class="col">
-                                    {{ form_group_no_error(form.company) }}
+                                    {{ render_field(form.company) }}
                                 </div>
                             </div>
                             <div class="row">
                                 <div class="col">
-                                    {{ form_group_no_error(form.start_date) }}
+                                    {{ render_field(form.start_date) }}
                                 </div>
                                 <div class="col">
-                                    {{ form_group_no_error(form.end_date) }}
-                                </div>
-                            </div>
-                            <div class="row">
-                                <div class="col">
-                                    {{ form_group_no_error(form.address) }}
+                                    {{ render_field(form.end_date) }}
                                 </div>
                             </div>
                             <div class="row">
                                 <div class="col">
-                                    {{ form_group_no_error(form.pin_code) }}
-                                </div>
-                                <div class="col">
-                                    {{ form_group_no_error(form.banquet_area) }}
+                                    {{ render_field(form.address) }}
                                 </div>
                             </div>
                             <div class="row">
                                 <div class="col">
-                                    {{ form_group_no_error(form.star) }}
+                                    {{ render_field(form.pin_code) }}
+                                </div>
+                                <div class="col">
+                                    {{ render_field(form.banquet_area) }}
                                 </div>
                             </div>
                             <div class="row">
                                 <div class="col">
-                                    {{ form_group_no_error(form.pan) }}
+                                    {{ render_field(form.star) }}
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col">
+                                    {{ render_field(form.pan) }}
                                 </div>
                                 <div class="col">
-                                    {{ form_group_no_error(form.gst) }}
+                                    {{ render_field(form.gst) }}
                                 </div>
                             </div>
                         </div>
                         <div id="edit-ballroom">
-                            {{ form_group_no_error(form.ballroom) }}
+                            {{ render_field(form.ballroom) }}
                         </div>
                         <div id="select-primary-hotel">
-                            {{ form_group_no_error(form.primaries) }}
+                            {{ render_field(form.primaries) }}
                         </div>
                         <div id="select-secondary-hotel">
-                            {{ form_group_no_error(form.secondaries) }}
+                            {{ render_field(form.secondaries) }}
                         </div>
                         <div id="comment">
                             Placeholder comment

@@ -1,6 +1,6 @@
-{% extends "base.html" %}
+{%- extends "base.html" %}
 
-{% block app_content %}
+{%- block app_content %}
     <div class="row justify-content-center">
         <div class="col-lg-4">
             <ul class="list-group text-center">
@@ -25,29 +25,29 @@
         </div>
     </div>
     <br>
-    {% if d.hotels %}
+    {%- if d.hotels %}
         <table id="usage_list" class="table table-bordered">
             <thead class="thead-dark">
             <tr>
                 <th class="" scope="col" rowspan="2">Hotel</th>
-                {% for column in d.header %}
+                {% for column in d.header -%}
                     <th class="text-center {{ column[1] }} {{ column[3] }}">{{ column[2] }}</th>
                 {% endfor %}
             </tr>
             <tr>
-                {% for column in d.header %}
+                {% for column in d.header -%}
                     <th class="text-center {{ column[1] }} {{ column[3] }}">{{ column[0] }}</th>
                 {% endfor %}
             </tr>
             </thead>
             <tbody>
-            {% for hotel in d.hotels %}
+            {% for hotel in d.hotels -%}
                 <tr>
                     <td {% if hotel[0] == current_user.hotel %}
                         class="table-warning font-weight-bold" {% endif %}>
                         {{ hotel[0] }}
                     </td>
-                    {% for status in hotel[1] %}
+                    {% for status in hotel[1] -%}
                         <td class="text-center {{ status[1] }} {{ status[2] }}">
                             <span class="{{ status[0] }}"></span>
                         </td>
@@ -56,11 +56,11 @@
             {% endfor %}
             </tbody>
         </table>
-    {% else %}
+    {%- else %}
         <div class="row">
             <div class="col text-center">
                 <strong>No Hotels</strong>
             </div>
         </div>
-    {% endif %}
-{% endblock %}
+    {%- endif %}
+{%- endblock %}
