@@ -10,7 +10,7 @@ os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "google-cloud.json"
 
 class Config:
     SECRET_KEY = os.environ.get("SECRET_KEY") or b64encode(os.urandom(24)).decode()
-    CI_SECURITY = False
+    CI_SECURITY = True
     SESSION_COOKIE_SECURE = CI_SECURITY
     PROJECT_ROOT = os.getcwd()
     APP_ROOT = os.path.join(PROJECT_ROOT, "fs_flask")
@@ -66,7 +66,7 @@ class BaseMap:
 
 
 class Date:
-    TODAY = dt.date(2019, 2, 28)
+    TODAY = dt.date(2019, 6, 30)
     INDIA_TIME_ZONE = timezone("Asia/Kolkata")
 
     def __init__(self, date: Union[dt.date, str] = None):

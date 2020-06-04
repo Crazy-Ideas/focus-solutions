@@ -71,6 +71,10 @@ class Hotel(FirestoreDocument):
         return Date(self.start_date).format_date, Date(self.end_date).format_date
 
     @property
+    def formatted_last_date(self) -> str:
+        return Date(self.last_date).format_date
+
+    @property
     def display_default(self) -> str:
         return "table-warning font-weight-bold" if current_user.hotel == self.name else str()
 

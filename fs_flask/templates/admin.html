@@ -34,6 +34,7 @@
                 <th class="text-center d-none d-md-table-cell" scope="col">Sr. No.</th>
                 <th class="" scope="col">Hotel</th>
                 <th class="text-center d-none d-md-table-cell" scope="col">Start</th>
+                <th class="text-center d-none d-md-table-cell" scope="col">Date Entry</th>
                 <th class="text-center d-none d-md-table-cell" scope="col">End</th>
                 <th class="text-center d-none d-md-table-cell" scope="col">Ballrooms</th>
                 <th class="text-center d-none d-md-table-cell" scope="col">Hotels</th>
@@ -46,6 +47,7 @@
                     <td class="text-center d-none d-md-table-cell">{{ loop.index }}</td>
                     <td class="">{{ hotel.name }}</td>
                     <td class="text-center d-none d-md-table-cell">{{ hotel.formatted_contract[0] }}</td>
+                    <td class="text-center d-none d-md-table-cell">{{ hotel.formatted_last_date }}</td>
                     <td class="text-center d-none d-md-table-cell">{{ hotel.formatted_contract[1] }}</td>
                     <td class="text-center d-none d-md-table-cell">{{ hotel.ballrooms|length }}</td>
                     <td class="text-center d-none d-md-table-cell">{{ hotel.competitions|length }}</td>
