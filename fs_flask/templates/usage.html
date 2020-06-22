@@ -5,12 +5,12 @@
         <div class="col-lg-4">
             <ul class="list-group text-center">
                 <li class="list-group-item list-group-item">
-                    <a type="button" class="btn btn-success text-white" data-toggle="modal" data-target="#usage-modal"
+                    <a class="btn btn-success text-white" data-toggle="modal" data-target="#usage-modal"
                        data-type="{{ form.CREATE }}" data-title="{{ form.format_week }} - New {{ form.timing }} Event"
                        data-timing="{{ form.timing }}" title="Add an Event">
                         <span class="oi oi-plus"></span> Add Event
                     </a>
-                    <a type="button" class="btn btn-danger text-white {{ form.display_no_event }}" data-toggle="modal"
+                    <a class="btn btn-danger text-white {{ form.display_no_event }}" data-toggle="modal"
                        data-target="#usage-modal" data-type="{{ form.NO_EVENT }}" title="Add a No Event"
                        data-title="{{ form.format_week }} - No {{ form.timing }} Event">
                         <span class="oi oi-ban"></span> Add No Event
@@ -21,7 +21,7 @@
         <div class="col-lg-4">
             <ul class="list-group text-center">
                 <li class="list-group-item list-group-item">
-                    <a type="button" class="btn btn-success text-white {{ form.display_upload }}" data-toggle="modal"
+                    <a class="btn btn-success text-white {{ form.display_upload }}" data-toggle="modal"
                        data-target="#usage-modal" data-type="{{ form.UPLOAD }}" title="Upload bulk events via csv file"
                        data-title="Bulk Upload">
                         <span class="oi oi-cloud-upload"></span> Upload
@@ -30,7 +30,7 @@
                        href="{{ url_for('download', filename='Upload Template', extension='xlsx', attachment=True) }}">
                         <span class="oi oi-cloud-download"></span> Template
                     </a>
-                    <a type="button" class="btn btn-danger text-white {{ form.display_bug }}" data-toggle="modal"
+                    <a class="btn btn-danger text-white {{ form.display_bug }}" data-toggle="modal"
                        data-target="#upload-modal" title="View errors in upload">
                         <span class="oi oi-bug"></span> Errors
                     </a>
@@ -44,7 +44,7 @@
                        title="{{ form.title_previous }}">
                         <span class="oi oi-arrow-thick-left"></span> Previous
                     </a>
-                    <a type="button" class="btn btn-primary text-white" data-toggle="modal"
+                    <a class="btn btn-primary text-white" data-toggle="modal"
                        title="Select Date to view"
                        data-target="#usage-modal" data-type="{{ form.GOTO_DATE }}" data-title="Goto Date">
                         <span class="oi oi-calendar"></span> Goto

@@ -6,7 +6,7 @@
             <div class="card text-center">
                 <h5 class="card-header">
                     Default City: <strong>{{ current_user.city }}</strong>
-                    <a type="button" class="btn btn-warning" data-toggle="modal" data-target="#admin-modal"
+                    <a class="btn btn-warning" data-toggle="modal" data-target="#admin-modal"
                        data-type="{{ form.EDIT_DEFAULT_CITY }}" data-title="Edit City" title="Change Default City">
                         <span class="oi oi-pencil"></span>
                     </a>
@@ -17,7 +17,7 @@
             <div class="card text-center">
                 <h5 class="card-header">
                     Hotels: <strong>{{ form.hotels|length }}</strong>
-                    <a type="button" class="btn btn-success text-white" data-toggle="modal" data-target="#admin-modal"
+                    <a class="btn btn-success text-white" data-toggle="modal" data-target="#admin-modal"
                        data-type="{{ form.NEW_HOTEL }}" data-title="New Hotel in {{ current_user.city }}"
                        title="New Hotel">
                         <span class="oi oi-plus" title="plus"></span>
@@ -52,7 +52,7 @@
                     <td class="text-center d-none d-md-table-cell">{{ hotel.ballrooms|length }}</td>
                     <td class="text-center d-none d-md-table-cell">{{ hotel.competitions|length }}</td>
                     <td class="text-center">
-                        <a type="button" class="btn btn-warning {{ hotel.display_default_button }}"
+                        <a class="btn btn-warning {{ hotel.display_default_button }}"
                            title="Set Default Hotel" data-toggle="modal" data-target="#admin-modal"
                            data-type="{{ form.EDIT_DEFAULT_HOTEL }}" data-title="Default Hotel"
                            data-hotel="{{ hotel.name }}" data-id="{{ hotel.id }}">
@@ -62,7 +62,7 @@
                            title="Open Hotel View">
                             <span class="oi oi-target"></span>
                         </a>
-                        <a type="button" class="btn btn-danger text-white {{ hotel.display_delete }}" title="Delete"
+                        <a class="btn btn-danger text-white {{ hotel.display_delete }}" title="Delete"
                            data-toggle="modal" data-target="#admin-modal" data-id="{{ hotel.id }}"
                            data-type="{{ form.DELETE_HOTEL }}" data-title="Delete Hotel" data-hotel="{{ hotel.name }}">
                             <span class="oi oi-trash"></span>

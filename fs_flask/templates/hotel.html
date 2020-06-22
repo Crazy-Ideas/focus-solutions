@@ -6,7 +6,7 @@
             <div class="card text-center">
                 <h5 class="card-header">
                     {{ hotel.name }}
-                    <a type="button" class="btn btn-warning" data-toggle="modal"
+                    <a class="btn btn-warning" data-toggle="modal"
                        data-target="#hotel-modal" data-type="{{ form.EDIT_HOTEL }}"
                        data-title="Edit Hotel Details" title="Edit Hotel Details">
                         <span class="oi oi-pencil"></span>
@@ -98,7 +98,7 @@
                 <h5 class="card-header">
                     Contract
                     {% if hotel.contract_file %}
-                        <a type="button" class="btn btn-danger text-white" data-toggle="modal"
+                        <a class="btn btn-danger text-white" data-toggle="modal"
                            data-target="#hotel-modal" title="Delete Contract File"
                            data-type="{{ form.DELETE_CONTRACT }}" data-title="Delete Contract File">
                             <span class="oi oi-trash"></span>
@@ -144,7 +144,7 @@
             <div class="card ">
                 <h5 class="card-header text-center">
                     Ballrooms
-                    <a type="button" class="btn btn-success text-white" data-toggle="modal"
+                    <a class="btn btn-success text-white" data-toggle="modal"
                        data-target="#hotel-modal" data-type="{{ form.NEW_BALLROOM }}" title="Add a new ballroom"
                        data-title="New Ballroom">
                         <span class="oi oi-plus"></span>
@@ -158,14 +158,13 @@
                                     <h6>{{ ballroom }}</h6>
                                 </div>
                                 <div class="col text-right">
-                                    <a type="button" class="btn btn-warning {{ hotel.display_ballroom(ballroom) }}"
+                                    <a class="btn btn-warning {{ hotel.display_ballroom(ballroom) }}"
                                        data-toggle="modal" data-target="#hotel-modal"
                                        data-type="{{ form.EDIT_BALLROOM }}" title="Edit ballroom name"
                                        data-title="Edit Ballroom {{ ballroom }}" data-ballroom="{{ ballroom }}">
                                         <span class="oi oi-pencil"></span>
                                     </a>
-                                    <a type="button"
-                                       class="btn btn-danger text-white {{ hotel.display_ballroom(ballroom) }}"
+                                    <a class="btn btn-danger text-white {{ hotel.display_ballroom(ballroom) }}"
                                        data-toggle="modal" data-target="#hotel-modal"
                                        data-type="{{ form.REMOVE_BALLROOM }}" title="Delete the ballroom"
                                        data-title="Remove Ballroom" data-ballroom="{{ ballroom }}">
@@ -182,7 +181,7 @@
             <div class="card text-center">
                 <h5 class="card-header">
                     Primary Comp Set
-                    <a type="button" class="btn btn-warning" data-toggle="modal" data-target="#hotel-modal"
+                    <a class="btn btn-warning" data-toggle="modal" data-target="#hotel-modal"
                        data-type="{{ form.EDIT_PRIMARY_HOTEL }}" data-title="Select Primary Hotels"
                        title="Change Primary Comp Set">
                         <span class="oi oi-pencil"></span>
@@ -198,7 +197,7 @@
             <div class="card text-center">
                 <h5 class="card-header">
                     Secondary Comp Set
-                    <a type="button" class="btn btn-warning" data-toggle="modal" data-target="#hotel-modal"
+                    <a class="btn btn-warning" data-toggle="modal" data-target="#hotel-modal"
                        data-type="{{ form.EDIT_SECONDARY_HOTEL }}" data-title="Select Secondary Hotels"
                        title="Change Secondary Comp Set">
                         <span class="oi oi-pencil"></span>
