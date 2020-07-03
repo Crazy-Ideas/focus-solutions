@@ -1,4 +1,3 @@
-import base64
 import datetime as dt
 import os
 from base64 import b64encode
@@ -79,7 +78,7 @@ class User(FirestoreDocument, UserMixin):
         now = dt.datetime.utcnow().replace(tzinfo=pytz.UTC)
         if self.token and self.token_expiration > now + dt.timedelta(seconds=60):
             return self.token
-        self.token = base64.b64encode(os.urandom(24)).decode()
+        self.token = b64encode(os.urandom(24)).decode()
         self.token_expiration = now + dt.timedelta(seconds=expires_in)
         self.save()
         return self.token
@@ -115,7 +114,7 @@ class LoginForm(FSForm):
 
 
 @fs_app.route("/login", methods=["GET", "POST"])
-def login() -> str:
+def login() -> Response:
     if current_user.is_authenticated:
         return redirect(url_for("home"))
     form = LoginForm()
