@@ -13,3 +13,4 @@ handlers:
 
 env_variables:
   GOOGLE_APPLICATION_CREDENTIALS: 'google-cloud.json'
+  ENVIRONMENT: "prod"

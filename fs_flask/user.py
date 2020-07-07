@@ -141,4 +141,4 @@ def login() -> Response:
 def logout():
     current_user.revoke_token()
     logout_user()
-    return redirect(url_for("home"))
+    return redirect(url_for("login"))
