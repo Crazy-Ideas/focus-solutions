@@ -1,3 +1,4 @@
+import csv
 import datetime as dt
 import time
 from concurrent.futures import as_completed, ThreadPoolExecutor
@@ -172,3 +173,34 @@ def update_ballroom_maps(workers: int = 200):
     if hotels:
         Hotel.save_all(hotels)
     print(f"{len(hotels)} updated")
+
+
+def hotel_backup():
+    for city in list(Config.CITIES):
+        hotels = Hotel.objects.filter_by(city=city).get()
+        file_name = f"Hotels-{city}.csv"
+        with open(file_name, "w", newline="", encoding="utf-8") as csv_file:
+            field_names = list(Hotel().doc_to_dict())
+            writer = csv.DictWriter(csv_file, fieldnames=field_names)
+            writer.writeheader()
+            for hotel in hotels:
+                writer.writerow(hotel.doc_to_dict())
+        print(f"{file_name} created with {len(hotels)} rows")
+    return
+
+
+def event_backup(month: str):
+    events = Usage.objects.filter_by(month=month).get()
+    if not events:
+        print("No events found")
+        return
+    events.sort(key=lambda item: (item.city, item.hotel, item.date))
+    file_name = f"Events-{month}.csv"
+    with open(file_name, "w", newline="", encoding="utf-8") as csv_file:
+        field_names = list(Usage().doc_to_dict())
+        writer = csv.DictWriter(csv_file, fieldnames=field_names)
+        writer.writeheader()
+        for event in events:
+            writer.writerow(event.doc_to_dict())
+    print(f"{file_name} created with {len(events)} rows")
+    return
