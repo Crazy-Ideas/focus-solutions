@@ -2,8 +2,9 @@ import csv
 import datetime as dt
 import time
 from concurrent.futures import as_completed, ThreadPoolExecutor
-
 # noinspection PyPackageRequirements
+from copy import deepcopy
+
 from googleapiclient.discovery import build
 
 from config import Config, Date
@@ -203,4 +204,50 @@ def event_backup(month: str):
         for event in events:
             writer.writerow(event.doc_to_dict())
     print(f"{file_name} created with {len(events)} rows")
+    return
+
+
+def update_data_entry_dates():
+    hotels = Hotel.objects.get()
+    updated_hotels = list()
+    for hotel in hotels:
+        query = Usage.objects.filter_by(city=hotel.city, hotel=hotel.name)
+        morning_usage = query.order_by("date", Usage.objects.ORDER_DESCENDING).filter_by(timing=Config.MORNING).first()
+        if not morning_usage:
+            print(f"{hotel.city} {hotel.name} {hotel.last_date} {hotel.last_timing} "
+                  f"does not have an morning event")
+            return
+        query = Usage.objects.filter_by(city=hotel.city, hotel=hotel.name)
+        evening_usage = query.filter_by(date=morning_usage.date, timing=Config.EVENING).first()
+        hotel_copy = deepcopy(hotel)
+        hotel_copy.last_date = evening_usage.date if evening_usage else morning_usage.date
+        hotel_copy.last_timing = Config.EVENING if evening_usage else Config.MORNING
+        if hotel.last_timing == Config.MORNING:
+            if morning_usage.date != hotel.last_date:
+                print(f"{hotel.city} {hotel.name} {hotel.last_date} {hotel.last_timing} "
+                      f"date is {hotel.last_date} but last event date is {morning_usage.date}")
+                updated_hotels.append(hotel_copy)
+            elif evening_usage:
+                print(f"{hotel.city} {hotel.name} {hotel.last_date} {hotel.last_timing} "
+                      f"has an evening event")
+                updated_hotels.append(hotel_copy)
+        elif hotel.last_timing == Config.EVENING:
+            if morning_usage.date != hotel.last_date:
+                print(f"{hotel.city} {hotel.name} {hotel.last_date} {hotel.last_timing} "
+                      f"last event date is {morning_usage.date} {Config.EVENING if evening_usage else Config.MORNING}")
+                updated_hotels.append(hotel_copy)
+            elif not evening_usage:
+                print(f"{hotel.city} {hotel.name} {hotel.last_date} {hotel.last_timing} "
+                      f"does not have an evening event")
+                updated_hotels.append(hotel_copy)
+            elif evening_usage.date != hotel.last_date:
+                print(f"{hotel.city} {hotel.name} {hotel.last_date} {hotel.last_timing} "
+                      f"last event date is {evening_usage.date} - Evening")
+                updated_hotels.append(hotel_copy)
+        else:
+            print(f"{hotel.city} {hotel.name} {hotel.last_date} {hotel.last_timing} "
+                  f"has an invalid last timing")
+            updated_hotels.append(hotel_copy)
+    Hotel.save_all(updated_hotels)
+    print(f"{len(updated_hotels)} of {len(hotels)} updated")
     return
