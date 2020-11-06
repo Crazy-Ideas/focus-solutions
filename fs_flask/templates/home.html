@@ -1,66 +1,76 @@
-{%- extends "base.html" %}
+{% extends "base.html" %}
 
-{%- block app_content %}
-    <div class="row justify-content-center">
-        <div class="col-lg-4">
-            <ul class="list-group text-center">
-                <li class="list-group-item list-group-item-secondary">
-                    <strong>{{ d.hotel }}</strong>
-                </li>
-            </ul>
-        </div>
-        <div class="col-lg-4">
-            <ul class="list-group text-center">
-                <li class="list-group-item list-group-item-secondary">
-                    <strong>{{ d.today }}</strong>
-                </li>
-            </ul>
-        </div>
-        <div class="col-lg-4">
-            <ul class="list-group text-center">
-                <li class="list-group-item {{ d.status[1] }}">
-                    <strong>{{ d.status[0] }}</strong>
-                </li>
-            </ul>
-        </div>
+{% block app_content %}
+    <div>
+        <ul id="slider">
+            <li>
+                <img src="{{ url_for('static', filename='slider/slides/1.jpg') }}" alt="Slide 1" class="img-fluid">
+                <div class="slide-desc"></div>
+            </li>
+            <li>
+                <img src="{{ url_for('static', filename='slider/slides/2.jpg') }}" alt="Slide 2" class="img-fluid">
+                <div class="slide-desc"></div>
+            </li>
+        </ul>
     </div>
-    <br>
-    {%- if d.hotels %}
-        <table id="usage_list" class="table table-bordered">
-            <thead class="thead-dark">
-            <tr>
-                <th class="" scope="col" rowspan="2">Hotel</th>
-                {% for column in d.header -%}
-                    <th class="text-center {{ column[1] }} {{ column[3] }}">{{ column[2] }}</th>
-                {% endfor %}
-            </tr>
-            <tr>
-                {% for column in d.header -%}
-                    <th class="text-center {{ column[1] }} {{ column[3] }}">{{ column[0] }}</th>
-                {% endfor %}
-            </tr>
-            </thead>
-            <tbody>
-            {% for hotel in d.hotels -%}
-                <tr>
-                    <td {% if hotel[0] == current_user.hotel %}
-                        class="table-warning font-weight-bold" {% endif %}>
-                        {{ hotel[0] }}
-                    </td>
-                    {% for status in hotel[1] -%}
-                        <td class="text-center {{ status[1] }} {{ status[2] }}">
-                            <span class="{{ status[0] }}"></span>
-                        </td>
-                    {% endfor %}
-                </tr>
-            {% endfor %}
-            </tbody>
-        </table>
-    {%- else %}
-        <div class="row">
-            <div class="col text-center">
-                <strong>No Hotels</strong>
+    <div class="row">
+        <div class="col-md ">
+            <div class="section-title ">
+                <h2 class="text-center">About Us</h2>
+                <p>Welcome to Focus Solutions, your number one source for all the data you require of Competition
+                    Hotels.
+                    We're dedicated to providing you with the most accurate Reader Board data of hotels,
+                    with a focus on dependability, accuracy and uniqueness.</p>
+                <p>Founded in 2009 by Punit Shah, Focus Solutions has come a long way from its beginnings in a home
+                    office in Andheri, Mumbai. When Focus Solutions first started out at as his passion for data
+                    collection and providing the same to hotels; so as to help hotels provide better service and get
+                    to their key clientele.</p>
+                <p>Reader Board services help hotels to compare and understand the market scenario and assists their
+                    marketing needs.</p>
+                <p>The Reader Board Activity was first started in 2002 and was well known in the hotel industry as the
+                    “Ikon Report”.
+                    When partners decided to move on their own paths, Punit Shah took over the Reader Board Activity
+                    under <strong>Focus Solutions</strong> from 2009 onwards. Focus Solutions provides services to
+                    cities across India.</p>
+                <p>We have been changing the ways we do our business and have embraced modern technologies.
+                    We are happy to introduce Focus Banquet Reports, an online platform that provides accurate banquet
+                    information to
+                    all hotels in India with rich set of reporting features.</p>
+                <p>We hope you enjoy our services as much as we enjoy offering them to you. If you have any questions
+                    or comments, please don't hesitate to contact us.</p>
             </div>
         </div>
-    {%- endif %}
-{%- endblock %}
+    </div>
+    <section id="portfolio" class="dark-bg">
+        <div class="container">
+            <br>
+            <br>
+            <div class="row" style="border-bottom:1px solid #fff;border-top:1px solid #fff;">
+                <div class="col-md">
+                    <div class="section-title">
+                        <p style="margin:20px 0; color:#fff;">
+                        <h5>Contact us</h5><br>
+                        <div>
+                            <h6>Focus Solutions</h6>
+                            CG-04, Ground Floor, Swapnalok Apartment CHS Limited,<br>
+                            Mogra Lane, Andheri (E), Mumbai - 400069, India
+                        </div>
+                        <br>
+                        <div>
+                            <h6>Mr Punit Shah</h6>
+                            +91 98202 82246
+                        </div>
+                        <br>
+                        <div>
+                            punit@focussolutions.in
+                        </div>
+                        <br>
+                    </div>
+                </div>
+            </div>
+            <div class="text-right" style="font-size:12px;">© 2020 - All Rights Reserved</div>
+            <br>
+        </div>
+    </section>
+    <br>
+{% endblock %}

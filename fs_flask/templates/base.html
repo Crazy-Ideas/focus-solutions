@@ -17,6 +17,8 @@
           href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
           integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh"
           crossorigin="anonymous">
+    <!-- Custom Stylesheet -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
     <!-- DataTable -->
     <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.20/css/jquery.dataTables.css">
     <!-- Select 2 -->
@@ -29,6 +31,8 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='open-iconic/font/css/open-iconic-bootstrap.css') }}">
     <!-- Favicon -->
     <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}">
+    <!-- Slider -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='slider/skdslider.css') }}">
 </head>
 
 <body>
@@ -45,7 +49,7 @@
             <div class="navbar-nav mr-auto">
                 {%- if current_user.is_authenticated %}
                     <a class="nav-item nav-link {% if request.url_rule.endpoint == 'home' %}active{% endif %}"
-                       href="{{ url_for('home') }}" title="Dashboard">
+                       href="{{ url_for('view_dashboard') }}" title="Dashboard">
                         <span class="oi oi-dashboard"></span> Dashboard
                     </a>
                     <a class="nav-item nav-link {% if request.url_rule.endpoint == 'usage_manage' %}active{% endif %}"
@@ -156,12 +160,15 @@
     <script src="https://cdn.jsdelivr.net/npm/select2@4.0.13/dist/js/select2.min.js"></script>
     <!-- Datepicker -->
     <script src="https://unpkg.com/gijgo@1.9.13/js/gijgo.min.js" type="text/javascript"></script>
-    <!-- Custom Scripting -->
+    <!-- Slider -->
+    <script src="{{ url_for('static', filename='slider/skdslider.min.js') }}"></script>
+    <!-- Default Data Table -->
     <script>
         $.extend($.fn.dataTable.defaults, {
             dom: '<"top"if>rt<"bottom"p>'
-        });
+        })
     </script>
+    <!-- Custom Scripting -->
     {%- set _select_fields = [] %}
     {%- for field in form %}
         {%- if field.type in ("SelectField", "SelectMultipleField", "DateField", "FileField") %}
@@ -180,22 +187,35 @@
                             {%- else %}
                                 maximumSelectionLength: 9,
                             {%- endif %}
-                        });
+                        })
                     {% elif field_type == "DateField" %}
                         $("#{{ field_id }}").datepicker({
                             uiLibrary: "bootstrap4",
                             format: "dd/mm/yyyy",
                             weekStartDay: 1,
                             showOtherMonths: true,
-                        });
+                        })
                     {% elif field_type == "FileField" %}
                         $(".custom-file-input").on("change", function () {
-                            let fileName = $(this).val().split("\\").pop();
-                            $(this).siblings(".custom-file-label").addClass("selected").html(fileName);
-                        });
+                            const fileName = $(this).val().split("\\").pop()
+                            $(this).siblings(".custom-file-label").addClass("selected").html(fileName)
+                        })
                     {% endif %}
                 {%- endfor %}
-            });
+            })
+        </script>
+    {%- else %}
+        <script>
+            $(document).ready(() => {
+                $("#slider").skdslider({
+                    "delay": 5000,
+                    "animationSpeed": 2000,
+                    "showNextPrev": false,
+                    "showPlayButton": false,
+                    "autoSlide": true,
+                    "animationType": "fading"
+                })
+            })
         </script>
     {%- endif %}
 {%- endblock scripts %}

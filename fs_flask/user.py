@@ -116,7 +116,7 @@ class LoginForm(FSForm):
 @fs_app.route("/login", methods=["GET", "POST"])
 def login() -> Response:
     if current_user.is_authenticated:
-        return redirect(url_for("home"))
+        return redirect(url_for("view_dashboard"))
     form = LoginForm()
     if not form.validate_on_submit():
         form.flash_form_errors()
@@ -129,7 +129,7 @@ def login() -> Response:
     login_user(user=user)
     next_page = request.args.get("next")
     if not next_page or url_parse(next_page).netloc != str():
-        next_page = url_for("home")
+        next_page = url_for("view_dashboard")
     response: Response = make_response(redirect(next_page))
     response.set_cookie("token", token, max_age=Config.TOKEN_EXPIRY, secure=Config.CI_SECURITY, httponly=True,
                         samesite="Strict")
@@ -141,4 +141,4 @@ def login() -> Response:
 def logout():
     current_user.revoke_token()
     logout_user()
-    return redirect(url_for("login"))
+    return redirect(url_for("home"))
