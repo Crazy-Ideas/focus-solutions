@@ -10,7 +10,7 @@ os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "google-cloud.json"
 
 class Config:
     SECRET_KEY = os.environ.get("SECRET_KEY") or b64encode(os.urandom(24)).decode()
-    CI_SECURITY = True if os.environ.get('ENVIRONMENT') == 'prod' else False
+    CI_SECURITY = True if os.environ.get("ENVIRONMENT") == "prod" else False
     SESSION_COOKIE_SECURE = CI_SECURITY
     PROJECT_ROOT = os.getcwd()
     APP_ROOT = os.path.join(PROJECT_ROOT, "fs_flask")
@@ -18,28 +18,20 @@ class Config:
     TOKEN_EXPIRY = 3600  # 1 hour = 3600 seconds
     MIME_TYPES = {"xlsx": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"}
     SHEET_ID = "1OnvVprC_RSlsKxgAgve-dliPGJydj--qkmvnRUfyGYM"
-    ADMIN = "Admin"
-    HOTEL = "Hotel"
+    # FBR specific constants
+    ADMIN, HOTEL = "Admin", "Hotel"
     ROLES = (ADMIN, HOTEL)
     DEFAULT_CITY = "Mumbai"
     EMPTY_CHOICE = (str(), str())
     CITIES = {"Mumbai": "Maharashtra", "Pune": "Maharashtra"}
-    NO_MEAL = "No Meal"
-    BREAKFAST = "Breakfast"
-    LUNCH = "Lunch"
-    DINNER = "Dinner"
-    HI_TEA = "Hi Tea"
-    BREAKFAST_LUNCH = "Breakfast and Lunch"
-    HI_TEA_DINNER = "Hi Tea and Dinner"
+    NO_MEAL, BREAKFAST, LUNCH, DINNER, HI_TEA = "No Meal", "Breakfast", "Lunch", "Dinner", "Hi Tea"
+    BREAKFAST_LUNCH, HI_TEA_DINNER = "Breakfast and Lunch", "Hi Tea and Dinner"
     MEALS = (BREAKFAST, LUNCH, HI_TEA, DINNER, NO_MEAL)
     MORNING_MEALS = (BREAKFAST, LUNCH, BREAKFAST_LUNCH, NO_MEAL)
     EVENING_MEALS = (HI_TEA, DINNER, HI_TEA_DINNER, NO_MEAL)
-    MORNING = "Morning"
-    EVENING = "Evening"
+    MORNING, EVENING = "Morning", "Evening"
     TIMINGS = (MORNING, EVENING)
-    MICE = "MICE Event"
-    SOCIAL = "Social Event"
-    OTHER = "Other"
+    MICE, SOCIAL, OTHER = "MICE Event", "Social Event", "Other"
     EVENTS = (MICE, SOCIAL, OTHER)
     STAR_CATEGORY = ("5 Star Deluxe", "5 Star", "4 Star", "3 Star", "2 Star", "1 Star", "Heritage Grand",
                      "Heritage Classic", "Heritage Basic")

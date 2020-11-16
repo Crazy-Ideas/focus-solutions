@@ -37,7 +37,6 @@
                 <th class="text-center d-none d-md-table-cell" scope="col">Date Entry</th>
                 <th class="text-center d-none d-md-table-cell" scope="col">End</th>
                 <th class="text-center d-none d-md-table-cell" scope="col">Ballrooms</th>
-                <th class="text-center d-none d-md-table-cell" scope="col">Hotels</th>
                 <th class="text-center" scope="col">Actions</th>
             </tr>
             </thead>
@@ -50,7 +49,6 @@
                     <td class="text-center d-none d-md-table-cell">{{ hotel.formatted_last_date }}</td>
                     <td class="text-center d-none d-md-table-cell">{{ hotel.formatted_contract[1] }}</td>
                     <td class="text-center d-none d-md-table-cell">{{ hotel.ballrooms|length }}</td>
-                    <td class="text-center d-none d-md-table-cell">{{ hotel.competitions|length }}</td>
                     <td class="text-center">
                         <a class="btn btn-warning {{ hotel.display_default_button }}"
                            title="Set Default Hotel" data-toggle="modal" data-target="#admin-modal"

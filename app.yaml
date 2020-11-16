@@ -12,5 +12,5 @@ handlers:
     script: auto
 
 env_variables:
-  GOOGLE_APPLICATION_CREDENTIALS: 'google-cloud.json'
+  GOOGLE_APPLICATION_CREDENTIALS: "google-cloud.json"
   ENVIRONMENT: "prod"
