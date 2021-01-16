@@ -140,8 +140,8 @@ class Hotel(FirestoreDocument):
         self.start_date = Date(start_date).db_date
         self.end_date = Date(end_date).db_date
 
-    def set_last_entry(self, date: Union[str, dt.date], timing: str) -> bool:
-        date = Date(date).date
+    def set_last_entry(self, input_date: Union[str, dt.date], timing: str) -> bool:
+        date = Date(input_date).date
         if not date:
             return False
         last_date = Date(self.last_date).date

@@ -207,6 +207,13 @@ class UsageForm(FSForm):
             return
         self._validate_date(goto_date.data, self.goto_timing.data)
 
+    def _check_start_period_of_uploaded_file(self):
+        first_date, first_timing = Date(self.upload_data[0].date).date, self.upload_data[0].timing
+        next_date, next_timing = Usage.get_data_entry_date(self.hotel)
+        if (first_date, first_timing) != (next_date, next_timing):
+            raise ValidationError(f"Start period ({Date(first_date).format_date} - {first_timing}) does not match with "
+                                  f"the next data entry period ({Date(next_date).format_date} - {next_timing})")
+
     def validate_filename(self, filename: FileField):
         if self.form_type.data != self.UPLOAD:
             return
@@ -272,11 +279,8 @@ class UsageForm(FSForm):
             raise ValidationError("There are no events in the csv file")
         self.upload_data.sort(key=lambda usage_item: usage_item.timing, reverse=True)
         self.upload_data.sort(key=lambda usage_item: usage_item.date)
-        first_date, first_timing = Date(self.upload_data[0].date).date, self.upload_data[0].timing
-        next_date, next_timing = Usage.get_data_entry_date(self.hotel)
-        if (first_date, first_timing) != (next_date, next_timing):
-            raise ValidationError(f"Start period ({Date(first_date).format_date} - {first_timing}) does not match with "
-                                  f"the next data entry period ({Date(next_date).format_date} - {next_timing})")
+        if current_user.role != Config.ADMIN:
+            self._check_start_period_of_uploaded_file()
         last_date, lock_in, end_date = Date(self.upload_data[-1].date).date, Date.next_lock_in(), self.hotel.contract[1]
         if last_date > lock_in:
             raise ValidationError(f"End period ({Date(last_date).format_date}) cannot be greater than the "
@@ -432,6 +436,8 @@ class UsageForm(FSForm):
 
     @property
     def disable_upload(self) -> bool:
+        if current_user.role == Config.ADMIN:
+            return False
         if self.timing == Config.EVENING:
             return True
         if Usage.get_data_entry_date(self.hotel) != (self.date, self.timing) or self.usages:
