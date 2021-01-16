@@ -23,7 +23,7 @@ class Config:
     ROLES = (ADMIN, HOTEL)
     DEFAULT_CITY = "Mumbai"
     EMPTY_CHOICE = (str(), str())
-    CITIES = {"Mumbai": "Maharashtra", "Pune": "Maharashtra"}
+    CITIES = {"Mumbai": "Maharashtra", "Pune": "Maharashtra", "Kolkata": "West Bengal" }
     NO_MEAL, BREAKFAST, LUNCH, DINNER, HI_TEA = "No Meal", "Breakfast", "Lunch", "Dinner", "Hi Tea"
     BREAKFAST_LUNCH, HI_TEA_DINNER = "Breakfast and Lunch", "Hi Tea and Dinner"
     MEALS = (BREAKFAST, LUNCH, HI_TEA, DINNER, NO_MEAL)
@@ -58,7 +58,7 @@ class BaseMap:
 
 
 class Date:
-    TODAY = dt.date(2020, 3, 31)
+    TODAY = None
     INDIA_TIME_ZONE = timezone("Asia/Kolkata")
 
     def __init__(self, date: Union[dt.date, str] = None):

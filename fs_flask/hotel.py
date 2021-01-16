@@ -218,7 +218,8 @@ class HotelForm(FSForm):
         hotels = Hotel.objects.filter_by(city=current_user.city).get()
         hotels.sort(key=lambda hotel_item: hotel_item.name)
         self.primaries.choices.extend([(hotel.name, hotel.name) for hotel in hotels])
-        self.primaries.choices.remove((hotel.name, hotel.name))
+        if (hotel.name, hotel.name) in self.primaries.choices:
+            self.primaries.choices.remove((hotel.name, hotel.name))
         self.secondaries.choices = self.primaries.choices
         if request.method == "GET":
             self.update_hotel_data()
