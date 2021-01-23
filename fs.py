@@ -13,19 +13,22 @@ from fs_flask.usage import Usage
 from fs_flask.user import User
 
 
-def create_user(email: str, name: str, role: str, hotel_name: str = None):
+def create_user(email: str, name: str, role: str, hotel_name_input: str = str(), city: str = str()):
     if role not in Config.ROLES:
         print("Invalid role")
         return
-    if role == Config.ADMIN and not hotel_name:
+    if role == Config.ADMIN and not hotel_name_input:
         print("Hotel name required for ADMIN")
         return
-    hotel_name = name if role == Config.HOTEL else hotel_name
-    hotel: Hotel = Hotel.objects.filter_by(name=hotel_name).first()
+    hotel_name = name if role == Config.HOTEL else hotel_name_input
+    hotel_city = city if city else Config.DEFAULT_CITY
+    if hotel_city not in Config.CITIES:
+        print("Invalid city")
+    hotel: Hotel = Hotel.objects.filter_by(name=hotel_name, city=hotel_city).first()
     if not hotel:
         print("Hotel not found in the database")
         return
-    password = User.create_user(email, name, role, hotel_name)
+    password = User.create_user(email, name, role, hotel_name, hotel_city)
     if not password:
         print("Invalid email")
     else:

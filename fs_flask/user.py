@@ -49,7 +49,7 @@ class User(FirestoreDocument, UserMixin):
         return f"{self.email.lower()}"
 
     @classmethod
-    def create_user(cls, email: str, name: str, role: str, hotel: str) -> str:
+    def create_user(cls, email: str, name: str, role: str, hotel: str, city: str) -> str:
         if not isinstance(email, str) or sum(1 for char in email if char == "@") != 1:
             return str()
         if cls.objects.filter_by(email=email).first():
@@ -59,6 +59,7 @@ class User(FirestoreDocument, UserMixin):
         user.name = name
         user.hotel = hotel
         user.role = role
+        user.city = city
         password = b64encode(os.urandom(24)).decode()
         user.set_password(password)
         user.set_id(email.replace("@", "_").replace(".", "-"))
