@@ -64,7 +64,7 @@ class QueryForm(FSForm):
         hotels.sort(key=lambda hotel: hotel.name)
         self.custom_hotels.choices.extend([(hotel.name, hotel.name) for hotel in hotels
                                            if hotel.name != current_user.hotel])
-        hotel = next((hotel for hotel in hotels if hotel.name == current_user.hotel), None)
+        hotel: Hotel = next((hotel for hotel in hotels if hotel.name == current_user.hotel), None)
         if not hotel:
             self.error_message = "Error in retrieving the hotel information"
             return
@@ -73,7 +73,7 @@ class QueryForm(FSForm):
             if not date:
                 self.error_message = "Error in retrieving last update date"
                 return
-            if date <= Date.previous_lock_in():
+            if date <= Date.previous_lock_in() and Date.today() <= hotel.contract.end_date:
                 self.error_message = "There are pending data entry for previous lock in period"
                 return
         self.primaries = hotel.primary_hotels if hotel else list()

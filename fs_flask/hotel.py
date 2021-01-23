@@ -1,6 +1,6 @@
 import datetime as dt
 from operator import itemgetter
-from typing import List, Optional, Tuple, Union
+from typing import List, Optional, Tuple, Union, NamedTuple
 
 from firestore_ci import FirestoreDocument
 from flask import request
@@ -62,9 +62,13 @@ class Hotel(FirestoreDocument):
     def used(self):
         return any(room["used"] for room in self.ballroom_maps)
 
+    class Contract(NamedTuple):
+        start_date: dt.date
+        end_date: dt.date
+
     @property
-    def contract(self) -> Tuple[dt.date, dt.date]:
-        return Date(self.start_date).date, Date(self.end_date).date
+    def contract(self) -> Contract:
+        return self.Contract(Date(self.start_date).date, Date(self.end_date).date)
 
     @property
     def formatted_contract(self) -> Tuple[str, str]:
