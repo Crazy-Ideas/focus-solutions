@@ -4,6 +4,7 @@ import time
 from concurrent.futures import as_completed, ThreadPoolExecutor
 # noinspection PyPackageRequirements
 from copy import deepcopy
+from typing import List
 
 from googleapiclient.discovery import build
 
@@ -214,14 +215,14 @@ def update_data_entry_dates():
     hotels = Hotel.objects.get()
     updated_hotels = list()
     for hotel in hotels:
-        query = Usage.objects.filter_by(city=hotel.city, hotel=hotel.name)
-        morning_usage = query.order_by("date", Usage.objects.ORDER_DESCENDING).filter_by(timing=Config.MORNING).first()
+        query = Usage.objects.filter_by(city=hotel.city, hotel=hotel.name, timing=Config.MORNING)
+        morning_usage: Usage = query.order_by("date", Usage.objects.ORDER_DESCENDING).first()
         if not morning_usage:
             print(f"{hotel.city} {hotel.name} {hotel.last_date} {hotel.last_timing} "
                   f"does not have an morning event")
             return
         query = Usage.objects.filter_by(city=hotel.city, hotel=hotel.name)
-        evening_usage = query.filter_by(date=morning_usage.date, timing=Config.EVENING).first()
+        evening_usage: Usage = query.filter_by(date=morning_usage.date, timing=Config.EVENING).first()
         hotel_copy = deepcopy(hotel)
         hotel_copy.last_date = evening_usage.date if evening_usage else morning_usage.date
         hotel_copy.last_timing = Config.EVENING if evening_usage else Config.MORNING
@@ -254,3 +255,18 @@ def update_data_entry_dates():
     Hotel.save_all(updated_hotels)
     print(f"{len(updated_hotels)} of {len(hotels)} updated")
     return
+
+
+def rename_hotel(old_name: str, new_name: str, city: str):
+    hotel: Hotel = Hotel.objects.filter_by(name=old_name, city=city).first()
+    if not hotel:
+        print(f"Hotel {old_name} not found.")
+    if Hotel.objects.filter_by(name=new_name, city=city).first():
+        print(f"Hotel with the name {new_name} already exists.")
+    hotel.name = new_name
+    events: List[Usage] = Usage.objects.filter_by(hotel=old_name, city=city).get()
+    for event in events:
+        event.hotel = new_name
+    hotel.save()
+    Usage.save_all(events)
+    print(f"Hotel renamed to {new_name}. {len(events) + 1} documents updated.")

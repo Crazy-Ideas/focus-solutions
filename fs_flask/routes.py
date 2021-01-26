@@ -34,13 +34,13 @@ def main_report() -> Response:
     form.update_data()
     if form.file_path:
         return send_file(form.file_path, as_attachment=True, attachment_filename="Report.xlsx")
-    return render_template("main_report.html", form=form, title="Report")
+    return render_template("main_report.html", form=form, title="Reports")
 
 
 @fs_app.route("/hotels/profile")
 @cookie_login_required
 def hotel_profile() -> Response:
-    hotel = Hotel.objects.filter_by(city=current_user.city, name=current_user.hotel).first()
+    hotel: Hotel = Hotel.objects.filter_by(city=current_user.city, name=current_user.hotel).first()
     if not hotel:
         flash("Error in retrieving hotel profile")
         return redirect(url_for("view_dashboard"))
