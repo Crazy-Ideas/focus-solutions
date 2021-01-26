@@ -263,8 +263,10 @@ class HotelForm(FSForm):
     def validate_end_date(self, end_date: DateField):
         if self.form_type.data != self.EDIT_HOTEL:
             return
+        if current_user.role != Config.ADMIN:
+            return
         if not self.start_date.data or not end_date.data:
-            self.raise_date_error(str())
+            self.raise_date_error("Invalid contract end date")
         if self.start_date.data > self.end_date.data:
             self.raise_date_error("Contract start date cannot be greater than contract end date")
 
@@ -304,7 +306,8 @@ class HotelForm(FSForm):
 
     def update(self):
         if self.form_type.data == self.EDIT_HOTEL:
-            self.hotel.set_contract(self.start_date.data, self.end_date.data)
+            if current_user.role == Config.ADMIN:
+                self.hotel.set_contract(self.start_date.data, self.end_date.data)
             self.hotel.full_name = self.full_name.data
             self.hotel.company = self.company.data
             self.hotel.address = self.address.data

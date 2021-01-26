@@ -236,6 +236,7 @@
                                     {{ render_field(form.company) }}
                                 </div>
                             </div>
+                            {% if admin %}
                             <div class="row">
                                 <div class="col">
                                     {{ render_field(form.start_date) }}
@@ -244,6 +245,7 @@
                                     {{ render_field(form.end_date) }}
                                 </div>
                             </div>
+                            {% endif %}
                             <div class="row">
                                 <div class="col">
                                     {{ render_field(form.address) }}

@@ -13,13 +13,13 @@ from fs_flask.user import cookie_login_required
 @fs_app.route("/")
 @fs_app.route("/home")
 def home() -> Response:
-    return render_template("home.html")
+    return render_template("home.html", title="Home")
 
 
 @fs_app.route("/dashboard")
 @cookie_login_required
 def view_dashboard() -> Response:
-    return render_template("dashboard.html", d=Dashboard())
+    return render_template("dashboard.html", d=Dashboard(), title="Dashboard")
 
 
 @fs_app.route("/reports/main", methods=["GET", "POST"])
@@ -69,11 +69,12 @@ def hotel_manage(hotel_id: str) -> Response:
         flash("Error in retrieving hotel")
         return redirect(url_for("view_dashboard"))
     form = HotelForm(hotel)
+    admin: bool = current_user.role == Config.ADMIN
     if not form.validate_on_submit():
         form.flash_form_errors()
-        return render_template("hotel.html", title=hotel.name, form=form, hotel=hotel)
+        return render_template("hotel.html", title=hotel.name, form=form, hotel=hotel, admin=admin)
     form.update()
-    return render_template("hotel.html", title=hotel.name, form=form, hotel=hotel)
+    return render_template("hotel.html", title=hotel.name, form=form, hotel=hotel, admin=admin)
 
 
 @fs_app.route("/data_entry")
@@ -99,11 +100,11 @@ def usage_manage(hotel_id: str, date: str, timing: str) -> Response:
         return redirect(url_for("view_dashboard"))
     if not form.validate_on_submit():
         form.flash_form_errors()
-        return render_template("usage.html", form=form, title="Data Entry")
+        return render_template("usage.html", form=form, title="Events")
     form.update()
     if form.redirect:
         return redirect(form.link_goto)
-    return render_template("usage.html", form=form, title="Data Entry")
+    return render_template("usage.html", form=form, title="Events")
 
 
 @fs_app.route("/download")
