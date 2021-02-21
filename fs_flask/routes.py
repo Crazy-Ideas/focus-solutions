@@ -16,6 +16,11 @@ def home() -> Response:
     return render_template("home.html", title="Home")
 
 
+@fs_app.route("/privacy")
+def privacy_policy() -> Response:
+    return render_template("privacy.html", title="Privacy Policy")
+
+
 @fs_app.route("/dashboard")
 @cookie_login_required
 def view_dashboard() -> Response:
