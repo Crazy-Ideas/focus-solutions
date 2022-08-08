@@ -150,7 +150,7 @@ class QueryForm(FSForm):
         sheet = File.create_sheet()
         data_rows = len(self.usage_data) + 4
         sheet.prepare(data_rows=data_rows)
-        header = ["Hotel Name", "Date", "Timing", "Client", "Meal", "Event Type", "Ballroom", "Event Description"]
+        header = ["Hotel Name", "Date", "Timing", "Client", "Meal", "Event Type", "Ballroom", "BTR"]
         data = [[u.hotel, u.formatted_date, u.timing, u.client, u.formatted_meal, u.event_type, u.formatted_ballroom,
                  u.event_description] for u in self.usage_data]
         data.insert(0, header)

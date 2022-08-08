@@ -103,7 +103,7 @@ class UsageForm(FSForm):
     form_type = HiddenField()
     usage_id = HiddenField()
     client = StringField("Enter client name")
-    event_description = StringField("Enter event description")
+    event_description = StringField("Enter BTR")
     event_type = RadioField("Select event type", choices=[(event, event) for event in Config.EVENTS])
     morning_meal = RadioField("Select morning meal", choices=[(meal, meal) for meal in Config.MORNING_MEALS])
     evening_meal = RadioField("Select evening meal", choices=[(meal, meal) for meal in Config.EVENING_MEALS])
