@@ -70,7 +70,7 @@ class User(FirestoreDocument, UserMixin):
     def check_token(cls, token) -> Optional["User"]:
         if not token:
             return None
-        user = cls.objects.filter_by(token=token).first()
+        user: User = cls.objects.filter_by(token=token).first()
         if user is None or user.token_expiration < dt.datetime.utcnow().replace(tzinfo=pytz.UTC):
             return None
         return user

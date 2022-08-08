@@ -22,3 +22,14 @@ class FSForm(FlaskForm):
 
 from fs_flask.user import login, logout
 from fs_flask.routes import *
+
+
+@fs_app.shell_context_processor
+def make_shell_context():
+    from fs_flask.usage import Usage
+    from fs_flask.hotel import Hotel
+    return {
+        "Config": Config,
+        "Usage": Usage,
+        "Hotel": Hotel,
+    }

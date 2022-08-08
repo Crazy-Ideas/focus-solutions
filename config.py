@@ -31,7 +31,7 @@ class Config:
     EVENING_MEALS = (HI_TEA, DINNER, HI_TEA_DINNER, NO_MEAL)
     MORNING, EVENING = "Morning", "Evening"
     TIMINGS = (MORNING, EVENING)
-    MICE, SOCIAL, OTHER = "MICE Event", "Social Event", "Other"
+    MICE, SOCIAL, OTHER = "Corporate Event", "Social Event", "Other"
     EVENTS = (MICE, SOCIAL, OTHER)
     STAR_CATEGORY = ("5 Star Deluxe", "5 Star", "4 Star", "3 Star", "2 Star", "1 Star", "Heritage Grand",
                      "Heritage Classic", "Heritage Basic")
