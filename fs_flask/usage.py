@@ -127,11 +127,12 @@ class UsageForm(FSForm):
         if not self.date or self.timing not in Config.TIMINGS:
             self._error_redirect("Error in retrieving event details")
             return
-        try:
-            self._validate_date(self.date, self.timing)
-        except ValidationError as error:
-            self._error_redirect(str(error))
-            return
+        if current_user.role != Config.ADMIN:
+            try:
+                self._validate_date(self.date, self.timing)
+            except ValidationError as error:
+                self._error_redirect(str(error))
+                return
         self.format_week: str = Date(self.date).format_week
         self.ballrooms.choices.extend([(room, room) for room in self.hotel.ballrooms])
         self.usage: Optional[Usage] = None
@@ -204,6 +205,8 @@ class UsageForm(FSForm):
 
     def validate_goto_date(self, goto_date: DateField):
         if self.form_type.data != self.GOTO_DATE:
+            return
+        if current_user.role == Config.ADMIN:
             return
         self._validate_date(goto_date.data, self.goto_timing.data)
 
@@ -281,13 +284,15 @@ class UsageForm(FSForm):
         self.upload_data.sort(key=lambda usage_item: usage_item.date)
         if current_user.role != Config.ADMIN:
             self._check_start_period_of_uploaded_file()
-        last_date, lock_in, end_date = Date(self.upload_data[-1].date).date, Date.next_lock_in(), self.hotel.contract[1]
-        if last_date > lock_in:
-            raise ValidationError(f"End period ({Date(last_date).format_date}) cannot be greater than the "
-                                  f"next lock in period ({Date(lock_in).format_date})")
-        if last_date > end_date:
-            raise ValidationError(f"End period ({Date(last_date).format_date}) cannot be greater than the "
-                                  f"contract end date ({Date(end_date).format_date})")
+            last_date = Date(self.upload_data[-1].date).date
+            lock_in = Date.next_lock_in()
+            end_date = self.hotel.contract[1]
+            if last_date > lock_in:
+                raise ValidationError(f"End period ({Date(last_date).format_date}) cannot be greater than the "
+                                      f"next lock in period ({Date(lock_in).format_date})")
+            if last_date > end_date:
+                raise ValidationError(f"End period ({Date(last_date).format_date}) cannot be greater than the "
+                                      f"contract end date ({Date(end_date).format_date})")
         previous_date = None
         for date, date_usages in itertools.groupby(self.upload_data, key=lambda usage_item: usage_item.date):
             date = Date(date).date
@@ -378,6 +383,8 @@ class UsageForm(FSForm):
 
     @property
     def display_previous(self) -> str:
+        if current_user.role == Config.ADMIN:
+            return str()
         return "disabled" if (self.date == self.hotel.contract[0] and self.timing == Config.MORNING) \
                              or self.date < self.hotel.contract[0] else str()
 
@@ -397,6 +404,8 @@ class UsageForm(FSForm):
 
     @property
     def display_next(self) -> str:
+        if current_user.role == Config.ADMIN:
+            return str()
         if not self.usages:
             return "disabled"
         end_date = min(self.hotel.contract[1], Date.next_lock_in())
