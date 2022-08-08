@@ -40,9 +40,17 @@ class Usage(FirestoreDocument):
 
     @classmethod
     def get_data_entry_date(cls, hotel: Hotel) -> Tuple[Optional[dt.date], str]:
-        start_date, end_date = hotel.contract
-        today = Date.next_lock_in()
+        today: dt.date = Date.next_lock_in()
         data_entry_date = Date(hotel.last_date).date
+        if current_user.role == Config.ADMIN:
+            if not data_entry_date:
+                return today, Config.MORNING
+            if hotel.last_timing == Config.MORNING and data_entry_date <= today:
+                return data_entry_date, Config.EVENING
+            if hotel.last_timing == Config.EVENING and data_entry_date < today:
+                return data_entry_date + dt.timedelta(days=1), Config.MORNING
+            return data_entry_date, Config.MORNING
+        start_date, end_date = hotel.contract
         if end_date < start_date:
             return None, "Invalid Contract"
         if today < start_date:
@@ -52,7 +60,7 @@ class Usage(FirestoreDocument):
         if today > end_date and data_entry_date > end_date:
             return end_date, str()
         if hotel.last_timing == Config.EVENING and (data_entry_date == end_date or data_entry_date == today):
-            return data_entry_date, str()
+            return data_entry_date, str()  # indicates all data entry done
         if hotel.last_timing == Config.MORNING and data_entry_date <= today:
             return data_entry_date, Config.EVENING
         if hotel.last_timing == Config.EVENING and data_entry_date < today:
