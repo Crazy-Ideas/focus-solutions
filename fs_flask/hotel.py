@@ -44,6 +44,7 @@ class Hotel(FirestoreDocument):
         self.pin_code: str = str()
         self.banquet_area: int = int()
         self.star_category: str = str()
+        self.ballroom_count: int = int()
         self.pan: str = str()
         self.gst: str = str()
         self.set_contract(Date.today(), Date.today())
@@ -89,6 +90,10 @@ class Hotel(FirestoreDocument):
     @property
     def display_delete(self) -> str:
         return "disabled" if self.used or self.name == current_user.hotel else str()
+
+    @property
+    def display_ballroom_count(self) -> str:
+        return "list-group-item-danger" if self.ballroom_count == len(self.ballroom_maps) else str()
 
     @property
     def full_address(self) -> str:
@@ -203,6 +208,8 @@ class HotelForm(FSForm):
         InputOptional(), Regexp(r"^\d{6}$", message="PIN Code must be 6 digit number")])
     banquet_area = IntegerField("Banquet area", default=0, validators=[
         NumberRange(min=0, max=1000000, message="Banquet area must be between 0 and 1000000")])
+    ballroom_count = IntegerField("Ballroom count", default=0, validators=[
+        NumberRange(min=1, max=100, message="Ballroom count must be between 1 and 100")])
     star = SelectField("Select Star Category", choices=[(star, star) for star in Config.STAR_CATEGORY],
                        default=Config.STAR_CATEGORY[0])
     pan = StringField("PAN #", validators=[InputOptional(), Regexp(r"^[A-Z]{5}\d{4}[A-Z]$", message=PAN_ERROR)])
@@ -239,6 +246,7 @@ class HotelForm(FSForm):
         self.pan.data = self.hotel.pan
         self.gst.data = self.hotel.gst
         self.banquet_area.data = self.hotel.banquet_area
+        self.ballroom_count.data = self.hotel.ballroom_count
         self.star.data = self.hotel.star_category if self.hotel.star_category else Config.STAR_CATEGORY[0]
 
     def raise_date_error(self, message):
@@ -313,6 +321,7 @@ class HotelForm(FSForm):
             self.hotel.address = self.address.data
             self.hotel.pin_code = self.pin_code.data
             self.hotel.banquet_area = self.banquet_area.data
+            self.hotel.ballroom_count = self.ballroom_count.data
             self.hotel.star_category = self.star.data
             self.hotel.pan = self.pan.data
             self.hotel.gst = self.gst.data

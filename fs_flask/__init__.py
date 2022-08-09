@@ -28,8 +28,10 @@ from fs_flask.routes import *
 def make_shell_context():
     from fs_flask.usage import Usage
     from fs_flask.hotel import Hotel
+    from fs_flask import methods
     return {
         "Config": Config,
         "Usage": Usage,
         "Hotel": Hotel,
+        "m": methods,
     }

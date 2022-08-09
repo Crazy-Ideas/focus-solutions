@@ -60,6 +60,12 @@
                             {{ hotel.banquet_area }} square feet
                         </span>
                     </li>
+                    <li class="list-group-item {{ hotel.display_ballroom_count }}">
+                        Ballroom count:
+                        <span class="font-weight-bold" id="edit-banquet-area">
+                            {{ hotel.ballroom_count }}
+                        </span>
+                    </li>
                     <li class="list-group-item">
                         Star Category:
                         <span class="font-weight-bold" id="edit-star-category">
@@ -260,6 +266,9 @@
                                 </div>
                             </div>
                             <div class="row">
+                                <div class="col">
+                                    {{ render_field(form.ballroom_count) }}
+                                </div>
                                 <div class="col">
                                     {{ render_field(form.star) }}
                                 </div>
