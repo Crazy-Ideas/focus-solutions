@@ -12,6 +12,12 @@ from googleapiclient.http import MediaIoBaseDownload
 from config import Config, BaseMap
 
 
+class RangeValues(BaseMap):
+    def __init__(self, range, values):
+        self.range = range
+        self.values = values
+
+
 class File:
     SHEETS = build("sheets", "v4")
     DRIVE = build("drive", "v3")
@@ -69,6 +75,10 @@ class File:
     def update_range(self, range_name: str, values: List[List[str]]):
         self.SHEETS.spreadsheets().values().update(spreadsheetId=self.name, valueInputOption="USER_ENTERED",
                                                    body={"values": values}, range=range_name).execute()
+
+    def update_bulk_range(self, data: list):
+        body: dict = {"valueInputOption": "USER_ENTERED", "data": data}
+        self.SHEETS.spreadsheets().values().batchUpdate(spreadsheetId=self.name, body=body).execute()
 
     def delete_sheet(self):
         if not self.name:
