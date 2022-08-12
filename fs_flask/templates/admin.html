@@ -48,7 +48,10 @@
                     <td class="text-center d-none d-md-table-cell">{{ hotel.formatted_contract[0] }}</td>
                     <td class="text-center d-none d-md-table-cell">{{ hotel.formatted_last_date }}</td>
                     <td class="text-center d-none d-md-table-cell">{{ hotel.formatted_contract[1] }}</td>
-                    <td class="text-center d-none d-md-table-cell">{{ hotel.ballrooms|length }}</td>
+                    <td class="text-center d-none d-md-table-cell
+                        {% if hotel.ballroom_count == hotel.ballrooms|length %} table-danger {% endif %}">
+                        {{ hotel.ballroom_count }}
+                    </td>
                     <td class="text-center">
                         <a class="btn btn-warning {{ hotel.display_default_button }}"
                            title="Set Default Hotel" data-toggle="modal" data-target="#admin-modal"
