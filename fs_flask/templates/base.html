@@ -56,8 +56,8 @@
                        href="{{ url_for('data_entry') }}" title="Event Data Entry">
                         <span class="oi oi-task"></span> Events
                     </a>
-                    <a class="nav-item nav-link {% if request.url_rule.endpoint == 'main_report' %}active{% endif %}"
-                       href="{{ url_for('main_report') }}" title="Main Report">
+                    <a class="nav-item nav-link {% if request.url_rule.endpoint == 'bqt_report' %}active{% endif %}"
+                       href="{{ url_for('bqt_report') }}" title="Main Report">
                         <span class="oi oi-spreadsheet"></span> Reports
                     </a>
                 {%- endif %}

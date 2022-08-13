@@ -2,7 +2,7 @@ import datetime as dt
 import os
 from base64 import b64encode
 from functools import wraps
-from typing import Optional
+from typing import Optional, List
 
 import pytz
 from firestore_ci import FirestoreDocument
@@ -16,6 +16,9 @@ from wtforms.validators import InputRequired
 
 from config import Config
 from fs_flask import fs_app, login, FSForm
+from fs_flask.date_methods import format_weeks_from_month, next_year, previous_year, next_month, previous_month, \
+    next_week, \
+    previous_week, get_default_week_month
 
 
 def cookie_login_required(route_function):
@@ -44,6 +47,10 @@ class User(FirestoreDocument, UserMixin):
         self.city: str = Config.DEFAULT_CITY
         self.hotel: str = str()
         self.role: str = str()
+        self.report_month: str = dt.datetime.utcnow().strftime("%b")
+        self.report_year: int = dt.datetime.utcnow().year
+        self.report_days: List[int] = Config.DEFAULT_DAYS
+        self.report_week: str = format_weeks_from_month(self.report_month, self.report_year)[0]
 
     def __repr__(self) -> str:
         return f"{self.email.lower()}"
@@ -97,6 +104,47 @@ class User(FirestoreDocument, UserMixin):
 
     def get_id(self) -> str:
         return self.email
+
+    def next_report_year(self):
+        self.report_year = next_year(self.report_year)
+        self.report_days = Config.DEFAULT_DAYS
+        self.report_week = format_weeks_from_month(self.report_month, self.report_year)[0]
+
+    def previous_report_year(self):
+        self.report_year = previous_year(self.report_year)
+        self.report_days = Config.DEFAULT_DAYS
+        self.report_week = format_weeks_from_month(self.report_month, self.report_year)[0]
+
+    def next_report_month(self):
+        self.report_month, self.report_year = next_month(self.report_month, self.report_year)
+        self.report_days = Config.DEFAULT_DAYS
+        self.report_week = format_weeks_from_month(self.report_month, self.report_year)[0]
+
+    def previous_report_month(self):
+        self.report_month, self.report_year = previous_month(self.report_month, self.report_year)
+        self.report_days = Config.DEFAULT_DAYS
+        self.report_week = format_weeks_from_month(self.report_month, self.report_year)[0]
+
+    def next_report_week(self):
+        self.report_week, month, self.report_year = next_week(self.report_week, self.report_month, self.report_year)
+        if month != self.report_month:
+            self.report_days = Config.DEFAULT_DAYS
+        self.report_month = month
+
+    def previous_report_week(self):
+        self.report_week, month, self.report_year = previous_week(self.report_week, self.report_month, self.report_year)
+        if month != self.report_month:
+            self.report_days = Config.DEFAULT_DAYS
+        self.report_month = month
+
+    def default_report_week(self):
+        self.report_week, month, year = get_default_week_month()
+        if month != self.report_month or year != self.report_year:
+            self.report_days = Config.DEFAULT_DAYS
+        self.report_month, self.report_year = month, year
+
+    def update_report_days(self, days: List[int]):
+        self.report_days = days if days else ["1"]
 
 
 User.init()

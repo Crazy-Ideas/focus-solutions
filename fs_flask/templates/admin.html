@@ -2,7 +2,7 @@
 
 {% block app_content %}
     <div class="row justify-content-center">
-        <div class="col-lg-6">
+        <div class="col-lg-4">
             <div class="card text-center">
                 <h5 class="card-header">
                     Default City: <strong>{{ current_user.city }}</strong>
@@ -13,7 +13,7 @@
                 </h5>
             </div>
         </div>
-        <div class="col-lg-6">
+        <div class="col-lg-4">
             <div class="card text-center">
                 <h5 class="card-header">
                     Hotels: <strong>{{ form.hotels|length }}</strong>
@@ -22,6 +22,16 @@
                        title="New Hotel">
                         <span class="oi oi-plus" title="plus"></span>
                     </a>
+                </h5>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="card text-center">
+                <h5 class="card-header">
+                    <a class="btn btn-primary" href="{{ url_for('main_report') }}" title="Main Report">
+                        <span class="oi oi-spreadsheet"></span> Old FBR Reports
+                    </a>
+
                 </h5>
             </div>
         </div>

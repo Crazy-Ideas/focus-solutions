@@ -35,7 +35,9 @@ class Config:
     EVENTS = (MICE, SOCIAL, OTHER)
     STAR_CATEGORY = ("5 Star Deluxe", "5 Star", "4 Star", "3 Star", "2 Star", "1 Star", "Heritage Grand",
                      "Heritage Classic", "Heritage Basic")
-
+    DEFAULT_DAYS = ["1"]
+    # noinspection SpellCheckingInspection
+    TEMPLATE_SHEET_ID = "1nLTQftpPTpnPBL3yLpcLdT8N_4B7RjtBeXDD4aRrdb4"
 
 class BaseMap:
     def to_dict(self):

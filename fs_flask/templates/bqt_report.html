@@ -1,0 +1,200 @@
+{% extends "base.html" %}
+
+{% block app_content %}
+    <div class="row justify-content-center">
+        <div class="col-md-4">
+            <div class="card text-center">
+                <h5 class="card-header">My Property</h5>
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item list-group-item-primary">
+                        <span class="oi oi-home"></span> {{ hotel.name }}
+                    </li>
+                </ul>
+            </div>
+            <br>
+            <div class="card text-center">
+                <h5 class="card-header">Weekly</h5>
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item list-group-item-primary">
+                        <small>{{ current_user.report_week }}</small>
+                    </li>
+                    <li class="list-group-item">
+                        <button type="button" class="btn btn-primary" title="Previous Week"
+                                onclick="submitForm('{{ action.PREVIOUS_WEEK }}')">
+                            <span class="oi oi-arrow-thick-left"></span> Previous
+                        </button>
+                        <button type="button" class="btn btn-primary" title="Last Week"
+                                onclick="submitForm('{{ action.DEFAULT_WEEK }}')">
+                            <span class="oi oi-calendar"></span> Default
+                        </button>
+                        <button type="button" class="btn btn-primary" title="Next Week"
+                                onclick="submitForm('{{ action.NEXT_WEEK }}')">
+                            <span class="oi oi-arrow-thick-right"></span> Next
+                        </button>
+                    </li>
+                    <li class="list-group-item">
+                        <button type="button" class="btn btn-primary"
+                                onclick="submitForm('{{ action.PRIMARY_WEEKLY }}')">
+                            <span class="oi oi-cloud-download"></span>
+                            Download Primary {{ current_user.report_week[:6] }}
+                        </button>
+                    </li>
+                    <li class="list-group-item">
+                        <button type="button" class="btn btn-primary"
+                                onclick="submitForm('{{ action.SECONDARY_WEEKLY }}')">
+                            <span class="oi oi-cloud-download"></span>
+                            Download Secondary {{ current_user.report_week[:6] }}
+                        </button>
+                    </li>
+                </ul>
+            </div>
+            <br>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-center">
+                <h5 class="card-header">Monthly</h5>
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item list-group-item-primary">
+                        {{ current_user.report_month }}-{{ current_user.report_year }}
+                    </li>
+                    <li class="list-group-item">
+                        <button type="button" class="btn btn-primary" title="Previous Month"
+                                onclick="submitForm('{{ action.PREVIOUS_MONTH }}')">
+                            <span class="oi oi-arrow-thick-left"></span> Previous Month
+                        </button>
+                        <button type="button" class="btn btn-primary" title="Next Month"
+                                onclick="submitForm('{{ action.NEXT_MONTH }}')">
+                            <span class="oi oi-arrow-thick-right"></span> Next Month
+                        </button>
+                    </li>
+                    <li class="list-group-item">
+                        <button type="button" class="btn btn-primary" title="Previous Year"
+                                onclick="submitForm('{{ action.PREVIOUS_YEAR }}')">
+                            <span class="oi oi-arrow-thick-left"></span> Previous Year
+                        </button>
+                        <button type="button" class="btn btn-primary" title="Next Year"
+                                onclick="submitForm('{{ action.NEXT_YEAR }}')">
+                            <span class="oi oi-arrow-thick-right"></span> Next Year
+                        </button>
+                    </li>
+                    <li class="list-group-item">
+                        <button type="button" class="btn btn-primary"
+                                onclick="submitForm('{{ action.PRIMARY_MONTHLY }}')">
+                            <span class="oi oi-cloud-download"></span>
+                            Download Primary {{ current_user.report_month }}-{{ current_user.report_year }}
+                        </button>
+                    </li>
+                    <li class="list-group-item">
+                        <button type="button" class="btn btn-primary"
+                                onclick="submitForm('{{ action.SECONDARY_MONTHLY }}')">
+                            <span class="oi oi-cloud-download"></span>
+                            Download Secondary {{ current_user.report_month }}-{{ current_user.report_year }}
+                        </button>
+                    </li>
+                </ul>
+            </div>
+            <br>
+            <div class="card text-center">
+                <h5 class="card-header">
+                    Saaya Days
+                    <a class="btn btn-warning" data-toggle="modal" data-target="#report-modal"
+                       title="Edit Saaya Days">
+                        <span class="oi oi-pencil"></span>
+                    </a>
+
+                </h5>
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item">
+                        {{ current_user.report_month }}-{{ current_user.report_year }}
+                    </li>
+                    <li class="list-group-item list-group-item-primary">
+                        <small>
+                            {% for day in current_user.report_days %}
+                                {{ day }}
+                            {% endfor %}
+                        </small>
+                    </li>
+                    <li class="list-group-item">
+                        <button type="button" class="btn btn-primary"
+                                onclick="submitForm('{{ action.PRIMARY_DAYS }}')">
+                            <span class="oi oi-cloud-download"></span>
+                            Download Primary Saaya Days
+                        </button>
+                    </li>
+                    <li class="list-group-item">
+                        <button type="button" class="btn btn-primary"
+                                onclick="submitForm('{{ action.SECONDARY_DAYS }}')">
+                            <span class="oi oi-cloud-download"></span>
+                            Download Secondary Saaya Days
+                        </button>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-center">
+                <h5 class="card-header">
+                    Primary Comp Set
+                </h5>
+                <ul class="list-group list-group-flush">
+                    {% for hotel in hotel.primary_hotels %}
+                        <li class="list-group-item">{{ hotel }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            <br>
+            <div class="card text-center">
+                <h5 class="card-header">
+                    Secondary Comp Set
+                </h5>
+                <ul class="list-group list-group-flush">
+                    {% for hotel in hotel.secondary_hotels %}
+                        <li class="list-group-item">{{ hotel }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+    <br>
+
+    <div class="modal fade" id="report-modal" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Edit Saaya Days</h5>
+                    <button type="button" class="close" data-dismiss="modal">
+                        <span>&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body justify-content-center">
+                    <form class="form" method="POST" id="report-form" enctype="multipart/form-data">
+                        {{ render_field(form.csrf_token) }}
+                        {{ render_field(form.action_type) }}
+                        {{ render_field(form.days) }}
+                    </form>
+                </div>
+                <div class="modal-footer justify-content-center d-flex">
+                    <button type="button" class="btn btn-primary" onclick="submitForm('{{ action.UPDATE_DAYS }}')">
+                        Save
+                    </button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}
+
+{% block scripts %}
+    {{ super() }}
+    <script>
+        function submitForm(action_type) {
+            const buttons = document.querySelectorAll(".btn");
+            buttons.forEach((button) => {
+                button.disabled = true;
+            });
+            document.querySelector("#action_type").value = action_type;
+            document.querySelector("#report-form").submit();
+        }
+    </script>
+{% endblock %}

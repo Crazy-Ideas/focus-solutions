@@ -3,9 +3,11 @@ from flask_login import current_user
 
 from config import Config, Date
 from fs_flask import fs_app
+from fs_flask.fbr_report import QueryForm, Dashboard
 from fs_flask.file import File
 from fs_flask.hotel import Hotel, HotelForm, AdminForm
-from fs_flask.report import QueryForm, Dashboard
+from fs_flask.report_methods import QueryTag, execute_report_action
+from fs_flask.templates.forms import ReportForm
 from fs_flask.usage import Usage, UsageForm
 from fs_flask.user import cookie_login_required
 
@@ -40,6 +42,19 @@ def main_report() -> Response:
     if form.file_path:
         return send_file(form.file_path, as_attachment=True, attachment_filename="Report.xlsx")
     return render_template("main_report.html", form=form, title="Reports")
+
+
+@fs_app.route("/reports/bqt", methods=["GET", "POST"])
+@cookie_login_required
+def bqt_report() -> Response:
+    form = ReportForm()
+    hotel = Hotel.objects.filter_by(name=current_user.hotel).first()
+    if not form.validate_on_submit():
+        return render_template("bqt_report.html", form=form, action=QueryTag(), hotel=hotel)
+    file_path, filename = execute_report_action(form.action_type.data, hotel, form.days.data)
+    if file_path:
+        return send_file(file_path, as_attachment=True, attachment_filename=filename)
+    return redirect(url_for("bqt_report"))
 
 
 @fs_app.route("/hotels/profile")

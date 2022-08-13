@@ -1,7 +1,8 @@
 import io
 import os
 import re
-from typing import List, Dict
+from concurrent.futures import ThreadPoolExecutor, as_completed, Future
+from typing import List, Dict, Optional
 
 from google.cloud.storage import Client, Blob
 # noinspection PyPackageRequirements
@@ -13,8 +14,8 @@ from config import Config, BaseMap
 
 
 class RangeValues(BaseMap):
-    def __init__(self, range, values):
-        self.range = range
+    def __init__(self, input_range, values):
+        self.range = input_range
         self.values = values
 
 
@@ -27,6 +28,7 @@ class File:
     def __init__(self, sheet_id: str, extension: str):
         self.name: str = sheet_id
         self.extension: str = extension
+        self.future: Optional[Future] = None
 
     @classmethod
     def create_sheet(cls) -> "File":
@@ -39,18 +41,41 @@ class File:
     @classmethod
     def create_with_permission(cls) -> "File":
         sheet = cls.create_sheet()
+        sheet.grant_permission()
+        return sheet
+
+    def async_copy(self):
+        with ThreadPoolExecutor() as executor:
+            self.future = executor.submit(self.copy_sheet)
+
+    def await_copy(self) -> "File":
+        results = [future.result() for future in as_completed([self.future])]
+        return results[0]
+
+    def copy_sheet(self) -> "File":
+        file = self.DRIVE.files().copy(fileId=self.name).execute()
+        file_id = file["id"]
+        print(f"A new copy of sheet {self.name} created. The id of new sheet is {file_id}")
+        return File(file_id, "xlsx")
+
+    def copy_sheet_with_permission(self) -> "File":
+        file = self.copy_sheet()
+        file.grant_permission()
+        return file
+
+    def grant_permission(self):
 
         def callback(_, __, exception):
             if exception:
                 print(exception)
                 return
-            print(f"Permission granted for sheet ID {sheet.name}")
+            print(f"Permission granted for sheet ID {self.name}")
 
-        batch = cls.DRIVE.new_batch_http_request(callback=callback)
+        batch = self.DRIVE.new_batch_http_request(callback=callback)
         permission = {"type": "user", "role": "writer", "emailAddress": "nayan@crazyideas.co.in"}
-        batch.add(cls.DRIVE.permissions().create(fileId=sheet.name, body=permission, fields="id"))
+        batch.add(self.DRIVE.permissions().create(fileId=self.name, body=permission, fields="id"))
         batch.execute()
-        return sheet
+        return
 
     @property
     def local_path(self):
@@ -192,7 +217,7 @@ class GridRange(BaseMap):
     def from_range(cls, range_name: str) -> 'GridRange':
         grid = cls()
         try:
-            sheet, start_col, start_row, end_col, end_row = re.findall(r"([^!]+)!([A-Z])([\d]+):([A-Z])([\d]+)",
+            sheet, start_col, start_row, end_col, end_row = re.findall(r"([^!]+)!([A-Z])(\d+):([A-Z])(\d+)",
                                                                        range_name)[0]
         except IndexError:
             return grid
@@ -216,7 +241,7 @@ class GridCoordinate(BaseMap):
     def from_cell(cls, cell_address) -> 'GridCoordinate':
         grid = cls()
         try:
-            sheet, column, row = re.findall(r"([^!]+)!([A-Z])([\d]+)", cell_address)[0]
+            sheet, column, row = re.findall(r"([^!]+)!([A-Z])(\d+)", cell_address)[0]
         except IndexError:
             return grid
         if sheet not in File.SHEET_ID:
