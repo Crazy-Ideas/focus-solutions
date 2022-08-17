@@ -31,6 +31,8 @@ def make_shell_context():
     from fs_flask.file import File
     from fs_flask import date_methods
     from fs_flask import report_methods
+    from fs_flask.user import User
+    import fs
     return {
         "Config": Config,
         "Usage": Usage,
@@ -38,4 +40,6 @@ def make_shell_context():
         "dm": date_methods,
         "rm": report_methods,
         "File": File,
+        "fs": fs,
+        "User": User,
     }

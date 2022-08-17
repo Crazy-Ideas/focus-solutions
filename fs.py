@@ -261,12 +261,18 @@ def rename_hotel(old_name: str, new_name: str, city: str):
     hotel: Hotel = Hotel.objects.filter_by(name=old_name, city=city).first()
     if not hotel:
         print(f"Hotel {old_name} not found.")
+        return
     if Hotel.objects.filter_by(name=new_name, city=city).first():
         print(f"Hotel with the name {new_name} already exists.")
+        return
     hotel.name = new_name
     events: List[Usage] = Usage.objects.filter_by(hotel=old_name, city=city).get()
     for event in events:
         event.hotel = new_name
     hotel.save()
     Usage.save_all(events)
-    print(f"Hotel renamed to {new_name}. {len(events) + 1} documents updated.")
+    users: List[User] = User.objects.filter_by(hotel=old_name, city=city).get()
+    for user in users:
+        user.hotel = new_name
+    User.save_all(users)
+    print(f"Hotel renamed to {new_name}. {len(events)} events and {len(users)} users updated.")
