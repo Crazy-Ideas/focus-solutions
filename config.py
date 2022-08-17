@@ -1,29 +1,32 @@
 import datetime as dt
 import os
-from base64 import b64encode
 from typing import Union, Optional
 
 from pytz import timezone
+
+from secret import SecretConfig
 
 os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "google-cloud.json"
 
 
 class Config:
-    SECRET_KEY = os.environ.get("SECRET_KEY") or b64encode(os.urandom(24)).decode()
+    SECRET_KEY = os.environ.get("SECRET_KEY") or SecretConfig.SECRET_KEY
     CI_SECURITY = True if os.environ.get("ENVIRONMENT") == "prod" else False
     SESSION_COOKIE_SECURE = CI_SECURITY
     PROJECT_ROOT = os.getcwd()
     APP_ROOT = os.path.join(PROJECT_ROOT, "fs_flask")
     DOWNLOAD_PATH = os.path.join(os.path.abspath(os.sep), "tmp")
     TOKEN_EXPIRY = 3600  # 1 hour = 3600 seconds
+    # noinspection SpellCheckingInspection
     MIME_TYPES = {"xlsx": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"}
+    # noinspection SpellCheckingInspection
     SHEET_ID = "1OnvVprC_RSlsKxgAgve-dliPGJydj--qkmvnRUfyGYM"
     # FBR specific constants
     ADMIN, HOTEL = "Admin", "Hotel"
     ROLES = (ADMIN, HOTEL)
     DEFAULT_CITY = "Mumbai"
     EMPTY_CHOICE = (str(), str())
-    CITIES = {"Mumbai": "Maharashtra", "Pune": "Maharashtra", "Kolkata": "West Bengal" }
+    CITIES = {"Mumbai": "Maharashtra", "Pune": "Maharashtra", "Kolkata": "West Bengal"}
     NO_MEAL, BREAKFAST, LUNCH, DINNER, HI_TEA = "No Meal", "Breakfast", "Lunch", "Dinner", "Hi Tea"
     BREAKFAST_LUNCH, HI_TEA_DINNER = "Breakfast and Lunch", "Hi Tea and Dinner"
     MEALS = (BREAKFAST, LUNCH, HI_TEA, DINNER, NO_MEAL)
@@ -38,6 +41,7 @@ class Config:
     DEFAULT_DAYS = ["1"]
     # noinspection SpellCheckingInspection
     TEMPLATE_SHEET_ID = "1nLTQftpPTpnPBL3yLpcLdT8N_4B7RjtBeXDD4aRrdb4"
+
 
 class BaseMap:
     def to_dict(self):

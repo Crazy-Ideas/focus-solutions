@@ -4,5 +4,6 @@ __pycache__
 *.env
 *.csv
 google-cloud.json
+secret.py
 fs_flask/static/open-iconic/
 fs_flask/downloads
