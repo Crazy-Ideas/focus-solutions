@@ -171,6 +171,7 @@ class UsageForm(FSForm):
     def validate_client(self, client: StringField):
         if self.form_type.data != self.UPDATE and self.form_type.data != self.CREATE:
             return
+        client.data = client.data.strip()
         if not client.data:
             raise ValidationError("Client name cannot be left blank")
         client_exists = any(client.data == usage.client for usage in self.usages)

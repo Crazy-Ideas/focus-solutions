@@ -124,10 +124,18 @@ def execute_report_action(query_tag: str, my_hotel: Hotel, days: List[int]) -> t
         update_ranges.append(RangeValues(report_attr.range, values).to_dict())
 
     # Update Reader Board data
+    def sort_events(data: List[Usage]) -> None:
+        data.sort(key=lambda item: item.timing, reverse=True)
+        data.sort(key=lambda item: (item.hotel, item.date))
+
+    sorted_events: List[Usage] = data[ReportAttribute.FULL_DAY].my_prop[:]
+    sort_events(sorted_events)
+    sort_events(data[ReportAttribute.FULL_DAY].comp_set)
+    sorted_events.extend(data[ReportAttribute.FULL_DAY].comp_set)
     rbd = [["Date", "Timings", "Company Name", "Event Type", "Hotel Name", "BTR", "Ballrooms"]]
     rbd.extend([[u.formatted_date, u.timing, u.client, u.event_type, u.hotel, u.event_description, u.formatted_ballroom,
-                 ] for u in usages])
-    update_ranges.append(RangeValues(f"'{ReportAttribute.RBD}'!A1:G{len(usages) + 1}", rbd).to_dict())
+                 ] for u in sorted_events])
+    update_ranges.append(RangeValues(f"'{ReportAttribute.RBD}'!A1:G{len(sorted_events) + 1}", rbd).to_dict())
 
     # Update Top 5 clients
     top5_counts: dict = dict()
