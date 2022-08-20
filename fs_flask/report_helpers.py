@@ -39,6 +39,8 @@ class ReportTag:
     EVENING_OCCUPANCY_DATA_POINT = "evening_occupancy_data_point"
     # Events
     FULL_DAY_EVENTS_BAR_GRAPH = "full_day_events_bar_graph"
+    MORNING_EVENTS_BAR_GRAPH = "morning_events_bar_graph"
+    EVENING_EVENTS_BAR_GRAPH = "evening_events_bar_graph"
     FULL_DAY_EVENTS_DATA_POINT = "full_day_events_data_point"
     MORNING_EVENTS_DATA_POINT = "morning_events_data_point"
     EVENING_EVENTS_DATA_POINT = "evening_events_data_point"
@@ -138,15 +140,31 @@ def get_report_attributes() -> List[ReportAttribute]:
                         occupancy=False,
                         sheet_range=f"'{ReportAttribute.DATA_POINT}'!A17:D17"
                         ),
+        ReportAttribute(name=ReportTag.MORNING_EVENTS_BAR_GRAPH,
+                        sheet=ReportAttribute.BAR_GRAPH,
+                        event=ReportAttribute.MORNING,
+                        cache_to=ReportTag.MORNING_EVENTS_DATA_POINT,
+                        occupancy=False,
+                        sheet_range=f"'{ReportAttribute.BAR_GRAPH}'!A18:B27"
+                        ),
         ReportAttribute(name=ReportTag.MORNING_EVENTS_DATA_POINT,
                         sheet=ReportAttribute.DATA_POINT,
                         event=ReportAttribute.MORNING,
+                        cache_from=ReportTag.MORNING_EVENTS_DATA_POINT,
                         occupancy=False,
                         sheet_range=f"'{ReportAttribute.DATA_POINT}'!A21:D21"
+                        ),
+        ReportAttribute(name=ReportTag.EVENING_EVENTS_BAR_GRAPH,
+                        sheet=ReportAttribute.BAR_GRAPH,
+                        event=ReportAttribute.EVENING,
+                        cache_to=ReportTag.EVENING_EVENTS_DATA_POINT,
+                        occupancy=False,
+                        sheet_range=f"'{ReportAttribute.BAR_GRAPH}'!E2:F11"
                         ),
         ReportAttribute(name=ReportTag.EVENING_EVENTS_DATA_POINT,
                         sheet=ReportAttribute.DATA_POINT,
                         event=ReportAttribute.EVENING,
+                        cache_from=ReportTag.EVENING_EVENTS_DATA_POINT,
                         occupancy=False,
                         sheet_range=f"'{ReportAttribute.DATA_POINT}'!A25:D25"
                         ),
